@@ -34,13 +34,15 @@ This database is being built in priority-ordered phases. The robotics/embodied-A
 
 ### Phase 2 — Recent Advances (2024–2026 frontier)
 - [x] `12_research_frontier_2024_2026/00_overview_latest.md`
-- [ ] `12_research_frontier_2024_2026/01_scaling_laws_vision.md`
-- [ ] `12_research_frontier_2024_2026/02_any_model_paradigm.md`
+- [x] `12_research_frontier_2024_2026/01_scaling_laws_vision.md`
+- [x] `12_research_frontier_2024_2026/02_any_model_paradigm.md`
 - [x] `12_research_frontier_2024_2026/03_multimodal_llm_2025_2026.md`
-- [ ] `12_research_frontier_2024_2026/04_vla_embodied_2025_2026.md`
+- [x] `12_research_frontier_2024_2026/04_vla_embodied_2025_2026.md`
 - [x] `12_research_frontier_2024_2026/05_4d_and_dynamic_scenes.md`
-- [ ] `12_research_frontier_2024_2026/06_spatial_intelligence.md`
-- [ ] `05_multimodal_vision_language/02_large_vision_language_models.md`
+- [x] `12_research_frontier_2024_2026/06_spatial_intelligence.md`
+- [x] `05_multimodal_vision_language/02_large_vision_language_models.md`
+
+> **Phase 2 complete** ✅ — all 8 `12_research_frontier_2024_2026/` files + the large-VLM module populated.
 
 ### Phase 3 — Core Technical Depth
 - [ ] `02_core_tasks/00_image_classification.md`
