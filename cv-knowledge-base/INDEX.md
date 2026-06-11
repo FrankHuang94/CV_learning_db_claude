@@ -44,37 +44,37 @@ This database is being built in priority-ordered phases. The robotics/embodied-A
 
 > **Phase 2 complete** ✅ — all 8 `12_research_frontier_2024_2026/` files + the large-VLM module populated.
 
-### Phase 3 — Core Technical Depth
-- [ ] `02_core_tasks/00_image_classification.md`
-- [ ] `02_core_tasks/01_object_detection.md`
-- [ ] `02_core_tasks/02_semantic_segmentation.md`
-- [ ] `02_core_tasks/03_instance_panoptic_segmentation.md`
-- [ ] `02_core_tasks/04_pose_estimation.md`
-- [ ] `02_core_tasks/05_depth_estimation.md`
-- [ ] `02_core_tasks/06_optical_flow_tracking.md`
-- [ ] `02_core_tasks/07_image_generation.md`
-- [ ] `02_core_tasks/08_video_understanding.md`
-- [ ] `02_core_tasks/09_3d_reconstruction.md`
+### Phase 3 — Core Technical Depth ✅ **Complete**
+- [x] `02_core_tasks/00_image_classification.md`
+- [x] `02_core_tasks/01_object_detection.md`
+- [x] `02_core_tasks/02_semantic_segmentation.md`
+- [x] `02_core_tasks/03_instance_panoptic_segmentation.md`
+- [x] `02_core_tasks/04_pose_estimation.md`
+- [x] `02_core_tasks/05_depth_estimation.md`
+- [x] `02_core_tasks/06_optical_flow_tracking.md`
+- [x] `02_core_tasks/07_image_generation.md`
+- [x] `02_core_tasks/08_video_understanding.md`
+- [x] `02_core_tasks/09_3d_reconstruction.md`
 - [x] `03_architectures/00_cnn_architectures.md`
 - [x] `03_architectures/01_vision_transformers.md`
 - [x] `03_architectures/02_hybrid_architectures.md`
 - [x] `03_architectures/03_self_supervised_learning.md`
 - [x] `03_architectures/04_multimodal_architectures.md`
 - [x] `03_architectures/05_state_space_models.md`
-- [ ] `04_3d_vision_and_scene/00_3d_representations.md`
-- [ ] `04_3d_vision_and_scene/01_nerf_and_variants.md`
-- [ ] `04_3d_vision_and_scene/02_gaussian_splatting.md`
-- [ ] `04_3d_vision_and_scene/03_sfm_and_slam.md`
-- [ ] `04_3d_vision_and_scene/04_3d_generation.md`
-- [ ] `05_multimodal_vision_language/00_overview.md`
-- [ ] `05_multimodal_vision_language/01_vlp_models.md`
-- [ ] `05_multimodal_vision_language/03_open_vocabulary_detection.md`
-- [ ] `05_multimodal_vision_language/04_document_and_ocr.md`
-- [ ] `10_generative_vision/00_gans_and_vaes.md`
-- [ ] `10_generative_vision/01_diffusion_models.md`
-- [ ] `10_generative_vision/02_video_generation.md`
-- [ ] `10_generative_vision/03_3d_generation.md`
-- [ ] `10_generative_vision/04_evaluation_and_safety.md`
+- [x] `04_3d_vision_and_scene/00_3d_representations.md`
+- [x] `04_3d_vision_and_scene/01_nerf_and_variants.md`
+- [x] `04_3d_vision_and_scene/02_gaussian_splatting.md`
+- [x] `04_3d_vision_and_scene/03_sfm_and_slam.md`
+- [x] `04_3d_vision_and_scene/04_3d_generation.md`
+- [x] `05_multimodal_vision_language/00_overview.md`
+- [x] `05_multimodal_vision_language/01_vlp_models.md`
+- [x] `05_multimodal_vision_language/03_open_vocabulary_detection.md`
+- [x] `05_multimodal_vision_language/04_document_and_ocr.md`
+- [x] `10_generative_vision/00_gans_and_vaes.md`
+- [x] `10_generative_vision/01_diffusion_models.md`
+- [x] `10_generative_vision/02_video_generation.md`
+- [x] `10_generative_vision/03_3d_generation.md`
+- [x] `10_generative_vision/04_evaluation_and_safety.md`
 
 ### Phase 4 — Supporting Sections
 - [ ] `00_foundations/00_overview.md` … `04_classical_geometry.md` (5 files)
