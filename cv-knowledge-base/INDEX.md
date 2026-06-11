@@ -24,19 +24,21 @@ This database is being built in priority-ordered phases. The robotics/embodied-A
 - [x] `06_robotics_and_embodied_ai/08_perception_for_robotics.md`
 - [x] `06_robotics_and_embodied_ai/11_generalist_vs_specialist.md`
 - [x] `12_research_frontier_2024_2026/07_future_trends.md`
-- [ ] `06_robotics_and_embodied_ai/05_simulation_and_data.md`
-- [ ] `06_robotics_and_embodied_ai/07_pros_cons_roadmaps.md`
-- [ ] `06_robotics_and_embodied_ai/09_robot_data_and_teleoperation.md`
-- [ ] `06_robotics_and_embodied_ai/10_language_conditioned_control.md`
-- [ ] `06_robotics_and_embodied_ai/12_hardware_robot_platforms.md`
+- [x] `06_robotics_and_embodied_ai/05_simulation_and_data.md`
+- [x] `06_robotics_and_embodied_ai/07_pros_cons_roadmaps.md`
+- [x] `06_robotics_and_embodied_ai/09_robot_data_and_teleoperation.md`
+- [x] `06_robotics_and_embodied_ai/10_language_conditioned_control.md`
+- [x] `06_robotics_and_embodied_ai/12_hardware_robot_platforms.md`
+
+> **Phase 1 complete** ✅ — all 13 `06_robotics_and_embodied_ai/` files + `12/07_future_trends.md` populated.
 
 ### Phase 2 — Recent Advances (2024–2026 frontier)
-- [ ] `12_research_frontier_2024_2026/00_overview_latest.md`
+- [x] `12_research_frontier_2024_2026/00_overview_latest.md`
 - [ ] `12_research_frontier_2024_2026/01_scaling_laws_vision.md`
 - [ ] `12_research_frontier_2024_2026/02_any_model_paradigm.md`
-- [ ] `12_research_frontier_2024_2026/03_multimodal_llm_2025_2026.md`
+- [x] `12_research_frontier_2024_2026/03_multimodal_llm_2025_2026.md`
 - [ ] `12_research_frontier_2024_2026/04_vla_embodied_2025_2026.md`
-- [ ] `12_research_frontier_2024_2026/05_4d_and_dynamic_scenes.md`
+- [x] `12_research_frontier_2024_2026/05_4d_and_dynamic_scenes.md`
 - [ ] `12_research_frontier_2024_2026/06_spatial_intelligence.md`
 - [ ] `05_multimodal_vision_language/02_large_vision_language_models.md`
 
