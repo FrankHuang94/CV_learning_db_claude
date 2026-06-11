@@ -55,12 +55,12 @@ This database is being built in priority-ordered phases. The robotics/embodied-A
 - [ ] `02_core_tasks/07_image_generation.md`
 - [ ] `02_core_tasks/08_video_understanding.md`
 - [ ] `02_core_tasks/09_3d_reconstruction.md`
-- [ ] `03_architectures/00_cnn_architectures.md`
-- [ ] `03_architectures/01_vision_transformers.md`
-- [ ] `03_architectures/02_hybrid_architectures.md`
-- [ ] `03_architectures/03_self_supervised_learning.md`
-- [ ] `03_architectures/04_multimodal_architectures.md`
-- [ ] `03_architectures/05_state_space_models.md`
+- [x] `03_architectures/00_cnn_architectures.md`
+- [x] `03_architectures/01_vision_transformers.md`
+- [x] `03_architectures/02_hybrid_architectures.md`
+- [x] `03_architectures/03_self_supervised_learning.md`
+- [x] `03_architectures/04_multimodal_architectures.md`
+- [x] `03_architectures/05_state_space_models.md`
 - [ ] `04_3d_vision_and_scene/00_3d_representations.md`
 - [ ] `04_3d_vision_and_scene/01_nerf_and_variants.md`
 - [ ] `04_3d_vision_and_scene/02_gaussian_splatting.md`
