@@ -85,6 +85,8 @@ graph LR
 - **Safety and provenance.** Deepfakes, memorization, and copyright remain unresolved.
 - **Compositional generation.** Binding attributes to objects correctly is still imperfect.
 - **From images to world models.** Extending generation to physically consistent video/3D fed directly into the robotics frontier (see [World Models](../06_robotics_and_embodied_ai/02_world_models.md)).
+- **Likelihood vs. quality.** GANs gave sharp samples without tractable likelihoods; VAEs gave likelihoods but blurry samples; diffusion reconciled the two only partially, and a single model that is simultaneously high-quality, fast, and likelihood-principled remains elusive.
+- **Conditioning fidelity.** Faithfully respecting complex, multi-object, spatially-specified prompts—rather than producing plausible-but-wrong compositions—was unsolved in this era and motivated the controllable-generation work that followed.
 
 ---
 

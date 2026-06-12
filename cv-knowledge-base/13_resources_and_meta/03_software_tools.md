@@ -87,6 +87,8 @@ graph LR
 - **Eval standardization.** No universal harness for fair CV/VLM evaluation across labs.
 - **Edge/deployment gap.** Bridging research frameworks to optimized edge runtimes remains manual (see [Edge Deployment](../09_efficiency_and_deployment/03_edge_deployment.md)).
 - **Robotics tooling immaturity.** Robot-learning software (LeRobot, sim interfaces) is younger and less standardized than core CV.
+- **Multi-backend portability.** Code written against PyTorch CUDA kernels rarely runs unmodified on TPUs, Apple Silicon, or edge NPUs, forcing per-backend rewrites that slow research iteration.
+- **Dependency fragility.** Fast-moving libraries with frequent breaking changes make multi-year reproducibility difficult; pinned environments and containers help but are inconsistently adopted across the field.
 
 ---
 

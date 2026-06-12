@@ -77,6 +77,8 @@ graph TD
 - **Small-object and crowded-scene performance.** Persistent weak points despite FPN.
 - **Annotation cost.** Dense mask labels are expensive, motivating promptable models like SAM.
 - **Long-tail recognition.** Rare-class detection (LVIS) remained far behind common classes.
+- **Video and temporal extent.** The era's methods were overwhelmingly image-based; extending detection and segmentation to coherent video object tracking with temporal consistency was left to later streaming-memory architectures (e.g., SAM 2).
+- **3D and amodal reasoning.** Box and mask prediction operated in the image plane; recovering 3D extent and reasoning about occluded (amodal) object parts remained outside the era's standard pipelines.
 
 ---
 
