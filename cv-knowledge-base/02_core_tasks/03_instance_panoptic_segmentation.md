@@ -106,7 +106,7 @@ Results with ResNet-50: 51.9 PQ panoptic, 44.2 AP instance, 57.7 mIoU semantic o
 
 ### Encoder-Only Universal Segmentation (2025–2026)
 
-**EoMT** [Kerssies2025] (CVPR 2025 Highlight) feeds N learnable query tokens into the last blocks of a plain ViT alongside the patch tokens; class logits come from the query tokens and masks from query–patch dot products, with masked attention used only during training and *annealed away* for inference. On COCO panoptic (640×640, DINOv2 backbones, H100) EoMT-L reaches **56.0 PQ at 128 FPS**, and EoMT-7B reaches **58.4 PQ**, equal to ViT-Adapter-7B + Mask2Former but about 2× faster. With DINOv3 backbones, EoMT-L reports **58.9 PQ** (panoptic) and **49.9 mask AP** (instance) at 1280×1280. **VidEoMT** (CVPR 2026) extends the encoder-only design to video instance/panoptic segmentation with query propagation, and **PMT** (2026) adapts it to frozen foundation encoders.
+**EoMT** [Kerssies2025] (CVPR 2025 Highlight) feeds N learnable query tokens into the last blocks of a plain ViT alongside the patch tokens; class logits come from the query tokens and masks from query–patch dot products, with masked attention used only during training and *annealed away* for inference. On COCO panoptic (640×640, DINOv2 backbones, H100) EoMT-L reaches **56.0 PQ at 128 FPS**, and EoMT-7B reaches **58.4 PQ**, equal to ViT-Adapter-7B + Mask2Former but about 2× faster. With DINOv3 backbones, EoMT-L reports **58.9 PQ** (panoptic) and **49.9 mask AP** (instance) at 1280×1280. **VidEoMT** (CVPR 2026) extends the encoder-only design to video segmentation (up to ~10× faster than competing video segmenters), and **PMT** (2026) adapts it to frozen foundation encoders.
 
 ### Real-Time Instance Segmentation (2025–2026)
 

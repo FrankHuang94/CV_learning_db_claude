@@ -182,7 +182,7 @@ DiffusionDrive (truncated diffusion):
 
 ## Tesla FSD v12: Production End-to-End Neural Driving
 
-Tesla FSD v12 (released early 2024) is the highest-profile production E2E AV system as of June 2026. Key technical details:
+Tesla FSD v12 (released early 2024) and its successors remain the highest-profile production E2E AV system as of October 2026. Key technical details:
 
 - **Input**: Eight cameras (360° surround, 120–250 m range), no LiDAR at inference.
 - **Output**: Direct vehicle control (steering angle, throttle, braking torque) at ~10–20 Hz.

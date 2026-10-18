@@ -58,7 +58,7 @@ Five concrete failure modes of bounding-box perception motivate occupancy:
 
 ## Tesla Occupancy Network
 
-Tesla's Occupancy Network was publicly described at AI Day 2022 and constitutes the most significant production deployment of camera-based 3D occupancy prediction as of June 2026. Key architectural details (from public presentations; detailed architecture not formally published):
+Tesla's Occupancy Network was publicly described at AI Day 2022 and constitutes the most significant production deployment of camera-based 3D occupancy prediction as of October 2026. Key architectural details (from public presentations; detailed architecture not formally published):
 
 - **Input**: Eight surround-view cameras at up to 1280 × 960 resolution, producing 360° coverage.
 - **Backbone**: Multi-scale feature extraction per camera (HydraNet-style shared trunk with task-specific heads).
