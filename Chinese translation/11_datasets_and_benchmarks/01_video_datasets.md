@@ -168,3 +168,101 @@ WebVid-2.5M（初版）和 WebVid-10M 包含从素材视频网站抓取、带描
 - **空间视频：VSI-Bench 与 VSI-SUPER。** **VSI-Bench** [Yang2025a]（CVPR 2025 Oral，NYU/Yale/Stanford）包含 5,000 多个问答对，来自 ScanNet、ScanNet++ 和 ARKitScenes 验证集场景的 288 段第一人称漫游视频。其八项任务涵盖构型推理、测量估计和时空推理。**VSI-SUPER** [Yang2025b]（2025年11月）将其扩展到任意长度的视频流，包含空间回忆与持续计数任务，其设计使得单纯扩展上下文的蛮力方法会失效。它倡导*预测式感知*（基于"惊奇度"的记忆），而非更长的上下文窗口。基于图像的空间套件（MMSI-Bench、ERQA）见[多模态数据集](./03_multimodal_datasets.md)。
 
 ---
+
+## 关键论文 / 数据集
+
+| 名称 | 作者/机构 | 年份 | 会议/期刊 | 关键统计 / 贡献 |
+|---|---|---|---|---|
+| Kinetics-400 | Kay et al. (DeepMind) | 2017 | arXiv | 约 30 万个片段、400 个类别、10 秒片段；主流预训练基准 |
+| Kinetics-700 | Smaira et al. (DeepMind) | 2020 | arXiv | 约 65 万个片段、700 个类别；扩展的类别体系 |
+| Something-Something v2 | Goyal et al. (TwentyBN) | 2017 | ICCV | 22 万个片段、174 个类别；需要时序推理 |
+| AVA | Gu et al. (Google) | 2018 | CVPR | 437 段电影片段、80 个原子动作、159 万个时空标签 |
+| ActivityNet v1.3 | Heilbron et al. | 2015 | CVPR | 2 万个视频、200 个类别、849 小时；未剪辑视频的时序检测 |
+| Charades | Sigurdsson et al. (CMU/Allen AI) | 2016 | ECCV | 9.8K 个视频、157 个动作、6.65 万个时序区间；室内脚本化 |
+| Ego4D | Grauman et al. (Meta AI + consortium) | 2022 | CVPR | 3,670 小时第一人称视频、74 个地点、5 个基准套件 |
+| EPIC-KITCHENS-100 | Damen et al. (Univ. Bristol) | 2020 | arXiv | 100 小时烹饪视频、45 名参与者、动词+名词分解 |
+| HowTo100M | Miech et al. (INRIA) | 2019 | ICCV | 122 万个视频、1.36 亿个片段-描述对，基于 ASR；视频-文本预训练 |
+| WebVid-10M | Bain et al. (Oxford) | 2021 | ICCV | 1070 万个片段、5.2 万小时；高质量素材描述 |
+| Panda-70M | Chen et al. (Snap) | 2024 | CVPR | 7000 万个片段，多教师模型生成描述；文生视频领域的 WebVid 后继者 |
+| OpenVid-1M | Nan et al. (NJU) | 2025 | ICLR | 100 万个高审美片段；40 万个 1080p（OpenVidHD） |
+| Koala-36M | Wang et al. (Kuaishou/Kling) | 2025 | CVPR | 3600 万个片段、>200 词的结构化描述、VTSS 适用性过滤 |
+| PE-Video / PLM-Video-Human | Cho et al. (Meta FAIR) | 2025 | arXiv | 100 万个视频（12 万个人工核验）；人工标注的 FGQA / 区域-时序数据；PLM-VideoBench |
+| Video-MME | Fu et al. | 2025 | CVPR | 900 个视频（254 小时）、2,700 道问答；短/中/长三档 ± 字幕；业界标准的视频 MLLM 指标 |
+| Video-MMMU | Hu et al. (NTU S-Lab / LMMs-Lab) | 2025 | arXiv | 300 个讲座视频、900 道问答；知识获取（感知 → 理解 → 应用） |
+| MotionBench | Hong et al. (Zhipu/Tsinghua) | 2025 | CVPR | 细粒度运动问答，6 类能力；另含 5K 个运动描述视频 |
+| VSI-Bench | Yang, Yang, Gupta, Han, Fei-Fei, Xie (NYU) | 2025 | CVPR (Oral) | 基于 288 段 3D 扫描场景视频的 5K+ 问答；视觉-空间智能 |
+| VSI-590K / VSI-SUPER (Cambrian-S) | Yang, Yang et al. (NYU/Stanford) | 2025 | arXiv | 59 万条空间问答训练集；流式空间回忆/计数基准 |
+| HD-EPIC | Perrett et al. (Bristol et al.) | 2025 | CVPR | 高度细致的无脚本第一人称厨房视频 + VQA 基准 |
+| EgoLife | Yang et al. (NTU et al.) | 2025 | CVPR | 为期一周的多人 Aria 眼镜生活日志；EgoIT-99K；超长上下文问答 |
+
+---
+
+## 基准对比
+
+| 数据集 | 视频数 | 时长/片段 | 任务 | 关键指标 | 是否需要时序推理 |
+|---|---|---|---|---|---|
+| Kinetics-400 | ~240K | 10 秒（剪辑） | 动作识别 | Top-1 Acc | 低（外观偏向） |
+| Something-Something v2 | 220K | 2–6 秒（剪辑） | 动作识别 | Top-1 Acc | 高 |
+| AVA | 437 部电影 | 15 分钟（未剪辑） | 时空检测 | mAP | 中 |
+| ActivityNet | 20K | 平均约 2 分钟（未剪辑） | 时序检测 | mAP@tIoU | 中 |
+| Charades | 9.8K | 平均 30 秒（未剪辑） | 动作定位 | mAP | 中 |
+| Ego4D | 共 3,670 小时 | 连续（未剪辑） | 多任务第一人称 | 按任务而定 | 高 |
+| EPIC-KITCHENS-100 | 700 个会话 | 平均约 8.5 分钟 | 识别 + 检测 | Top-1 Acc, mAP | 高 |
+| HowTo100M | 1.22M | 约 15 秒片段（含噪） | 检索预训练 | R@1（下游） | 低（预训练） |
+| Video-MME | 900 | 11 秒–1 小时（3 档） | MLLM 多项选择问答 | 准确率（± 字幕） | 中–高 |
+| Video-MMMU | 300 | 讲座长度 | 知识获取问答 | 准确率, Δknowledge | 中 |
+| MotionBench | — | 短片段 | 细粒度运动问答 | 准确率 | 高 |
+| VSI-Bench | 288 | 场景漫游 | 空间推理问答 | 准确率 / MRA（数值题） | 高（3D 记忆） |
+
+---
+
+## 优缺点
+
+| 数据集 | 优势 | 局限 |
+|---|---|---|
+| Kinetics-400/700 | 规模巨大；标准预训练资源；标签干净 | 外观偏向；URL 失效降低可复现性；top-1 接近饱和 |
+| Something-Something v2 | 检验真正的时序推理；众包带来多样性 | 仅 174 个类别；片段短；以物体操作为主 |
+| Ego4D | 第一人称视频规模空前；多基准套件 | 基准设置复杂；第一人称领域差距限制迁移 |
+| EPIC-KITCHENS-100 | 细粒度组合式标签；精心整理 | 单一领域（厨房）；仅限烹饪活动 |
+| ActivityNet | 长时未剪辑视频；提供密集描述 | 活动标签粗粒度；许多类别仅凭外观即可识别 |
+| HowTo100M | 大规模免费 ASR 监督 | 对齐噪声大；话题漂移；需要仔细过滤 |
+| AVA | 密集原子标签；空间定位 | 片段数少（437 部电影）；标注仅限 1 fps 关键帧 |
+| Video-MME | 新采集数据（发布时泄漏风险低）；时长分档；被广泛采用 | 对前沿模型已接近饱和（约 85–88%）；分数强烈依赖帧预算与字幕 |
+| VSI-Bench / VSI-SUPER | 以 3D 扫描为依据 → 答案有客观度量；考察空间记忆 | 仅室内场景；扫描场景分布狭窄（ScanNet/ScanNet++/ARKitScenes） |
+| Koala-36M / OpenVid-1M | 达到生成级质量的过滤；长描述 | 描述由模型生成；源视频的授权情况仍不明确 |
+
+---
+
+## 开放问题与研究空白
+
+- **长上下文视频理解：** 当前基于 Transformer 的视频模型能处理几十到几百帧的序列，而 Ego4D 类任务需要在数千帧上推理。高效注意力机制、压缩记忆和检索增强架构是活跃的研究方向。
+- **跨领域第一人称泛化：** 在 EPIC-KITCHENS 烹饪视频上训练的模型在 Ego4D 的施工或户外任务上会严重失效。目前还没有统一的第一人称预训练基准。
+- **基于自然语言的时序定位：** 时序语句定位（在长视频中定位文本所描述事件发生的时间）远未解决，对于复杂的组合式描述尤其如此。
+- **细粒度运动理解：** 区分"轻轻拿起"与"快速拿起"或区分方向性运动仍然困难，因为当前的视频表征以外观为主导。
+- **数据集 URL 失效：** 随着 YouTube 删除内容，Kinetics 和 HowTo100M 每年都会丢失相当比例的视频。数据集托管方案（例如将 Kinetics 放入云存储桶）可以缓解但无法消除这一问题。
+- **多摄像头与多模态视频：** 大多数基准都是单目视频，而真实世界系统使用多摄像头装置（来自电影的 AVA 是个例外）。将视频与 IMU、深度、视线（如 Ego4D 中）相结合的数据集在预训练中尚未得到充分探索。
+- **动作预判与预测：** 从部分观察中预测未来动作是具身智能的一项关键能力，已在 EPIC-KITCHENS 和 Ego4D 上评估，但可达到的准确率仍远低于人类水平，需要根本性进展。即使是 V-JEPA 2 在 2025 年的大幅跃升，在 EK-100 上也只达到 39.7% 的 recall@5。
+- **视频大模型基准的协议可比性：** Video-MME、LVBench 和 Video-MMMU 的分数取决于采样帧数（16 到 1,000+ 帧，或按 fps 采样）、分辨率、字幕/音频访问以及推理预算。自报的模型卡数字与独立重新评估之间常相差数个点（例如 Kimi K2.5 报告中带星号的重新评估结果）。目前仍缺少标准的"帧预算 × token 预算"报告惯例。
+- **第一波视频大模型基准的饱和：** 前沿系统在发布仅约 18 个月后，就在 Video-MME 上达到约 85–88%、在 Video-MMMU 上达到约 87%。细粒度运动（MotionBench 约 70%）和流式空间记忆（VSI-SUPER）仍明显未解决，很可能成为下一批目标。
+- **空间超感知（spatial supersensing）：** VSI-Bench 和 VSI-SUPER 表明，MLLM 无法在长时第一人称视频流中维持持久的 3D 地图。预测式/世界模型（World Model）记忆（Cambrian-S、V-JEPA 风格的目标）与显式 3D 重建，哪一种才是正确的归纳偏置，仍是开放问题。
+
+---
+
+## 延伸阅读
+
+- [Ego4D 项目网站](https://ego4d-data.org/)
+- [EPIC-KITCHENS 数据集与挑战赛](https://epic-kitchens.github.io/)
+- [Papers With Code — 视频分类基准](https://paperswithcode.com/task/video-classification)
+- [Zhu & Yang (2020) — ActBERT: Learning Global-Local Video-Text Representations. CVPR 2020](https://openaccess.thecvf.com/content_CVPR_2020/papers/Zhu_ActBERT_Learning_Global-Local_Video-Text_Representations_CVPR_2020_paper.pdf)
+- [Tran et al. (2018) — A Closer Look at Spatiotemporal Convolutions for Action Recognition. CVPR 2018](https://arxiv.org/abs/1711.11248)
+- [DeepMind Kinetics 数据集文档](https://deepmind.com/research/open-source/kinetics)
+- [Video-MME 基准与评估流程](https://github.com/MME-Benchmarks/Video-MME) — [arXiv:2405.21075](https://arxiv.org/abs/2405.21075)
+- [Video-MMMU (arXiv:2501.13826)](https://github.com/EvolvingLMMs-Lab/VideoMMMU)
+- [MotionBench (CVPR 2025)](https://github.com/zai-org/MotionBench)
+- [Thinking in Space / VSI-Bench (arXiv:2412.14171)](https://github.com/vision-x-nyu/thinking-in-space)
+- [Cambrian-S：VSI-590K 与 VSI-SUPER (arXiv:2511.04670)](https://github.com/cambrian-mllm/cambrian-s)
+- [V-JEPA 2 / 2.1 代码与结果 (arXiv:2506.09985)](https://github.com/facebookresearch/vjepa2)
+- [HD-EPIC 标注 (CVPR 2025)](https://github.com/hd-epic/hd-epic-annotations)
+- [EgoLife 项目 (arXiv:2503.03803)](https://github.com/EgoLife-AI/EgoLife)
+- [Koala-36M](https://github.com/KlingTeam/Koala-36M) · [OpenVid-1M](https://github.com/NJU-PCALab/OpenVid-1M) · [Panda-70M](https://github.com/snap-research/Panda-70M)
+- [Perception Models：PE-Video、PLM-Video-Human、PLM-VideoBench](https://github.com/facebookresearch/perception_models)
