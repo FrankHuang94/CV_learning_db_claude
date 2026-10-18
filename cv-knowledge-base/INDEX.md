@@ -2,7 +2,9 @@
 
 > **A living research reference for PhD-level computer vision, with emphasis on the 2024–2026 frontier: VLA models, world models, embodied AI, and robotics.**
 >
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
+>
+> **中文版 (Simplified Chinese):** a full reference translation mirroring this folder lives in [`../Chinese translation/`](../Chinese%20translation/INDEX.md).
 
 Each Markdown file is a self-contained, deeply researched reference module: architecture descriptions, mathematical formulations, real benchmark numbers, key-paper tables, pros/cons analysis, open problems, and curated further reading. Files cross-link via relative Markdown links.
 
@@ -131,10 +133,19 @@ cv-knowledge-base/
 
 ## 🔥 Latest Developments (Section 12)
 
-The [Research Frontier 2024–2026](12_research_frontier_2024_2026/) section tracks the cutting edge. Completed so far:
+The [Research Frontier 2024–2026](12_research_frontier_2024_2026/) section tracks the cutting edge (all 8 modules complete, refreshed October 2026):
+- [State of the Field](12_research_frontier_2024_2026/00_overview_latest.md) — latest SOTA across VLMs, VLAs and world models; open-model landscape; industry context; CVPR 2026 / ECCV 2026 highlights.
+- [Scaling Laws in Vision](12_research_frontier_2024_2026/01_scaling_laws_vision.md) · [The "Any-Model" Paradigm](12_research_frontier_2024_2026/02_any_model_paradigm.md) · [Multimodal LLMs 2025–2026](12_research_frontier_2024_2026/03_multimodal_llm_2025_2026.md)
+- [VLA & Embodied 2025–2026](12_research_frontier_2024_2026/04_vla_embodied_2025_2026.md) · [4D & Dynamic Scenes](12_research_frontier_2024_2026/05_4d_and_dynamic_scenes.md) · [Spatial Intelligence](12_research_frontier_2024_2026/06_spatial_intelligence.md)
 - [Future Trends](12_research_frontier_2024_2026/07_future_trends.md) — embodied foundation models, spatial intelligence, 4D scenes, video-as-data-engine, tactile fusion, edge VLAs, neuromorphic vision, embodied safety.
 
-(Remaining frontier files — latest-SOTA overview, scaling laws, the "any-model" paradigm, 2025–2026 multimodal LLMs and VLAs, 4D/dynamic scenes, spatial intelligence — are queued.)
+---
+
+## 🆕 October 2026 Refresh
+
+Every module was reviewed against research and industry developments from mid-2025 through October 2026. Each file now carries `Last Updated: October 2026` and a short **🆕 October 2026 update** callout at the top summarising what changed; new models, papers, benchmark numbers and industry facts are integrated inline (Key Papers tables, benchmark tables, open problems, further reading). Folder names (e.g. `12_research_frontier_2024_2026/`) are kept unchanged so that all cross-links remain valid.
+
+A complete Simplified Chinese reference translation of the database, with identical folder structure and per-file links back to the English originals, is in [`Chinese translation/`](../Chinese%20translation/INDEX.md).
 
 ---
 
@@ -149,4 +160,4 @@ The [Research Frontier 2024–2026](12_research_frontier_2024_2026/) section tra
 
 ## ✍️ Contributing / Maintenance Notes
 
-Every file follows a mandatory template: Overview → tailored technical sections → Key Papers table → Benchmark Performance → Pros & Cons → Open Problems & Research Gaps → Further Reading. Citations use `[AuthorYear]` notation; equations are in fenced code blocks; pipelines use Mermaid diagrams. This INDEX is updated as each phase completes.
+Every file follows a mandatory template: Overview → tailored technical sections → Key Papers table → Benchmark Performance → Pros & Cons → Open Problems & Research Gaps → Further Reading. Citations use `[AuthorYear]` notation; equations are in fenced code blocks; pipelines use Mermaid diagrams. This INDEX is updated as each phase completes. When editing an English module, mirror the change in the corresponding file under `../Chinese translation/` (same relative path).
