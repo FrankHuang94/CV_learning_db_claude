@@ -111,7 +111,6 @@ A parallel trend lets a multimodal LLM output coordinates directly. **Rex-Omni**
 | OWLv2 | LVIS | zero-shot AP | SOTA (2023) | Self-training scaling |
 | Detic | LVIS | AP_rare | ~24+ | Image-level supervision [Zhou2022] |
 | YOLO-World-L | LVIS | zero-shot AP | ~35 AP @ real-time | Edge-friendly [Cheng2024] |
-
 | YOLOE-v8-L | LVIS minival | fixed AP (text) | 35.9 (AP_r 33.2) | 102.5 FPS on T4/TensorRT [Wang2025b] |
 | LLMDet Swin-L | LVIS minival | fixed AP | 51.1 (AP_r 45.1) | LLM-supervised [Fu2025] |
 | DINO-X | LVIS / COCO | box AP | 52.4 / 56.0 | As tabulated in the SAM 3 release |
