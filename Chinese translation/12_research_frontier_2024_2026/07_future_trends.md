@@ -159,3 +159,364 @@ Meta 于 2025 年 6 月发布的 V-JEPA 2 [Meta2025] 正是针对这一问题。
 **UniPi** [Du2023]（ICLR 2024）：将序列决策表述为文本条件的视频生成。视频预测模型生成未来帧；帧间的逆动力学模型恢复动作。在迷宫导航和积木操作中展示了在视频空间中进行规划。
 
 **SuSIE** [Black2023]：使用微调后的 InstructPix2Pix 模型根据语言指令生成目标图像，然后运行以生成目标为条件的下游扩散策略（Diffusion Policy）。展示了语言条件的长时程操作。
+
+**V-JEPA** [Assran2024]（Meta，2024）：Video-JEPA 预测未来视频帧的抽象特征表征而非原始像素，从而避免了像素预测模型的模式坍缩与模糊问题。在有限微调下即可向动作识别基准实现强迁移。
+
+**从视频中进行潜在动作预训练（LAPT）** [LAPT2024]：训练一个 VQ-VAE，将视频帧间的转换离散化为"潜在动作"，从而能够基于无标注视频预训练语言条件策略。降低了下游微调对机器人示范数据的需求。
+
+### 动作标签问题
+
+```
+差距：互联网视频有视觉内容，但没有机器人可执行的动作标签。
+
+方法：
+  (A) 逆动力学模型：预测相邻帧之间的动作
+      问题：存在歧义（多种动作可产生相同的视觉变化）
+  
+  (B) 潜在动作空间：从视频中学习压缩的动作表征，
+      而不与真实机器人的自由度对应
+      问题：潜在动作可能无法迁移到实体机器人
+
+  (C) 手/身体关键点跟踪：从视频推断抓取位姿和手臂轨迹，
+      再重定向到机器人运动学
+      问题：人类手臂 ≠ 机器人手臂；重定向只是近似
+
+  (D) 将视频生成用作策略：先预测视频，再执行动作以与之匹配
+      问题：需要精确的底层控制，才能实时执行
+      生成的视频
+```
+
+这些方法都没有完全解决动作标签问题。它仍是具身智能中最受关注的开放问题之一。
+
+### 2025–2026 年进展
+
+两种务实的方案获得了关注。(1) **人类与机器人共享的动作空间**：NVIDIA 的 GR00T N1.7 将动作表示为在人类与机器人数据间一致的 *相对末端执行器增量*，从而能够在 2 万小时 EgoScale 第一人称人类视频上预训练；Generalist 则让人佩戴类似机器人的"数据手"夹爪以绕开重定向问题，数据规模达到约 50 万小时。(2) **将视频生成用作策略（方法 D）变得具有竞争力**：联合预测视频与动作的 *世界-动作模型*——NVIDIA 的 **Cosmos Policy** 和 **DreamZero**——受到关注，其中 DreamZero 在 2026 年初登顶真实世界的 RoboArena 和 MolmoSpaces 排行榜，并能从约 30 分钟的自由交互数据中适配新机器人。推理开销（未使用缓存时在 H100 上每步需数秒）是方法 D 尚存的主要障碍。
+
+---
+
+## 趋势 5：物理仿真的复兴
+
+### 背景
+
+用于机器人训练的物理仿真并不新鲜——MuJoCo 自 2012 年起就被用于强化学习。2024–2026 年的新变化在于 GPU 并行仿真、可微物理与生成式场景构建的结合，使仿真在基础模型所需的规模上切实可行地成为数据来源。
+
+### 当前平台
+
+**Genesis** [Genesis2024]（2024 年 12 月，开源）：一个完全用 Python 构建的通用物理引擎。基准数据：
+- 在单块 RTX 4090 上仿真 Franka 机械臂可达每秒 4,300 万帧
+- 比实时快 430,000 倍
+- 比 Isaac Gym/Sim/Lab 和 MuJoCo MJX 快 10–80 倍
+- 26 秒内训练出行走策略
+- 在统一框架中支持 MPM（软体）、SPH（流体）、FEM（可变形体）、PBD、Stable Fluids 和刚体
+- 跨平台：CPU、NVIDIA GPU、AMD GPU、Apple Metal
+
+**Isaac Lab** [NVIDIA2024]：构建于 Isaac Sim 之上的 GPU 加速强化学习框架。支持大规模并行环境实例，可同时进行数千个机器人策略的执行。NVIDIA 用它为 GR00T N1 生成合成数据。
+
+**MuJoCo MJX / MuJoCo Playground** [DeepMind2025]：MJX 是编译到 JAX/XLA 的 MuJoCo，支持 GPU/TPU 并行仿真以及穿过物理过程的自动微分。MuJoCo Playground（2025 年 1 月）获得 RSS 2025 杰出演示论文奖。支持四足机器人、人形机器人、灵巧手和机械臂，可从状态与像素输入实现零样本仿真到现实迁移。
+
+**Newton** [NVIDIA-Google-Disney2025]：由 NVIDIA、Google DeepMind 和 Disney Research 发布的统一物理引擎，基于 MuJoCo-Warp 构建。声称与 CPU 版 MuJoCo 相比，在 RTX 4090 上行走任务最多加速 152 倍、操作任务最多加速 313 倍。到 2026 年，Newton 已成为开源的 **Linux 基金会** 项目（Apache-2.0），构建于 NVIDIA Warp 之上并以 **MuJoCo Warp** 为主要后端，强调 GPU 计算、OpenUSD 支持和可微性。
+
+**2026 年更新。** Genesis 团队发布了 **Genesis World 1.0**（2026 年 5 月），并附上一篇关于仿真在可扩展机器人学中作用的立场文章。在生成式方面，**Cosmos 3**（2026 年 5 月；64B Super、16B Nano、4B Edge）以及 Cosmos-Predict 2.5 的动作条件模型被用于合成机器人训练数据，并作为动作条件化的学习型仿真器，模糊了物理仿真与世界模型之间的界线。
+
+### 仿真数据何时足够？
+
+仿真到现实的迁移问题取决于任务：
+
+| 任务类别 | 仿真到现实差距 | 当前状态 |
+|---|---|---|
+| 行走（刚体） | 低 | 已解决：Isaac Lab 策略可零样本部署 [Kumar2021] |
+| 抓取放置（刚性物体） | 中 | 借助域随机化基本解决 |
+| 接触密集型装配 | 高 | 活跃研究中；Genesis FEM 前景看好 |
+| 可形变物体操作（布料、绳索） | 很高 | 部分解决；Genesis MPM 显示出进展 |
+| 液体处理 | 极高 | 开放问题 |
+| 手内灵巧操作 | 高 | 活跃研究中；需要触觉反馈 |
+
+共识是：对于接触密集型操作，仿真数据 *必要但不充分*；对于涉及可形变物体、液体或物体属性（摩擦、柔顺性）变化很大的任务，仍然需要真实世界数据。
+
+---
+
+## 趋势 6：跨模态触觉-视觉融合
+
+### 为何灵巧操作需要触觉
+
+仅靠视觉无法可靠地确定：
+- 抓握力（物体是否在打滑？）
+- 物体柔顺性（是刚性的还是可形变的？）
+- 接触几何（物体如何接触手指表面？）
+- 接触点处的纹理
+
+人类每只手约有 17,000 个机械感受器。缺乏同等感知能力的灵巧机器人手，无论视觉系统多好，都无法达到人类水平的操作可靠性。
+
+### 传感器技术
+
+**GelSight**（MIT/GelSight Inc.）：一种基于相机的触觉传感器，对凝胶弹性体在接触下的形变成像，以亚毫米分辨率恢复三维接触几何。GelSight Mini 已商用；一份 Phase II SBIR 合同被授予用于开发面向工业部署的加固版本。
+
+**DIGIT** [Lambeta2020]（Meta AI / GelSight）：一种紧凑、可复现、为多指手设计的高分辨率触觉传感器。公开规格：18×24 mm 感知面积、60 Hz 帧率、USB 连接。被广泛用于 Meta 的灵巧操作研究。Digit 360（2024）将其扩展为完整指尖形状，具有 18 种以上感知模态。
+
+**DVTac、FingerVision**：其他基于视觉的触觉传感器，在分辨率与外形尺寸之间各有权衡。
+
+### 视触觉模型
+
+关键的研究挑战在于将视觉与触觉信息融合到一个共享表征中，使策略能够对接触进行推理：
+
+```python
+# 概念性的视触觉融合
+visual_features = vision_encoder(rgb_image)      # 全局场景上下文
+tactile_features = tactile_encoder(gel_image)    # 局部接触细节
+proprioceptive = mlp(joint_angles, velocities)
+
+combined = cross_attention(
+    query=proprioceptive,
+    key_value=concat(visual_features, tactile_features)
+)
+action = policy_head(combined)
+```
+
+近期工作 [ViTaSCOPE2025] 利用隐式神经表征，从视触觉观测中估计手内位姿与外部接触。FlowTouch [FlowTouch2025] 解决了视角不变的触觉预测问题，使在一个相机视角下训练的策略能够泛化到其他视角。
+
+在产业界，Figure 的 **Helix 02**（2026 年初）强调利用触觉感知和掌心摄像头完成取药片、用注射器分配少量液体等精细操作（公司自报），但截至 2026 年 10 月，尚未有可与纯视觉 VLA 相媲美的视触觉 *基础模型* 发表。
+
+根本的开放问题是缺乏大规模视触觉数据集。大多数已发表工作每个任务的训练示范不到 1,000 条；而需要真实触觉反馈的操作基础模型将需要多出几个数量级的数据。
+
+---
+
+## 趋势 7：面向边缘机器人的小型基础模型
+
+### 部署约束
+
+量产机器人——尤其是移动平台和低成本协作机器人——有严格的算力预算：
+
+```
+NVIDIA Jetson Orin NX:  16 GB LPDDR5, 20 TOPS, ~25W TDP
+NVIDIA Jetson Orin AGX: 32–64 GB, 275 TOPS, ~60W TDP
+NVIDIA Jetson AGX Thor: 128 GB, 最高约 2,070 FP4 TFLOPS, 40–130W（2025 年 8 月）
+典型大型 VLA:           7B–55B 参数，需要 A100/H100（400W 以上）
+```
+
+7B 参数的 VLA 超出了 Jetson 级硬件的内存与功耗预算。该领域以蒸馏、量化和架构重设计作为回应。
+
+### 当前工作
+
+**EdgeVLA** [EdgeVLA2025]：取消自回归的末端执行器位置预测（VLA 的主要推理瓶颈），改用独立的轻量头。推理速度提升 7 倍。在 Jetson AGX Orin 上运行耗时 5–6 ms，模型大小可低至 56–86 MB。以 Qwen2-0.5B 作为语言主干，内存占用低于 2 GB。
+
+**MobileVLM**（美团/BAAI，2023–2024）：面向移动端部署优化的 3B 以下视觉-语言模型，采用高效视觉投影器和分组查询注意力。MobileVLM V2 加入了任务特定的恢复 token。
+
+**SwiftVLA**：通过结构化剪枝和知识蒸馏，与大型 VLA 基线相比实现 1–7 倍参数缩减和 10–18 倍内存缩减，同时保持相当的任务成功率。
+
+**NanoVLA** [NanoVLA2025]：将解耦的视觉-语言理解路由到一个纳米级策略，把感知（由量化 VLM 处理）与动作生成（由微型反应式网络处理）分开。
+
+**2025–2026 年进展。** 硬件上限随 **Jetson AGX Thor**（2025 年 8 月）而提高，厂商也开始推出前沿技术栈的边缘版本：**GR00T N1.7** 可在包括 Jetson AGX Thor/Orin 在内的单块 16 GB 级 GPU 上推理，并支持 ONNX/TensorRT 导出；**Gemini Robotics On-Device**（2025 年 6 月）与 **On-Device 2**（2026 年 7 月）在机器人本地运行；**Cosmos3-Edge**（4B，2026 年 7 月）面向在 Jetson 上实时运行机器人策略和视觉推理；**SmolVLA**（约 0.45B，Hugging Face）面向消费级 GPU。极限压缩的研究仍在继续，例如 **ActQuant**（2026）探索对 VLA 进行 4 比特以下、由动作引导的量化。
+
+### 性能-效率权衡
+
+```
+模型规模:   55B      7B       1B      500M      56M
+成功率:     RT-2-X   OpenVLA  ~SOTA   EdgeVLA   约为 OpenVLA 的 75%
+推理耗时:   ~500ms   ~150ms   ~50ms   ~10ms     ~5ms
+平台:       H100     A100     L40     Orin AGX  Orin NX
+```
+
+（数字为近似值；确切基准因任务和环境而异。）
+
+当前前沿是在 Jetson 级硬件上以不到 1 亿参数保持大模型 80% 以上的性能。这在窄任务领域可以实现，但对于通用家务操作仍是开放问题。
+
+---
+
+## 趋势 8：神经形态与基于事件的视觉
+
+### 动机
+
+标准 CMOS 相机在高速机器人控制方面有两个根本局限：
+1. **时延**：30 FPS 下帧读出需约 33 ms，造成不可避免的控制滞后
+2. **运动模糊**：快速运动的物体或机器人末端执行器在标准快门速度下会模糊
+
+事件相机（动态视觉传感器）同时解决了这两个问题：
+
+```
+标准帧相机：
+  输出：以固定间隔（30–120 Hz）输出完整帧 I(x,y,t)
+  时延：一个帧周期（8–33 ms）
+  功耗：传感器约 1–5W
+
+事件相机：
+  输出：由对数亮度变化触发的事件流 (x, y, t, polarity)：
+        ΔL(x,y,t) > θ
+  时延：每个事件 <1 μs
+  动态范围：>120 dB（CMOS 约为 60 dB）
+  功耗：约 10–100 mW
+```
+
+### 硬件
+
+**Prophesee EVK4**（Prophesee）：128 万像素事件相机，120 dB 动态范围，已商用。
+**DVXplorer**（iniVation）：VGA 分辨率，110 dB 动态范围，每秒 1.65 亿事件吞吐量，USB 3.0 连接。
+**DVXplorer Lite**：QVGA 分辨率，面向研究的低成本入门款。
+
+### 在机器人中的应用
+
+- **手术机器人**：利用事件流以亚毫米精度跟踪器械运动和患者呼吸
+- **高速抓取**：跟踪传送带上快速移动、在标准相机中会模糊的物体
+- **滑动检测**：在抓取失败扩散之前检测早期的触觉滑动事件
+- **无人机导航**：在弱光条件下高速避障
+
+### 缺失的基础模型
+
+尽管优势已被证明，截至 2026 年 10 月仍没有在事件相机数据上训练的大规模基础模型（据我们所知，尚未有达到 VGGT、DINOv3 或 V-JEPA 2 规模的事件相机模型发表）。主要障碍：
+1. **数据稀缺**：事件数据集只有数千个序列；不存在 ImageNet 规模的事件数据集
+2. **表征异构**：事件流稀疏、异步且密度可变——若不转换为基于帧的表征（体素网格、时间曲面），便难以适配标准 CNN/ViT 架构
+3. **仿真差距**：从合成场景模拟逼真的事件数据仍然只是近似
+
+这是该领域中传感器能力与机器学习成熟度之间最明显的差距之一。
+
+---
+
+## 趋势 9：具身智能的安全与对齐
+
+### 物理伤害与数字伤害
+
+具身智能的安全利害关系与语言模型有本质区别：
+
+| | 语言模型 | 具身智能 |
+|---|---|---|
+| 失败模式 | 错误/有害文本 | 人身伤害、财产损失 |
+| 可逆性 | 可以撤回 | 掉落物体、碰撞损坏往往不可逆 |
+| 伤害范围 | 读者 | 同处一地的人员、基础设施 |
+| 监管制度 | 内容审核 | 产品责任、CE 标志、ISO 10218（工业机器人） |
+
+### 当前方法
+
+**基于约束的安全层**：将物理安全约束（工作空间限制、速度限制、力限制）编码为神经策略输出上的硬约束。策略在安全区域内自由运行；约束执行层会裁剪或拒绝违反限制的动作。Drake [Tedrake2019] 支持在设计阶段进行形式化约束验证。
+
+**用于机器人策略的 RLHF**：将基于人类反馈的强化学习迁移到物理动作空间，由人类评估者对轨迹质量而非文本回答打分。挑战：人类评估三维运动轨迹的认知负担很重；基于轨迹评分训练的奖励模型可能难以泛化到新的物理构型。
+
+**接触动力学的形式化验证**：近期工作 [FormalMethods2026] 综述了受可微逻辑规约约束的规划与控制策略联合学习。由自然语言安全需求导出的 LTL（线性时序逻辑）规约经由 LLM 转换为 Büchi 自动机，再通过约束解码确保策略输出始终位于接受路径上。该方法已在简单操作上得到演示，但尚未扩展到家庭环境。
+
+**可证明的概率安全** [ProvoSafe2025]：源于保形预测（conformal prediction），无需对神经网络进行完整的形式化验证，即可提供概率保证（"机器人以 ≥ 0.99 的概率不会超过安全力限制"）。
+
+**作为推理层能力的安全（2026）。** 前沿具身推理模型如今会报告专门的安全评测：Google 的 **Gemini Robotics ER 2** 报告在安全指令遵循上达到 97.9%（ER 1.6 为 47.2%），ER 1.6 也报告了危险识别能力的提升。这些是厂商对 *语义层面* 安全理解的基准，而非对物理行为的保证。2026 年的两篇综述——关于 VLA 安全（威胁、评测与机制；arXiv:2604.23775）以及关于具身智能中的风险、攻击与防御（arXiv:2605.02900）——梳理了语言条件机器人特有的对抗攻击与越狱风险。
+
+### 规约问题
+
+具身智能安全中最难的开放问题不是技术问题，而是概念问题：
+
+> **如何规定家用机器人应该做什么、不应该做什么，既要全面到足以保证安全，又要窄到不至于严重束手束脚？**
+
+"不得伤害人类"是规定不足的（什么算伤害？在什么概率阈值下？）。目前并不知道存在一份全面的家庭安全需求形式化规约。这是 AI 对齐问题在物理世界中的对应物，并且多了一个约束：违规是即时的，且可能不可逆。
+
+---
+
+<a id="reality-check-october-2026-predictions-vs-outcomes"></a>
+
+## 现实检验（2026 年 10 月）：预测与结果对照
+
+上述趋势最初是作为预测写成的。下表将其与 2025 年中至 2026 年 10 月间可核实的发布成果进行对照评分。
+
+| 趋势 | 本文的预测 / 假设 | 实际发生的情况（2025 年中 → 2026 年 10 月） | 结论 |
+|---|---|---|---|
+| 1. 具身基础模型 | 跨具身泛化的证据不断增加；数据规模是瓶颈 | π\*0.6（从经验中强化学习）、π0.7（初步组合式泛化）、Gemini Robotics 2（全身控制）、GR00T N1.7（开源、人类视频预训练）；GEN-1 达到约 50 万小时 | **符合预期 / 数据方面更快**；分布外稳健性仍未证实，结果多为自报 |
+| 2. 空间智能 | VLM 空间推理失败；合成三维数据是主要抓手 | 视频空间基准（VSI-Bench、VSI-SUPER、MMSI）；800 万样本的空间数据使 8B 开源模型在 VSI-Bench 上超过 GPT-5；具身推理模型实现产品化 | **部分实现**——基准上提升显著，向操作任务的迁移尚不明确 |
+| 3. 4D 场景 → 世界模型 | 4D-GS 扩展为预测式世界模型 | 前馈式 4D 重建获得 CVPR 2026 最佳论文（D4RT）；Genie 3、Marble、Cosmos 3 使世界模型成为主流 | 在重建速度和生成式世界方面 **超出预期**；动作条件下的物理精度仍然薄弱 |
+| 4. 视频作为机器人数据引擎 | 动作标签问题未解决 | 人-机共享动作空间（GR00T N1.7）、可穿戴数据采集（Generalist）、世界-动作模型登顶 RoboArena | **实质性进展**——未解决，但方法 (D) 已具备竞争力 |
+| 5. 仿真复兴 | GPU/可微仿真 + 生成式场景成为数据来源 | Newton（Linux 基金会，MuJoCo Warp 后端）、Genesis World 1.0、用于合成数据的 Cosmos 3 | **符合预期**；可形变物体/液体的仿真到现实仍是开放问题 |
+| 6. 触觉-视觉融合 | 灵巧操作所必需；受数据限制 | 商用人形机器人中出现触觉感知（Helix 02）；尚无视触觉基础模型发表 | **慢于预期** |
+| 7. 小型/边缘基础模型 | 压缩到 Jetson 预算之内 | Jetson AGX Thor；GR00T N1.7 运行于 Thor/Orin；Gemini Robotics On-Device 2；Cosmos3-Edge（4B）；SmolVLA | **符合预期**，其推动力既来自压缩，也同样来自更强的边缘硬件 |
+| 8. 基于事件的视觉 | 没有事件相机基础模型 | 仍然没有达到基础模型规模的事件相机模型 | **未变** |
+| 9. 安全与对齐 | 规约问题未解决 | 厂商的安全推理基准（ER 2）；VLA 安全综述；尚无被广泛批准的通用机器人安全标准 | **实质未变** |
+
+与最初预测相比，最大的意外在于：**世界模型和前馈式三维/4D 重建** 以极快的速度从研究走到学术奖项与产业路线图的中心；以及 2026 年的数据规模扩张有很大一部分来自 **以人为中心的数据**（第一人称视频、可穿戴夹爪），而非机器人遥操作。
+
+---
+
+## 关键论文
+
+| 论文 | 作者 | 年份 | 发表载体 | 主要贡献 |
+|---|---|---|---|---|
+| SpatialVLM: Endowing VLMs with Spatial Reasoning Capabilities | Chen, Xu, Kirmani, Ichter, Sadigh, Guibas, Xia | 2024 | CVPR 2024 | 首个互联网规模的度量空间推理数据集；联合训练 VLM 进行距离估计 |
+| 4D Gaussian Splatting for Real-Time Dynamic Scene Rendering | Wu et al. | 2024 | CVPR 2024 | HexPlane 时间高斯；RTX 3090 上 800×800 分辨率 82 FPS |
+| V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning | Meta AI | 2025 | arXiv 2025 | 1.2B 世界模型；100 万小时视频 + 62 小时机器人数据；零样本抓取放置 |
+| UniPi: Learning Universal Policies via Text-Guided Video Generation | Du et al. | 2023 | ICLR 2024 | 将视频生成用作策略；逆动力学从预测帧中恢复动作 |
+| EdgeVLA: Efficient Vision-Language-Action Models | — | 2025 | arXiv | 推理加速 7 倍；Jetson AGX Orin 上 5–6 ms；模型 56–86 MB |
+| Genesis: Universal Physics Engine | Genesis Team | 2024 | Open source | RTX 4090 上 4,300 万 FPS；统一 MPM/SPH/FEM/刚体；26 秒训练行走策略 |
+| GR00T N1: An Open Foundation Model for Generalist Humanoid Robots | NVIDIA Research | 2025 | arXiv 2025 | 双系统人形 VLA；11 小时生成 78 万条合成轨迹 |
+| Formal Methods in Robot Policy Learning and Verification | — | 2026 | Survey | 基于 LTL 的安全规约；可微逻辑约束；Büchi 解码 |
+| π\*0.6: a VLA That Learns From Experience | Physical Intelligence | 2025 | arXiv:2511.14759 | Recap：基于执行轨迹 + 人工干预的优势条件化强化学习 |
+| π0.7: a Steerable Generalist Robotic Foundation Model with Emergent Capabilities | Physical Intelligence | 2026 | arXiv:2604.15483 | 初步的组合式任务泛化 |
+| Cambrian-S: Towards Spatial Supersensing in Video | Yang, Yang, Huang, Brown, …, LeCun, Fei-Fei, Xie | 2025 | arXiv:2511.04670 | VSI-SUPER；VSI-590K；预测式感知 |
+| Scaling Spatial Intelligence with Multimodal Foundation Models (SenseNova-SI) | Cai et al. | 2026 | CVPR 2026 | 800 万样本的空间数据规模化；在空间基准上达到开源 SOTA |
+| Efficiently Reconstructing Dynamic Scenes One D4RT at a Time | Zhang, Le Moing, …, Zisserman, Zhang, Sajjadi | 2026 | CVPR 2026 (Best Paper) | 基于查询的前馈式 4D 重建与跟踪 |
+| DreamZero: World Action Models Are Zero-Shot Policies | NVIDIA GEAR | 2026 | arXiv:2602.15922 | 视频 + 动作联合模型；RoboArena 第一（2026 年 2 月） |
+
+---
+
+## 基准性能
+
+| 模型 | 任务 | 指标 | 得分 | 备注 |
+|---|---|---|---|---|
+| SpatialVLM | 度量距离估计（室内场景） | 相对 GPT-4V 的准确率 | 较 GPT-4V 基线显著提升 | 首个具备定量空间估计能力的模型 |
+| 4D-GS (CVPR 2024) | 动态场景新视角合成 | 800×800 下的 FPS | 82 FPS | RTX 3090；PSNR 与动态 NeRF 方法相当 |
+| V-JEPA 2-AC | 零样本抓取放置（Franka） | 成功率 | 在两个不同实验室得到验证 | 部署实验室未采集任何任务特定数据 |
+| Genesis | Franka 机械臂仿真 | 每秒帧数 | 43,000,000 FPS | 单块 RTX 4090；实时的 430,000 倍 |
+| EdgeVLA | 桌面操作 | 推理时延 | 5–6 ms | Jetson AGX Orin；比基线 VLA 快 7 倍 |
+| OpenVLA (7B) | 29 任务操作套件 | 绝对成功率 | 比 RT-2-X（55B）高 16.5% | 参数量少 7 倍 |
+| SenseNova-SI-1.3 (8B) | VSI-Bench | 准确率 | 68.6（GPT-5 为 55.0） | 统一 EASI 评测；作者自报 |
+| GEN-1 | Generalist 任务套件 | 平均成功率 | 99%（此前为 64%） | 公司自报；短时任务 |
+| π\*0.6 (Recap) | 困难真实任务 | 吞吐量 / 失败率 | 约 2× / 约 0.5× | 公司自报 |
+| Gemini Robotics ER 2 | 安全指令遵循 | 准确率 | 97.9%（ER 1.6 为 47.2%） | Google 自报 |
+| D4RT | 4D 重建套件 | 效率 | 相对以往方法最多 300× | DeepMind 自报；CVPR 2026 最佳论文 |
+
+---
+
+## 优缺点
+
+| 方面 | 当前优势 | 当前不足 |
+|---|---|---|
+| **具身基础模型** | 分布内泛化强；OXE 规模的训练验证了跨具身迁移；合成数据（Genesis）现已可扩展 | 分布外泛化仍然较差；尚无已解决的接触密集型家务任务；数据上限比 NLP 对应水平低约 10 倍 |
+| **空间智能** | SpatialVLM 证明度量估计是可学习的；RGB-D 集成（SpatialBot）改进了定位；精选空间数据使 8B 开源模型在 VSI-Bench 上超过 GPT-5（2026） | 许多通用 VLM 在序数类和多视角空间问题上仍会失败（MMSI-Bench 最佳约 40–43）；三维空间推理尚未集成进主流 VLA 流水线 |
+| **4D 场景 / 世界模型** | 82 FPS 的实时 4D-GS；数秒完成的前馈式 4D 重建（D4RT）；V-JEPA 2 零样本机器人部署；Genesis 支持快速的反事实仿真 | 可形变物体/液体的仿真到现实差距；世界模型的动作条件化只是近似；可靠预测接触事件仍是开放问题 |
+| **安全/对齐** | 约束层如今即可部署；已有可证明的概率界；形式化 LTL 方法已在简单任务上演示 | 规约问题未解决；面向物理动作的 RLHF 验证不足；尚无针对通用 AI 控制机器人的 ISO 同等级安全标准获得批准 |
+| **世界-动作模型 / 生成式世界模型** | 利用互联网规模的视频预训练；登顶真实世界排行榜（DreamZero）；交互式世界（Genie 3、Marble） | 推理慢；物理精度与接触动力学未经验证；在学习型仿真器中进行的评测可能偏乐观 |
+| **以人为中心的数据规模化** | 第一人称视频和可穿戴夹爪能以低成本达到 10⁵ 小时规模（GR00T N1.7、GEN-1） | 具身差距与动作重定向仍是近似；数据大多为私有 |
+
+---
+
+## 开放问题与研究空白
+
+1. **大规模的动作标签问题。** 从无标注互联网视频中提取机器人可执行的动作——获得 100 倍训练数据的关键——仍未解决。潜在动作预训练很有前景，但尚未被验证能在复杂操作任务上达到监督示范数据的质量。共享的相对末端执行器动作空间（GR00T N1.7）和世界-动作模型（DreamZero、Cosmos Policy）在 2026 年缩小了这一差距，但二者都尚未证明 *无标注的互联网* 视频（相对于精心采集的第一人称数据）能带来同等收益。
+
+2. **可形变物体与液体的仿真到现实迁移。** Genesis 和 MuJoCo MJX 能处理刚体和软体，但可靠地训练出能迁移到真实布料、绳索、颗粒介质和液体的策略仍是开放问题。根本问题在于材料参数中的小误差会在接触序列中不断累积。
+
+3. **事件相机基础模型。** 尽管事件相机对高速机器人的优势已被证明，目前仍不存在面向事件相机数据的大规模预训练模型。缺少"事件相机的 ImageNet"阻碍了将标准迁移学习方法应用于神经形态感知。
+
+4. **多步操作中的空间推理。** 当前的空间 VLM 回答的是静态图像问题。跨多步操作序列的空间推理——跟踪场景空间关系如何随机器人动作而变化——几乎没有被研究。
+
+5. **基础模型规模的触觉数据。** 已发表的最大视触觉数据集包含数万个接触样例。一个灵巧操作基础模型将需要数百万到数十亿个触觉观测。合成触觉生成（根据接触几何模拟 GelSight 图像）是一个有前景但探索不足的方向。
+
+6. **开放世界机器人部署的形式化安全。** 将自然语言安全需求转化为可执行的形式化规约，并验证神经策略在开放世界环境中遵守这些规约，目前还没有令人满意的解决方案。这可以说是在家庭和医院部署通用机器人的关键门槛问题。
+
+7. **跨具身策略迁移理论。** 经验证据表明跨具身训练有帮助，但对于迁移何时以及为何会成功或失败，尚无理论解释。一个能根据形态相似性、任务相似性和训练数据统计预测迁移质量的理论，将使架构与数据混合决策有章可循。
+
+8. **独立的真实世界评测。** 2026 年大多数引人注目的机器人数据（Gemini Robotics 2、π0.7、GEN-1、Helix 02）都是在专有硬件和任务套件上自报的。共享的真实世界评测（如 RoboArena）已经存在，但覆盖的具身形态范围较窄；可信的第三方基准是比较趋势 1、4 和 7 的前提。
+
+9. **验证学习型世界模型作为仿真器的可靠性。** 随着生成式世界模型（Genie 3、Cosmos 3、WAM）被用于训练和评估策略，用于确认其预测的动力学——尤其是接触与失败情形——与现实相符的方法在很大程度上仍然缺失。
+
+---
+
+## 延伸阅读
+
+- [V-JEPA 2 —— Meta AI](https://ai.meta.com/research/publications/v-jepa-2-self-supervised-video-models-enable-understanding-prediction-and-planning/) —— 基于视频的机器人规划世界模型
+- [Genesis 物理引擎](https://genesis-world.readthedocs.io/) —— 4,300 万 FPS 的开源通用仿真器
+- [SpatialVLM (CVPR 2024)](https://openaccess.thecvf.com/content/CVPR2024/html/Chen_SpatialVLM_Endowing_Vision-Language_Models_with_Spatial_Reasoning_Capabilities_CVPR_2024_paper.html) —— VLM 中的空间推理
+- [GR00T N1 arXiv](https://arxiv.org/abs/2503.14734) —— 采用双系统架构的开源人形基础模型
+- [机器人策略学习中的形式化方法（2026 综述）](https://arxiv.org/pdf/2602.06971) —— LTL、Büchi 自动机与可微安全约束
+- [事件相机最新创新综述（ECCV 2024 Workshop）](https://arxiv.org/html/2408.13627v2) —— 面向机器人的神经形态视觉全面综述
+- [π\*0.6 (arXiv:2511.14759)](https://arxiv.org/abs/2511.14759) 与 [π0.7 (arXiv:2604.15483)](https://arxiv.org/abs/2604.15483) —— 从经验中学习；组合式泛化
+- [Gemini Robotics 2（DeepMind 博客）](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/) —— 全身 VLA + ER 2
+- [Isaac GR00T N1.7](https://github.com/NVIDIA/Isaac-GR00T) —— 采用人类视频预训练的开源人形 VLA
+- [D4RT（CVPR 2026 最佳论文）](https://d4rt-paper.github.io/) —— 前馈式 4D 重建与跟踪
+- [Cambrian-S](https://github.com/cambrian-mllm/cambrian-s) 与 [SenseNova-SI](https://github.com/OpenSenseNova/SenseNova-SI) —— 空间智能的规模化
+- [DreamZero](https://github.com/dreamzero0/dreamzero) —— 将世界-动作模型用作零样本策略
+- [NVIDIA Cosmos 3](https://github.com/NVIDIA/Cosmos) —— 面向物理 AI 的统一世界基础模型
+- [Newton 物理引擎](https://github.com/newton-physics/newton) —— Linux 基金会旗下的 GPU 仿真器（MuJoCo Warp 后端）
+- [V-JEPA 2 / 2.1 代码](https://github.com/facebookresearch/vjepa2) —— 自监督视频世界模型
+- [Genie 3（Google DeepMind）](https://deepmind.google/discover/blog/genie-3-a-new-frontier-for-world-models/) —— 实时交互式世界模型
+- [VLA 安全综述 (arXiv:2604.23775)](https://arxiv.org/abs/2604.23775) —— 威胁、评测与机制
