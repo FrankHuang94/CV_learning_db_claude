@@ -116,7 +116,7 @@ V-JEPA uses multi-block masking (multiple contiguous blocks removed). Unlike Vid
 a^*_{1:T} = \arg\min_{a_{1:T}} \big\| P_\phi(a_{1:T}; E_\theta(x_{t}), s_t) - E_\theta(x_{\text{goal}}) \big\|_1
 ```
 
-**V-JEPA 2.1** (arXiv 2603.14482, Mar 2026) targets **dense, temporally consistent features**. It adds a dense predictive loss on all tokens, deep self-supervision at multiple layers and multi-modal tokenizers, with models from ViT-B (80M) to a 2B ViT-G. This makes JEPA features competitive for dense video tasks such as tracking, segmentation and depth, not only clip-level recognition.
+**V-JEPA 2.1** (arXiv 2603.14482, Mar 2026) targets **dense, temporally consistent features**. It adds a dense predictive loss on all tokens, deep self-supervision at multiple layers and multi-modal tokenizers, with models from ViT-B (80M) to a 2B ViT-G. The aim is JEPA features that serve dense video tasks (e.g. tracking, segmentation, depth) and not only clip-level recognition.
 
 ---
 

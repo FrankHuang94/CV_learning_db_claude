@@ -140,3 +140,117 @@ Places365-Standard：365 个场景类别，共 180 万张训练图像，另有�
 **跨数据集迁移：** 一些研究表明，在 Places 上预训练的模型迁移到卫星图像分类和医学场景标注时，比 ImageNet 预训练模型效果更好，这推动了迁移学习中的数据集选择分析。
 
 ---
+
+## SA-1B 与 SA-Co（Segment Anything 数据引擎）
+
+**引用：** [Kirillov2023] Kirillov, A. et al. (2023). Segment Anything. *ICCV 2023*. [Carion2025] Carion, N., Gustafson, L., Hu, Y.-T., et al. (2025). SAM 3: Segment Anything with Concepts. Meta Superintelligence Labs.
+
+**SA-1B**（2023）包含约 1100 万张经授权、做过隐私保护的图像和约 11 亿个类别无关（class-agnostic）掩码，由三阶段模型在环数据引擎（辅助人工 → 半自动 → 全自动）生成。它定义了*可提示分割（promptable segmentation）*任务，其掩码不带语义标签。
+
+**SA-Co**（Segment Anything with Concepts，2025年11月）是 SAM 3 背后的数据与基准发布，它加入了*语义*：每张图像或每段视频都配有简短名词短语，与短语匹配的每个实例都被穷尽地标注掩码并赋予唯一物体 ID。没有匹配物体的短语充当困难的*负提示（negative prompts）*。官方发布中的关键事实：
+- 该基准涵盖**约 270K 个唯一概念**，Meta 称这一数量是此前开放词汇分割基准的 50 倍以上。它有两个图像划分（**SA-Co/Gold**，三重标注；**SA-Co/Silver**）和一个视频划分（**SA-Co/VEval**）。
+- 训练数据引擎结合 SAM/MLLM 提议与 AI 和人工核验器，自动标注了**超过 400 万个唯一概念**。
+- 主要指标是 **cgF1**，即一种分类门控 F1（classification-gated F1），它将图像级存在性校准（IL_MCC）与定位上的正样本 micro-F1 相乘（参见[评估指标](./04_evaluation_metrics.md)）。
+- SA-Co/Gold 上的参考结果（实例分割，cgF1）：人类 72.8；**SAM 3 54.1**；OWLv2* 24.6；DINO-X 21.3；Gemini 2.5 13.0。SAM 3 是一个 8.48 亿参数的模型，由共享同一视觉编码器的检测器和跟踪器组成。2026年3月又发布了多目标跟踪更快的 SAM 3.1 检查点。
+
+**为何重要：** SA-Co 把开放词汇分割从 1,203 类的 LVIS 问题变成了带显式负样本、约 25 万概念的问题。在这种变化下，在 COCO 风格基准上看起来很强的基于 VLM 的检测器会丢失大部分准确率。"模型在环引擎 + 仅对困难样本做人工核验"的做法已成为新的大规模标注工作的模板。SAM 3D（2025年11月）将其扩展到 3D（参见[3D 与机器人数据集](./02_3d_and_robotics_datasets.md)）。
+
+---
+
+## LVD-1689M 与 SAT-493M（精选预训练图像池）
+
+**引用：** [Simeoni2025] Siméoni, O., Vo, H. V., Seitzer, M., et al. (2025). DINOv3. arXiv:2508.10104 (Meta FAIR).
+
+DINOv3（2025年8月）在 **LVD-1689M**（约 17 亿张精选网络图像）上进行无标注训练，另一个变体则在 **SAT-493M**（约 4.93 亿张卫星图像）上训练。其 70 亿参数的 ViT 教师模型被蒸馏为 ViT-S/B/L/H+ 和 ConvNeXt 学生模型。这些数据集本身并未公开发布。它们的意义在于证明：*围绕种子分布进行检索/聚类式的精选*可以把无标注预训练扩展到 ImageNet-21K 之外。据报告，冻结的 DINOv3 特征无需微调即可在众多密集任务上超越专用的最先进模型。这使 ADE20K、COCO 和 NYUv2 越来越成为针对冻结骨干网络的*探测*基准。下游发布包括 COCO2017 检测头、ADE20K 分割头以及 Canopy Height Maps v2 模型（2026年3月），均构建在冻结的 7B 骨干网络之上。
+
+---
+
+## RF100-VL（面向 VLM 的多领域检测基准）
+
+**引用：** [Robicheaux2025] Robicheaux, P., Popov, M., Madan, A., Robinson, I., Nelson, J., Ramanan, D., & Peri, N. (2025). Roboflow100-VL: A Multi-Domain Object Detection Benchmark for Vision-Language Models. Roboflow / CMU.
+
+RF100-VL 是托管在 Roboflow Universe 上、以 COCO-JSON 格式分发的 100 个真实世界检测数据集的精选集合，其中大多数领域在网络预训练数据中代表性不足。它有一个少样本变体（**RF100-VL-FSOD**）和一个 20 数据集子集（**RF20-VL**），因此既能评估常规微调检测器，也能评估 VLM 风格的零样本和少样本检测。它迅速成为实时检测器在 COCO 之外报告的*第二个维度*。例如 RF-DETR 同时报告 COCO AP 和 RF100-VL AP，因为 COCO 上的提升越来越难以迁移到分布外领域。
+
+---
+
+## 关键论文 / 数据集
+
+| 名称 | 作者/机构 | 年份 | 会议/期刊 | 关键统计 / 贡献 |
+|---|---|---|---|---|
+| ImageNet ILSVRC | Deng, Dong, Socher, Li, Fei-Fei (Stanford) | 2009 | CVPR | 1420 万张图像、2.1 万个同义词集（ILSVRC：128 万张 / 1K 类）；引爆深度学习革命 |
+| MS-COCO | Lin, Maire, et al. (Microsoft Research) | 2014 | ECCV | 32.8 万张图像、250 万个实例、80 个类别；引入 AP@0.5:0.95 |
+| PASCAL VOC 2012 | Everingham et al. | 2012 | IJCV | 2.25 万张图像、20 个类别；COCO 之前的标准检测基准 |
+| Open Images V7 | Kuznetsova et al. (Google) | 2022 | IJCV | 900 万张图像、600 个边界框类别、350 个掩码类别、视觉关系 |
+| ADE20K | Zhou et al. (MIT CSAIL) | 2017 | CVPR | 2.55 万张图像、150 个语义类别、层级部件标注 |
+| Cityscapes | Cordts et al. (Daimler et al.) | 2016 | CVPR | 5K 精细 + 20K 粗标注图像；2048×1024 城市场景，30 个类别 |
+| LVIS | Gupta, Dollar, Girshick (FAIR) | 2019 | CVPR | 16.4 万张图像、1,203 个类别、220 万个实例；长尾分布 |
+| Places365 | Zhou, Lapedriza et al. (MIT) | 2018 | TPAMI | 180 万张训练图像、365 个场景类别；最大的场景识别数据库 |
+| ImageNet-21K | Deng et al. / Ridnik et al. (2021) | 2009/2021 | CVPR/arXiv | 1420 万张图像、2.18 万个类别；ViT 类模型偏好的预训练集 |
+| SA-1B | Kirillov et al. (Meta AI) | 2023 | ICCV | 约 1100 万张图像、约 11 亿个类别无关掩码；模型在环数据引擎 |
+| SA-Co (SAM 3) | Carion, Gustafson, Hu et al. (Meta) | 2025 | Meta 技术报告 | 约 270K 概念的开放词汇分割基准（Gold/Silver/VEval）；400 万+ 自动标注概念；cgF1 指标 |
+| LVD-1689M / SAT-493M (DINOv3) | Siméoni et al. (Meta FAIR) | 2025 | arXiv | 约 17 亿张精选网络图像 / 约 4.93 亿张卫星图像，用于无标注 7B ViT 预训练（未公开） |
+| RF100-VL | Robicheaux, Popov et al. (Roboflow/CMU) | 2025 | arXiv | 100 个多领域检测数据集 + 少样本（FSOD）变体；COCO 的分布外补充 |
+
+---
+
+## 基准对比表
+
+| 数据集 | 图像数（训练） | 类别 | 标注类型 | 主要任务 | 评估指标 |
+|---|---|---|---|---|---|
+| ImageNet-1K | 1.28M | 1,000 | 图像级类别 | 分类 | Top-1 / Top-5 Acc |
+| MS-COCO 2017 | 118K | 80 things + 53 stuff | 边界框 + 掩码 + 描述 | 检测 / 分割 / 描述 | AP@0.5:0.95 |
+| PASCAL VOC 2012 | 11.5K | 20 | 边界框 + 分割掩码 | 检测 | mAP@0.5 |
+| Open Images V7 | 1.74M（已标注） | 600（检测） | 边界框 + 掩码 + 关系 | 检测 / 分割 / VRD | mAP |
+| ADE20K | 20.2K | 150 | 密集像素 | 语义分割 | mIoU |
+| Cityscapes | 2.975K 精细 | 19（评估） | 密集像素 + 实例 | 语义 / 实例分割 | mIoU / AP |
+| LVIS v1 | 100K | 1,203 | 实例掩码 | 实例分割 | AP, AP_r/c/f |
+| Places365 | 1.8M | 365 | 图像级类别 | 场景分类 | Top-1 / Top-5 |
+| SA-1B | ~11M | 无（类别无关） | 掩码 | 可提示分割 | mIoU（提示式） |
+| SA-Co/Gold | 仅评估 | ~270K 概念（完整基准） | 短语 → 全部实例掩码 + 负样本 | 概念分割 / 检测 | cgF1 (IL_MCC × pmF1) |
+| RF100-VL | 100 个数据集（各异） | 按数据集而定 | 边界框 | 多领域检测 | AP<sub>50:95</sub>（平均） |
+
+---
+
+## 优缺点
+
+| 数据集 | 优势 | 局限 |
+|---|---|---|
+| ImageNet-1K | 经典；预训练模型生态庞大；偏差已被充分理解 | 纹理偏差；每张图像单一标签；不代表真实世界分布；接近饱和 |
+| MS-COCO | 多任务标注；生态丰富；严格的 AP 指标能暴露定位质量 | 80 个类别遗漏稀有物体；COCO 图像经过筛选，并非自然分布 |
+| LVIS | 真实的长尾分布；高质量掩码 | 稀有类别的每类训练集很小；难以从零训练 |
+| Open Images | 规模巨大；包括关系在内的多类型标注 | 众包标签噪声更大；核验方法与 COCO 不同 |
+| ADE20K | 深度层级标注；场景 + 物体 + 部件 | 绝对规模小（2 万训练）；室内/室外场景覆盖不均 |
+| Cityscapes | 高分辨率、高质量精细标注；真实城市场景 | 单一领域（欧洲城市）；5K 精细图像限制模型容量 |
+| Places365 | 最大的场景数据库；365 个多样类别 | 仅图像级标注；无空间标注 |
+| SA-Co | 概念词表巨大；显式负提示；图像 + 视频划分 | 机器在环标签继承了 SAM/MLLM 的偏差；仅支持名词短语提示（不含复杂指代表达） |
+| RF100-VL | 领域多样；暴露对 COCO 的过拟合；有少样本协议 | 100 个社区数据集的标注质量参差不齐；平均 AP 掩盖了各领域的失效 |
+
+---
+
+## 开放问题与研究空白
+
+- **长尾与开放词汇评估：** LVIS 揭示了模型在 1,203 个类别上的失效，而真实世界系统面对的是数以百万计的类别。SA-Co（2025）把词表提升到约 270K 个概念并加入负提示。即便如此，最佳模型（SAM 3，在 SA-Co/Gold 上 54.1 cgF1）仍远低于人类一致性水平（72.8），通用 VLM 的得分则低得多（Gemini 2.5：13.0）。长指代表达、组合属性和关系仍在该基准的名词短语范围之外。
+- **机器标注的真值：** 随着数据引擎（SA-1B、SA-Co）取代人工标注，基准可能衡量的是与*上一代模型*的一致性。审计模型在环标签的协议（例如 SA-Co/Gold 中的三重人工标注和"在多位标注者中取最优"的评分）仍然是临时性的。
+- **数据集偏差与伪相关：** ImageNet 模型依赖纹理线索 [Geirhos2019]。测量与纠正分布偏移的系统性工具仍是开放领域，尤其是在合成数据越来越多地进入训练流程的情况下。
+- **标注噪声量化：** 众包数据集中的真值标签包含系统性错误（例如 COCO 实例边界）。用于衡量标注噪声对模型性能影响的基准尚不成熟。
+- **多标签与组合式真值：** 大多数基准只分配一个主导类别，而真实场景具有组合语义。GQA 和 Visual Genome 指向了更丰富的真值，但组合式场景图的可扩展标注仍未解决。
+- **时序与视频扩展：** 静态图像基准无法衡量时序一致性。视频目标分割基准（DAVIS、YouTube-VOS）虽已存在，但规模不及图像领域的同类基准。
+- **地理与人口多样性：** ImageNet、COCO 和 Places 的数据不成比例地来自西方语境。近期工作（GeoDE、Dollar-Sign 数据集）对此进行了量化，但大规模修正仍未解决。
+- **基准饱和与古德哈特定律：** 一旦 ImageNet-1K 这样的基准实际上饱和（top-1 >90%），继续优化就可能是在过拟合评估，而不是提升真实世界能力。新的评估范式（如模型汤、多样化测试套件）是活跃的研究方向。多领域套件（RF100-VL）和冻结骨干探测协议（DINOv3 风格）是当前的应对方式。
+- **排行榜基础设施：** Papers With Code 曾是这些数据集事实上的公共 SOTA 追踪器，如今已不再维护。其评估表只以静态归档形式保存（Hugging Face 上的 `pwc-archive`）。排行榜现分散在基准所有者网站、Hugging Face Spaces 和自行报告的模型卡中，因此"当前 SOTA"的说法更难核实，协议差异也更不易察觉。
+
+---
+
+## 延伸阅读
+
+- [ImageNet 网站与 ILSVRC 结果存档](https://www.image-net.org/)
+- [COCO 基准排行榜](https://cocodataset.org/#detection-leaderboard)
+- [Papers With Code — ImageNet 基准](https://paperswithcode.com/sota/image-classification-on-imagenet)（已归档；数据转储见 [paperswithcode-data](https://github.com/paperswithcode/paperswithcode-data)）
+- [Beyer et al. (2020) — Are we done with ImageNet? arXiv:2006.07159](https://arxiv.org/abs/2006.07159)
+- [Gupta et al. (2019) — LVIS 论文 arXiv:1908.03195](https://arxiv.org/abs/1908.03195)
+- [Open Images V7 数据概况](https://storage.googleapis.com/openimages/web/factsfigures_v7.html)
+- [SAM 3 与 SA-Co 基准 — 官方仓库](https://github.com/facebookresearch/sam3)
+- [Kirillov et al. (2023) — Segment Anything (SA-1B) arXiv:2304.02643](https://arxiv.org/abs/2304.02643)
+- [DINOv3（LVD-1689M / SAT-493M）— arXiv:2508.10104 及代码](https://github.com/facebookresearch/dinov3)
+- [RF100-VL 基准仓库](https://github.com/roboflow/rf100-vl)
+- [RF-DETR — 在 COCO 与 RF100-VL 上评测的实时检测器](https://github.com/roboflow/rf-detr)

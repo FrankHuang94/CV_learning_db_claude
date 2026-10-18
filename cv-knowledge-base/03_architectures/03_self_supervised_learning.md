@@ -185,7 +185,7 @@ Here $a_m$ are random unit directions and $T$ is a univariate goodness-of-fit st
 
 ### Generative and Agglomerative Alternatives
 
-Two non-SSL routes now compete with SSL for the "general vision encoder" role. **AIMv2** [Fini2025] (Apple, CVPR 2025 Highlight) pre-trains a ViT with a *multimodal autoregressive* objective: a causal decoder reconstructs image patches and then generates the caption. AIMv2-3B reaches 89.5% ImageNet top-1 with a frozen trunk. **Agglomerative distillation** (RADIO; see [Hybrid Architectures](./02_hybrid_architectures.md)) treats SSL models like DINOv3 as one teacher among several. Meanwhile, Perception Encoder shows that contrastive image-text training alone can yield DINO-quality dense features in *intermediate* layers (see [Multimodal Architectures](./04_multimodal_architectures.md)).
+Two non-SSL routes now compete with SSL for the "general vision encoder" role. **AIMv2** [Fini2025] (Apple, CVPR 2025 Highlight) pre-trains a ViT with a *multimodal autoregressive* objective: a causal decoder reconstructs image patches and then generates the caption. AIMv2-3B reaches 89.5% ImageNet top-1 with a frozen trunk. **Agglomerative distillation** (RADIO; see [Hybrid Architectures](./02_hybrid_architectures.md)) treats SSL models like DINOv3 as one teacher among several. Meanwhile, Perception Encoder shows that contrastive image-text training alone can yield strong dense features in *intermediate* layers (see [Multimodal Architectures](./04_multimodal_architectures.md)).
 
 ```mermaid
 flowchart LR
