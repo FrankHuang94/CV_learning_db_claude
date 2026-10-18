@@ -1,8 +1,14 @@
 # Feature Engineering: Classical Descriptors, Detectors, and Their Legacy
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Intermediate
 > **Related Sections:** [CNN Architectures](../03_architectures/00_cnn_architectures.md) · [Classical Geometry](./04_classical_geometry.md) · [Image Processing](./02_image_processing.md) · [CV Overview](./00_overview.md)
+
+> **🆕 October 2026 update:**
+> - The learned-feature lineage is extended past SuperGlue: LightGlue (ICCV 2023), dense RoMa (CVPR 2024) and RoMa v2 (Nov 2025), and LoMa (ECCV 2026 oral), a scaled-up sparse matcher.
+> - DINOv3 (Aug 2025) added as the current self-supervised dense-feature backbone, with Gram anchoring for stable patch features.
+> - Learned features are now built into the standard SfM tool: COLMAP 4.0 (Mar 2026) ships ALIKED + LightGlue, and COLMAP 4.2 (Sep 2026) adds LoMa.
+> - New two-view pose / WxBS benchmark table (values from official repositories), plus new Key Papers and Further Reading entries.
 
 ---
 
@@ -204,11 +210,45 @@ The shift from SIFT/HOG to CNN features was not simply one of accuracy — it wa
 
 3. **End-to-end training**: A CNN trained for classification learns features optimised for the *task loss*, not a surrogate like repeatability or descriptor distance. This global optimisation is unavailable to hand-crafted features.
 
-4. **Self-supervised large-scale pre-training**: DINO (Caron et al., 2021), DINOv2 (Oquab et al., 2023), and others learn universal features from unlabelled images that outperform SIFT on both semantic and geometric matching tasks.
+4. **Self-supervised large-scale pre-training**: DINO (Caron et al., 2021), DINOv2 (Oquab et al., 2023), DINOv3 (Siméoni et al., 2025), and others learn universal features from unlabelled images that outperform SIFT on both semantic and geometric matching tasks.
 
 5. **Robustness to extreme appearance change**: SIFT fails under heavy blur, large illumination changes, or non-rigid deformation. Learned features, when trained with appropriate augmentations, handle these gracefully.
 
 However, classical features retain roles in: (a) systems with strict computational budgets (ORB is real-time on embedded devices); (b) domains with limited training data (satellite imagery, medical imaging); (c) interpretable pipelines where explicit geometric reasoning (via homographies or fundamental matrices) is required; and (d) hybrid systems like SuperPoint + SuperGlue which marry learned feature extraction with classical geometric verification.
+
+---
+
+## 2023–2026: Learned Matchers Become the Default
+
+The detector–descriptor–matcher decomposition introduced by the classical pipeline has survived, but each stage is now learned, and since 2026 the learned variants ship inside the standard tools.
+
+**Sparse matchers.** LightGlue [Lindenberger2023] (ICCV 2023) re-engineered SuperGlue's attention matcher with adaptive depth and width: it stops early on easy pairs and prunes unmatchable points, so it is considerably faster than SuperGlue at similar accuracy. LoMa [Nordstrom2026] (arXiv 2604.04931, ECCV 2026 oral) revisits local feature matching with a scaling recipe borrowed from foundation models (large and diverse data mixtures, modern training, larger models and compute). It keeps LightGlue's sparse keypoint interface, so it is a drop-in replacement in SfM and localisation pipelines, and comes in sizes from LoMa-B (LightGlue-sized) to LoMa-G, plus a rotation-invariant LoMa-R for aerial imagery. Its authors report that it outperforms the dense RoMa family on the hard WxBS wide-baseline benchmark.
+
+**Dense matchers.** LoFTR (2021) removed the detector entirely; RoMa [Edstedt2024] (CVPR 2024) combined frozen DINOv2 coarse features with a fine-grained ConvNet and a regression-by-classification warp head. RoMa v2 [Edstedt2025] (arXiv 2511.15706, Nov 2025) predicts bidirectional dense warps with confidences *and* a per-pixel precision matrix, uses a two-stage matching + refinement pipeline with a custom CUDA refinement kernel, and builds on DINOv3 features. The authors report state-of-the-art results on many benchmarks along with reduced runtime and memory relative to RoMa.
+
+**Foundation features as descriptors.** DINOv3 [Simeoni2025] (Aug 2025) adds *Gram anchoring*, which regularises the Gram matrix of patch features (pairwise patch similarities) towards that of an earlier "anchor" checkpoint. This keeps dense features sharp and localised over long training, the property that matters most when frozen patch features are used for correspondence:
+
+```latex
+\mathcal{L}_{\text{Gram}} = \left\| \mathbf{X}_S \mathbf{X}_S^\top - \mathbf{X}_G \mathbf{X}_G^\top \right\|_F^2
+% X_S: L2-normalised patch features of the student; X_G: those of the Gram-anchor teacher
+```
+
+**In standard tooling.** COLMAP 4.0 (March 2026) added ALIKED feature extraction and LightGlue matching (for both SIFT and ALIKED) through ONNX Runtime, and COLMAP 4.2 (September 2026) added LoMa extraction and matching. Learned features have therefore moved from research add-ons (e.g., hloc) to options in the reference SfM tool, while SIFT remains the standard choice for reproducibility and CPU-only use.
+
+```mermaid
+graph LR
+    A["Harris 1988"] --> B["SIFT 2004"]
+    B --> C["ORB 2011"]
+    B --> D["SuperPoint 2018"]
+    D --> E["SuperGlue 2020"]
+    E --> F["LightGlue 2023"]
+    F --> G["LoMa 2026"]
+    D --> H["LoFTR 2021 (detector-free)"]
+    H --> I["RoMa 2024"]
+    I --> J["RoMa v2 2025"]
+    K["DINOv2 / DINOv3"] --> I
+    K --> J
+```
 
 ---
 
@@ -224,6 +264,11 @@ However, classical features retain roles in: (a) systems with strict computation
 | "Video Google: A Text Retrieval Approach to Object Matching in Videos" | J. Sivic, A. Zisserman | 2003 | ICCV | Bag of visual words; TF-IDF for image retrieval |
 | "SuperPoint: Self-Supervised Interest Point Detection and Description" | D. DeTone, T. Malisiewicz, A. Rabinovich | 2018 | CVPR Workshops | Self-supervised learned keypoints competitive with SIFT |
 | "SuperGlue: Learning Feature Matching with Graph Neural Networks" | P. Sarlin et al. | 2020 | CVPR | GNN-based descriptor matching; attention-based assignment |
+| "LightGlue: Local Feature Matching at Light Speed" | P. Lindenberger, P.-E. Sarlin, M. Pollefeys | 2023 | ICCV | Adaptive-depth/width attention matcher; much faster than SuperGlue |
+| "RoMa: Robust Dense Feature Matching" | J. Edstedt et al. | 2024 | CVPR | Dense matching with frozen DINOv2 coarse features and a regression-by-classification warp head |
+| "DINOv3" | O. Siméoni et al. | 2025 | arXiv 2508.10104 | 7B self-supervised ViT; Gram anchoring for high-quality dense features |
+| "RoMa v2: Harder Better Faster Denser Feature Matching" | J. Edstedt et al. | 2025 | arXiv 2511.15706 | Bidirectional dense warps with precision matrix; faster two-stage training |
+| "LoMa: Local Feature Matching Revisited" | D. Nordström, J. Edstedt, G. Bökman et al. | 2026 | ECCV (oral) | Data-, model- and compute-scaled sparse matcher; drop-in LightGlue replacement |
 
 ---
 
@@ -241,6 +286,15 @@ Matching performance on HPatches benchmark (108 sequences, photometric + viewpoi
 
 Numbers are approximate; exact values depend on detector parameters and evaluation protocol.
 
+HPatches is now largely saturated for learned methods. Modern matchers are compared mainly on **two-view relative pose** (AUC of pose error at 5°/10°/20° on MegaDepth-1500 and ScanNet-1500) and on extreme wide-baseline pairs (**WxBS**, mean average accuracy at 10 px):
+
+| Method | MegaDepth-1500 AUC@5/10/20 | ScanNet-1500 AUC@5/10/20 | WxBS mAA@10px | Source |
+|--------|---------------------------|--------------------------|---------------|--------|
+| RoMa v2 (2025) | 62.8 / 76.8 / 86.5 | 34.0 / 56.5 / 73.9 | — | Official repo (reproduced results) |
+| LoMa-B (2026) | — | — | 68.8 | Official repo |
+
+These are author-reported values. See the papers for full comparisons with LightGlue, RoMa and other matchers under matched protocols.
+
 ---
 
 ## Pros & Cons
@@ -253,6 +307,8 @@ Numbers are approximate; exact values depend on detector parameters and evaluati
 | ORB | Real-time; free; binary (compact + fast match) | Less invariant than SIFT; worse on viewpoint extremes |
 | BoVW | Scalable retrieval; interpretable | Quantisation loss; sensitive to vocabulary size $k$ |
 | Learned (SuperPoint) | Task-optimised; robust to extreme changes | Requires GPU; less interpretable; training data needed |
+| Learned sparse matcher (LightGlue, LoMa) | Drop-in for SfM/localisation; fast; robust wide-baseline matching | GPU-oriented; model licences and ONNX/runtime dependencies |
+| Dense matcher (RoMa, RoMa v2) | Works in low-texture regions; very accurate poses | Heavier; dense output must be sampled into tracks for SfM |
 
 ---
 
@@ -263,8 +319,9 @@ Numbers are approximate; exact values depend on detector parameters and evaluati
 - **Descriptor learning with weak supervision.** Self-supervised descriptor learning (DINO, DINOv2) is powerful but requires large compute; few-shot or zero-shot transfer of descriptors to new domains is an open challenge.
 - **Long-term place recognition.** For robot localisation, features must be consistent across day/night, seasons, and weather — a regime where both classical and basic learned descriptors fail without explicit appearance modelling.
 - **Theoretical foundations of learned features.** Unlike SIFT, which has known invariance properties and failure modes, learned descriptors lack formal characterisation; understanding what invariances they capture and when they fail is a largely open theoretical question.
-- **Efficiency at scale for learned matchers.** SuperGlue's attention mechanism scales quadratically in the number of keypoints; efficient approximate matching for large-vocabulary retrieval is an active engineering problem.
+- **Efficiency at scale for learned matchers.** SuperGlue's attention mechanism scales quadratically in the number of keypoints; LightGlue's adaptive pruning and RoMa v2's custom kernels reduce the cost, but exhaustive pairwise matching for large collections remains expensive, and efficient approximate matching for large-vocabulary retrieval is an active engineering problem.
 - **Unifying detection and description.** Detection and description are jointly trained in SuperPoint but still conceptually separate; fully unified detection-description-matching architectures (e.g., LoFTR, which abandons detection entirely) are an evolving frontier.
+- **Sparse vs. dense, and the role of scale.** As of 2026 both a scaled sparse matcher (LoMa) and a dense matcher (RoMa v2) claim state-of-the-art results on different benchmarks. Whether the gap is architectural or mainly due to training data and compute is unresolved, and so is whether feed-forward 3D models (VGGT, MapAnything) will make explicit pairwise matching unnecessary for SfM.
 
 ---
 
@@ -276,3 +333,8 @@ Numbers are approximate; exact values depend on detector parameters and evaluati
 - [Tuytelaars, T. & Mikolajczyk, K. (2008). Local Invariant Feature Detectors: A Survey. *Foundations and Trends in Computer Graphics and Vision*, 3(3).](https://doi.org/10.1561/0600000017) — Comprehensive survey of classical detectors.
 - [Sarlin, P. E. et al. (2020). SuperGlue: Learning Feature Matching with Graph Neural Networks. *CVPR*.](https://arxiv.org/abs/1911.11763) — State-of-the-art learned matching.
 - [Oquab, M. et al. (2023). DINOv2: Learning Robust Visual Features without Supervision. *TMLR*.](https://arxiv.org/abs/2304.07193) — Self-supervised foundation features.
+- [Lindenberger, P., Sarlin, P.-E. & Pollefeys, M. (2023). LightGlue: Local Feature Matching at Light Speed. *ICCV*.](https://arxiv.org/abs/2306.13643) — Efficient adaptive attention matcher.
+- [Siméoni, O. et al. (2025). DINOv3. arXiv:2508.10104.](https://arxiv.org/abs/2508.10104) — Gram anchoring and 7B-scale self-supervised dense features.
+- [Edstedt, J. et al. (2025). RoMa v2: Harder Better Faster Denser Feature Matching. arXiv:2511.15706.](https://arxiv.org/abs/2511.15706) — Current dense matcher; code at [Parskatt/romav2](https://github.com/Parskatt/romav2).
+- [Nordström, D. et al. (2026). LoMa: Local Feature Matching Revisited. *ECCV 2026*.](https://arxiv.org/abs/2604.04931) — Scaled sparse matcher; code at [davnords/loma](https://github.com/davnords/loma).
+- [COLMAP release notes.](https://github.com/colmap/colmap/releases) — ALIKED/LightGlue (4.0) and LoMa (4.2) integration.

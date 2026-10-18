@@ -1,8 +1,10 @@
 # Image Processing: Filtering, Edges, Frequency, and Pyramids
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Foundational
 > **Related Sections:** [Feature Engineering](./03_feature_engineering.md) · [Image Formation](./01_image_formation.md) · [CV Overview](./00_overview.md) · [Classical Geometry](./04_classical_geometry.md)
+
+> **🆕 October 2026 update:** No major changes to classical image processing. The BSD68 denoising table was corrected (its columns actually reported σ = 15 and σ = 25, and the BM3D figures were wrong), and OpenCV 5.0.0 (June 2026), the first stable 5.x release of the reference library for these operators, is noted.
 
 ---
 
@@ -13,6 +15,8 @@ Image processing encompasses the family of operations that transform a discrete 
 The mathematical backbone of classical image processing is **linear systems theory**, specifically the convolution theorem. A linear, shift-invariant (LSI) system is fully characterised by its **impulse response** (in the spatial domain) or equivalently its **transfer function** (in the frequency domain). This duality is exploited in all frequency-domain methods: Gaussian smoothing is low-pass filtering; edge detection is high-pass filtering; Laplacian of Gaussian (LoG) is a band-pass operator. The frequency domain also explains *why* aliasing occurs, *why* you must smooth before subsampling (the Nyquist constraint), and *why* gradient operators amplify noise.
 
 Beyond linear filtering, the field includes nonlinear operations — median filtering for salt-and-pepper noise, morphological operators for binary structure analysis, histogram operations for global intensity normalisation — and multi-scale representations (Gaussian and Laplacian pyramids, wavelets) that serve as the conceptual precursors to the feature pyramid networks and multi-scale attention mechanisms in modern deep architectures.
+
+In practice, almost all of the operators below are used through OpenCV (now in two maintained lines: 4.x and 5.x, with 5.0.0 released in June 2026) or through GPU tensor libraries such as PyTorch/Kornia, where the same kernels appear as fixed or learnable convolutions.
 
 ---
 
@@ -301,15 +305,15 @@ a|x|^3 - 5a|x|^2 + 8a|x| - 4a & 1 \leq |x| < 2 \\
 
 ## Benchmark Performance
 
-| Method | BSD68 PSNR (σ=25) | BSD68 PSNR (σ=50) | Notes |
+| Method | BSD68 PSNR (σ=15) | BSD68 PSNR (σ=25) | Notes |
 |--------|------------------|--------------------|-------|
-| Gaussian filter | ~28 dB | ~25 dB | Baseline; blurs detail |
-| BM3D (2007) | 31.73 dB | 29.05 dB | Long-standing classical SOTA |
-| DnCNN (2017) | 31.73 dB | 29.22 dB | Matched BM3D at publication |
+| Gaussian filter | well below BM3D | well below BM3D | Baseline; blurs detail |
+| BM3D (2007) | 31.07 dB | 28.57 dB | Long-standing classical SOTA |
+| DnCNN (2017) | 31.73 dB | 29.23 dB | Beat BM3D by ≈0.6–0.7 dB at publication |
 | FFDNet (2018) | 31.63 dB | 29.19 dB | Handles spatially varying noise |
 | DRUNet (2021) | 31.91 dB | 29.48 dB | Plug-and-play prior |
 
-PSNR = $10 \log_{10}(255^2 / \text{MSE})$. Numbers from published benchmarks; BSD68 is 68 natural images from the Berkeley Segmentation Dataset.
+PSNR = $10 \log_{10}(255^2 / \text{MSE})$. Grayscale additive white Gaussian noise; numbers as reported by the respective authors (BM3D and DnCNN values from the DnCNN paper/repository; at σ = 50 these are 25.62 dB and 26.23 dB). BSD68 is 68 natural images from the Berkeley Segmentation Dataset. Later transformer restorers (SwinIR 2021, Restormer 2022) report further incremental gains; the benchmark is now close to saturation, and recent restoration research has shifted towards real-noise, all-in-one and diffusion-prior methods (see [Diffusion Models](../10_generative_vision/01_diffusion_models.md)).
 
 ---
 
@@ -346,3 +350,5 @@ PSNR = $10 \log_{10}(255^2 / \text{MSE})$. Numbers from published benchmarks; BS
 - [Lindeberg, T. (1994). *Scale-Space Theory in Computer Vision*. Kluwer.](https://www.springer.com/gp/book/9780792394570) — Rigorous scale-space axiomatic treatment.
 - [Dabov, K. et al. (2007). Image Denoising by Sparse 3D Transform-Domain Collaborative Filtering. *IEEE TIP*, 16(8), 2080–2095.](https://doi.org/10.1109/TIP.2007.901238) — BM3D algorithm.
 - [Szeliski, R. (2022). *Computer Vision: Algorithms and Applications*, Ch. 3.](https://szeliski.org/Book/) — Filtering and pyramids in the context of modern CV.
+- [Zhang, K. et al. DnCNN official repository.](https://github.com/cszn/DnCNN) — Reference BSD68 results for BM3D, WNNM, TNRD and DnCNN at σ = 15/25/50.
+- [OpenCV releases.](https://github.com/opencv/opencv/releases) — Reference implementations of the filters, morphology, pyramids and interpolation kernels in this file; 5.0.0 released June 2026 alongside the continuing 4.x line (4.14.0, July 2026).

@@ -1,8 +1,13 @@
 # Image Formation: Cameras, Radiometry, and Color
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Foundational
 > **Related Sections:** [Image Processing](./02_image_processing.md) · [Classical Geometry](./04_classical_geometry.md) · [SfM and SLAM](../04_3d_vision_and_scene/03_sfm_and_slam.md) · [CV Overview](./00_overview.md)
+
+> **🆕 October 2026 update:**
+> - The physics of image formation is unchanged; the main development is on the *inverse* side: model-agnostic single-image calibration (AnyCalib, ICCV 2025) and 3D foundation models that predict intrinsics/field of view as a by-product (VGGT, MoGe-2, Depth Anything 3). A new section summarises these.
+> - Camera-model table extended with generic per-pixel ray models, EUCM and equirectangular (360°) models, reflecting what COLMAP 4.x (2026) now supports.
+> - Open problem on in-the-wild calibration updated to reflect this progress.
 
 ---
 
@@ -152,6 +157,23 @@ where $\alpha$ is the angle from the optical axis ($\cos^4\alpha$ vignetting). T
 
 ---
 
+## Learned Calibration and Feed-Forward Camera Estimation (2025–2026)
+
+The forward model above is classical, but *inverting* it — recovering $\mathbf{K}$ and distortion without a calibration target — has changed substantially since 2025.
+
+**Ray-based, model-agnostic calibration.** Rather than regressing the parameters of one specific model (e.g., $f, c_x, c_y, k_1$), recent methods predict a *per-pixel viewing ray* $\mathbf{r}(u,v) = \mathbf{K}^{-1}(u, v, 1)^\top$ (normalised, or more generally the unprojection of any central camera model) and then fit the chosen parametric model in closed form. AnyCalib [TiradoGarin2025] (ICCV 2025) does this on-manifold from a single in-the-wild image and recovers pinhole, Brown–Conrady and Kannala–Brandt parameters from the same dense ray prediction; it also handles cropped and stretched images. Because the parametric model is fitted *after* the network, the camera model can be selected at inference time. An ONNX export of AnyCalib is distributed alongside COLMAP's release assets (Sept 2026).
+
+```latex
+\hat{\boldsymbol{\theta}} = \arg\min_{\boldsymbol{\theta}} \sum_{(u,v)} \left\| \pi^{-1}_{\boldsymbol{\theta}}(u,v) - \hat{\mathbf{r}}(u,v) \right\|^2
+% fit camera-model parameters θ to the network's dense ray field r̂
+```
+
+**Calibration as a by-product of 3D foundation models.** Feed-forward geometry networks now predict cameras jointly with depth: VGGT [Wang2025] regresses intrinsics and extrinsics for every input view; MoGe-2 (arXiv 2507.02546) predicts metric-scale point maps and estimates the field of view when it is not supplied; Depth Anything 3 (Nov 2025) uses a depth-plus-ray representation from which pose and intrinsics are derived. These estimates are typically good enough to initialise SfM, but they inherit the training distribution's camera priors, and accuracy on unusual optics (strong fisheye, catadioptric, heavily cropped images) is less well characterised than target-based calibration.
+
+**Tooling.** COLMAP 4.0–4.2 (Mar–Sep 2026) added division, fisheye (no-distortion), equirectangular and EUCM camera models, and its global mapper estimates intrinsics through view-graph calibration. For metrology-grade work, Zhang's target-based method remains the reference.
+
+---
+
 ## Color: Spectral Sensitivity, Demosaicing, and Color Spaces
 
 ### Spectral Integration
@@ -254,6 +276,8 @@ where $\alpha$ is the shot noise gain and $\sigma_r^2$ is the read noise varianc
 | "Camera Models and Fundamental Concepts Used in Geometric Computer Vision" | P. Sturm et al. | 2011 | Foundations and Trends in Computer Graphics and Vision | Comprehensive unified treatment of camera models |
 | *Multiple View Geometry in Computer Vision* (Ch. 6–7) | R. Hartley, A. Zisserman | 2004 | Cambridge University Press | Canonical reference for projection geometry |
 | "Deep Learning for Camera Calibration and Beyond: A Survey" | Y. Cao et al. | 2023 | arXiv 2303.10559 | Survey of learned calibration methods |
+| "AnyCalib: On-Manifold Learning for Model-Agnostic Single-View Camera Calibration" | J. Tirado-Garín, J. Civera | 2025 | ICCV | Dense ray regression + closed-form fit to any central camera model from one image |
+| "VGGT: Visual Geometry Grounded Transformer" | J. Wang et al. | 2025 | CVPR (Best Paper) | Feed-forward prediction of intrinsics, extrinsics and depth for many views |
 
 ---
 
@@ -267,6 +291,8 @@ Camera calibration accuracy is typically reported as **reprojection error** — 
 | DNN-based (single image) | ~1–2 px RMS | No calibration target needed |
 | Self-calibration (SfM) | ~0.5–1.0 px | Requires scene texture |
 
+Single-image learned calibrators (GeoCalib, AnyCalib) and 3D foundation models are usually evaluated with *intrinsics* errors (e.g., relative focal-length error, field-of-view error) and pose AUC rather than reprojection error against a target, so their numbers are not directly comparable with the rows above.
+
 ---
 
 ## Pros & Cons: Camera Model Choices
@@ -278,12 +304,15 @@ Camera calibration accuracy is typically reported as **reprojection error** — 
 | Division model (Fitzgibbon 2001) | Single parameter, closed-form inversion | Less accurate than polynomial for large distortion |
 | Kannala-Brandt fisheye | Handles > 180° FOV | Requires specialised tooling; more parameters |
 | Unified sphere model | Handles catadioptric systems | More complex; less standard tooling |
+| Enhanced unified (EUCM) | Few parameters; fisheye and wide-angle; supported in COLMAP 4.1+ | Less common in older toolchains |
+| Equirectangular (360°) | Native model for panoramic/spherical cameras | Strong distortion near poles; needs specialised matching |
+| Generic per-pixel rays (learned, e.g., AnyCalib) | Model-agnostic; works from a single in-the-wild image | Accuracy bounded by learned prior; not metrology-grade |
 
 ---
 
 ## Open Problems & Research Gaps
 
-- **Self-supervised / in-the-wild calibration.** Current methods require controlled calibration targets or textured scenes; robust single-image calibration from arbitrary content remains challenging.
+- **Self-supervised / in-the-wild calibration.** Classical methods require controlled calibration targets or textured scenes. Learned single-image calibrators (AnyCalib, 2025) and 3D foundation models (VGGT, MoGe-2) have made in-the-wild estimates practical, but their errors on unusual optics and their calibration of uncertainty remain poorly characterised, and they do not yet match target-based accuracy.
 - **Dynamic calibration.** Thermal expansion and mechanical vibration cause intrinsics to drift over time; continuous online recalibration is an open engineering and algorithmic problem.
 - **Non-Lambertian and global illumination effects.** BRDFs in real scenes (specularities, inter-reflections, subsurface scattering) violate the assumptions of most calibration and reconstruction methods.
 - **Event cameras.** Neuromorphic (event-based) sensors produce asynchronous pixel-level brightness changes rather than frames; their formation model, calibration, and integration with standard CV pipelines is actively being developed.
@@ -301,3 +330,6 @@ Camera calibration accuracy is typically reported as **reprojection error** — 
 - [Cao, Y. et al. (2023). Deep Learning for Camera Calibration and Beyond: A Survey. arXiv:2303.10559.](https://arxiv.org/abs/2303.10559) — Modern learned calibration overview.
 - [Nicodemus, F. et al. (1977). *Geometrical Considerations and Nomenclature for Reflectance*. NBS Monograph 160.](https://nvlpubs.nist.gov/nistpubs/Legacy/MONO/nbsmonograph160.pdf) — BRDF definition source.
 - [Wikipedia: Color filter array.](https://en.wikipedia.org/wiki/Color_filter_array) — Overview of Bayer and alternative CFA patterns.
+- [Tirado-Garín, J. & Civera, J. (2025). AnyCalib: On-Manifold Learning for Model-Agnostic Single-View Camera Calibration. *ICCV 2025*.](https://arxiv.org/abs/2503.12701) — Model-agnostic single-image calibration; code at [javrtg/AnyCalib](https://github.com/javrtg/AnyCalib).
+- [MoGe-2: Accurate Monocular Geometry with Metric Scale and Sharp Details. arXiv:2507.02546.](https://github.com/microsoft/MoGe) — Monocular metric point maps with field-of-view estimation.
+- [COLMAP release notes.](https://github.com/colmap/colmap/releases) — Camera models and calibration options added in 4.x (2026).

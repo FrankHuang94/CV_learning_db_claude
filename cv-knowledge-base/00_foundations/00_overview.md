@@ -1,8 +1,13 @@
 # Computer Vision: Foundations and Overview
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Foundational
 > **Related Sections:** [Image Formation](./01_image_formation.md) · [CV Timeline](../01_history/00_timeline_overview.md) · [Feature Engineering](./03_feature_engineering.md) · [CNN Architectures](../03_architectures/00_cnn_architectures.md)
+
+> **🆕 October 2026 update:**
+> - The hand-crafted → learned narrative now continues into 2025–2026 foundation models: DINOv3 (Aug 2025) for self-supervised dense features, SAM 3 (Nov 2025; SAM 3.1 Mar 2026) for open-vocabulary "promptable concept segmentation", and feed-forward 3D geometry networks (VGGT, CVPR 2025 Best Paper; MapAnything; Depth Anything 3).
+> - Key Papers table and the Levels-of-Analysis taxonomy gain DINOv3, SAM 3 and VGGT.
+> - Marr's framework is revisited for feed-forward geometry (classical computational goals, learned algorithmic level), and a new open problem on guarantees for learned geometry is added.
 
 ---
 
@@ -68,6 +73,14 @@ The **deep learning revolution** — catalysed by AlexNet's decisive win on Imag
 
 The subsequent decade saw transformers (originally from NLP) enter CV via Vision Transformers (ViT, Dosovitskiy et al., 2020), enabling global self-attention over image patches and further performance improvements, particularly with large-scale pre-training. Contrastive and self-supervised methods (SimCLR, MoCo, DINO, MAE) then demonstrated that powerful visual representations can be learned without manual labels, and vision-language models (CLIP, Flamingo, GPT-4V) learned to align visual and textual semantics at scale.
 
+**2025–2026: foundation-scale vision reaches every stage of the pipeline.** Three releases illustrate how far learned representations have now reached into territory once reserved for hand-designed modules:
+
+- **Self-supervised dense features.** DINOv3 [Simeoni2025] scales DINO-style self-distillation to a 7B-parameter ViT trained on a curated 1.7B-image corpus (LVD-1689M), and introduces *Gram anchoring* — a regulariser that keeps patch-level feature similarity structure stable during long training — to stop the degradation of dense feature maps seen in earlier large-scale runs. The 7B teacher is distilled into ViT-S/B/L/H+ and ConvNeXt students, and a variant trained on satellite imagery (SAT-493M) is also released. These frozen features serve as general-purpose low/mid-level descriptors (see [Feature Engineering](./03_feature_engineering.md)).
+- **Open-vocabulary segmentation.** SAM 3 [Carion2025] extends the promptable-segmentation paradigm from "segment *this* object" (points/boxes) to *Promptable Concept Segmentation*: given a short noun phrase or image exemplars, detect, segment and track *every* instance of the concept in images and video. It pairs a detector and a memory-based tracker on a shared backbone (≈848M parameters) and is evaluated on the new SA-Co benchmark (≈270K unique concepts). SAM 3.1 (March 2026) added faster joint multi-object tracking.
+- **Feed-forward geometry.** VGGT [Wang2025] (CVPR 2025 Best Paper) predicts camera intrinsics/extrinsics, depth maps, point maps and point tracks for one to hundreds of views in a single forward pass (the authors report typical scenes reconstructed in under a second). Follow-ups such as MapAnything [Keetha2025] (metric-scale, with optional intrinsics/pose/depth inputs) and Depth Anything 3 (ByteDance Seed, Nov 2025; a single depth-ray representation on a plain DINO-style transformer) push the same idea. Notably, VGGT's outputs can still be exported to COLMAP and refined by bundle adjustment — the classical machinery of [Classical Geometry](./04_classical_geometry.md) becomes a refinement and verification layer rather than the whole pipeline.
+
+In Marr's terms these systems keep the *computational* specification of classical vision (recover depth, pose, and object extent from images) but replace the hand-designed *algorithmic* level with a learned, amortised inference procedure.
+
 Understanding the *classical* pipeline — hand-crafted features, explicit geometric models, optimization-based inference — remains essential for several reasons: (1) it provides interpretable, theoretically grounded models whose failure modes are understood; (2) classical geometry underpins modern 3D reconstruction, SLAM, and camera calibration pipelines; (3) many deployment-critical systems (autonomous driving sensors, medical devices) use hybrid pipelines; and (4) the classical methods often serve as targets or priors for learned systems. The shift from hand-crafted to learned is a change of *algorithmic level* in Marr's sense; the *computational* goals and *physical* constraints remain the same.
 
 ---
@@ -83,6 +96,9 @@ Understanding the *classical* pipeline — hand-crafted features, explicit geome
 | "Masked Autoencoders Are Scalable Vision Learners" (MAE) | K. He et al. | 2022 | CVPR | Self-supervised ViT pre-training by reconstructing masked image patches |
 | "Rich Feature Hierarchies for Accurate Object Detection" (R-CNN) | R. Girshick et al. | 2014 | CVPR | Bridged classical region proposals with CNN features; launched modern object detection |
 | "Fully Convolutional Networks for Semantic Segmentation" | J. Long, E. Shelhamer, T. Darrell | 2015 | CVPR | End-to-end pixel-wise classification via fully convolutional architectures |
+| "VGGT: Visual Geometry Grounded Transformer" | J. Wang, M. Chen, N. Karaev, A. Vedaldi, C. Rupprecht, D. Novotny | 2025 | CVPR (Best Paper) | Single feed-forward network predicting cameras, depth, point maps and tracks from many views |
+| "DINOv3" | O. Siméoni et al. | 2025 | arXiv 2508.10104 | 7B self-supervised ViT with Gram anchoring; high-quality dense features; distilled model family |
+| "SAM 3: Segment Anything with Concepts" | N. Carion et al. | 2025 | arXiv 2511.16719 | Promptable Concept Segmentation in images and video; SA-Co benchmark |
 
 ---
 
@@ -110,8 +126,8 @@ In a Bayesian formulation, the regularizer corresponds to a log-prior $-\log p(\
 |-------|------|-------------------|-------------------|
 | Low-level | Signal cleaning, basic structure | Gaussian filter, Sobel, Canny | First conv layers |
 | Mid-level | Geometric/structural grouping | Hough transform, RANSAC, optical flow | FPN, deformable convolutions |
-| High-level | Semantic understanding | SVM + HoG, Bag-of-words | ResNet, ViT, DINO |
-| 3D / Scene | Geometry, depth, motion | Epipolar geometry, SfM | NeRF, 3DGS, DUSt3R |
+| High-level | Semantic understanding | SVM + HoG, Bag-of-words | ResNet, ViT, DINO/DINOv3, SAM 3 |
+| 3D / Scene | Geometry, depth, motion | Epipolar geometry, SfM | NeRF, 3DGS, DUSt3R, VGGT, MapAnything |
 
 ---
 
@@ -122,7 +138,8 @@ In a Bayesian formulation, the regularizer corresponds to a log-prior $-\log p(\
 - **Causal and compositional understanding.** Models excel at correlation-based pattern matching but struggle with causal reasoning — predicting what happens if an object is moved, removed, or occluded.
 - **Unifying geometry and semantics.** Bridging classical geometric 3D reconstruction (SfM, SLAM) with semantic scene understanding in a principled, end-to-end framework remains an active research challenge.
 - **Interpretability and failure-mode understanding.** Even state-of-the-art networks remain largely opaque; understanding *why* a model succeeds or fails is essential for safety-critical deployment.
-- **Efficient inference at scale.** Foundation models for vision (SAM, CLIP, GPT-4V) are computationally expensive; compressing them for edge deployment without capability loss is an unsolved engineering and algorithmic challenge.
+- **Efficient inference at scale.** Foundation models for vision (SAM/SAM 3, CLIP, DINOv3-7B, GPT-4V-class VLMs) are computationally expensive; compressing them for edge deployment without capability loss is an unsolved engineering and algorithmic challenge. Distilled families (e.g., DINOv3's ViT-S to ViT-H+ students) are a partial answer.
+- **Guarantees for learned geometry.** Feed-forward 3D models (VGGT, MapAnything, Depth Anything 3) now rival optimisation-based pipelines on many benchmarks, but offer no analogue of the identifiability and degeneracy results of multi-view geometry; knowing *when* their camera and depth predictions can be trusted, and how best to combine them with bundle adjustment, is open.
 - **Embodied and active perception.** Most CV research addresses passive recognition; extending to *active* agents that control their sensors and move through environments to reduce uncertainty is nascent.
 
 ---
@@ -135,3 +152,6 @@ In a Bayesian formulation, the regularizer corresponds to a log-prior $-\log p(\
 - [LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. *Nature*, 521, 436–444.](https://www.nature.com/articles/nature14539) — Overview of the deep learning revolution.
 - [Dosovitskiy, A. et al. (2021). An image is worth 16×16 words. *ICLR 2021*.](https://arxiv.org/abs/2010.11929) — Vision Transformers.
 - [McClamrock, R. Marr's Three Levels: A Re-evaluation.](https://www.albany.edu/~ron/papers/marrlevl.html) — Critical philosophical analysis of Marr's framework.
+- [Siméoni, O. et al. (2025). DINOv3. arXiv:2508.10104.](https://arxiv.org/abs/2508.10104) — Self-supervised foundation features with Gram anchoring; code and weights at [facebookresearch/dinov3](https://github.com/facebookresearch/dinov3).
+- [Carion, N. et al. (2025). SAM 3: Segment Anything with Concepts. arXiv:2511.16719.](https://arxiv.org/abs/2511.16719) — Promptable Concept Segmentation; code at [facebookresearch/sam3](https://github.com/facebookresearch/sam3).
+- [Wang, J. et al. (2025). VGGT: Visual Geometry Grounded Transformer. *CVPR 2025*.](https://arxiv.org/abs/2503.11651) — Feed-forward multi-view geometry; CVPR 2025 Best Paper.

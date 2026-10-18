@@ -1,12 +1,17 @@
 # Classical Multi-View Geometry
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Foundational
 > **Related Sections:**
 > - [Image Formation](./01_image_formation.md)
 > - [SfM and SLAM](../04_3d_vision_and_scene/03_sfm_and_slam.md)
 > - [3D Reconstruction](../02_core_tasks/09_3d_reconstruction.md)
 > - [Feature Engineering](./03_feature_engineering.md)
+
+> **🆕 October 2026 update:**
+> - New section on **global SfM and feed-forward geometry**: GLOMAP (ECCV 2024) is now built into COLMAP 4.0 (Mar 2026) as a first-class global mapper; COLMAP 4.1 (Jun 2026) adds a GPU bundle-adjustment backend (Caspar); COLMAP 4.2 (Sep 2026) adds LoMa learned matching.
+> - Feed-forward networks (VGGT, CVPR 2025 Best Paper; MapAnything; Depth Anything 3) now predict cameras and depth directly, and classical BA becomes a refinement step.
+> - Robust estimation: SupeRANSAC (2025) unified RANSAC pipeline added; references, pros/cons and open problems updated accordingly.
 
 ---
 
@@ -51,9 +56,17 @@ Estimated from ≥4 correspondences (DLT). Homographies underpin image stitching
 
 Real correspondences contain outliers, so geometric models are fit with **RANSAC**: repeatedly sample a minimal set, fit the model, count inliers (points consistent within a threshold), and keep the best-supported hypothesis.
 
+The number of iterations needed to draw at least one all-inlier minimal sample of size `s` with confidence `p`, given inlier ratio `w`, is:
+
+```
+N = log(1 − p) / log(1 − wˢ)
+```
+
+so the cost grows sharply with the minimal-sample size (e.g., 8-point vs. 5-point vs. 3-point solvers) and with outlier ratio. Modern variants replace the hard inlier count with threshold-robust scoring (MAGSAC++), add local optimisation (LO-/GC-RANSAC), and use guided sampling (PROSAC). SupeRANSAC [Barath2025] (2025) argues that end-to-end *implementation* choices matter as much as any single component, and assembles them into one pipeline for homography, fundamental/essential matrix and absolute/rigid pose estimation. Its author reports gains over existing implementations such as OpenCV and PoseLib, e.g. about 6 AUC points on average for fundamental-matrix estimation.
+
 ```mermaid
 graph LR
-    A[Feature matches<br/>SIFT/ORB/LightGlue] --> B[RANSAC<br/>minimal-sample + inlier count]
+    A[Feature matches<br/>SIFT/ORB/LightGlue/LoMa] --> B[RANSAC<br/>minimal-sample + inlier count]
     B --> C[Estimate F/E/H]
     C --> D[Decompose → R, t]
     D --> E[Triangulate → 3D points]
@@ -73,6 +86,32 @@ min_{Cᵢ, Xⱼ}  Σᵢⱼ  ρ( || π(Cᵢ, Xⱼ) − xᵢⱼ ||² )
 
 Solved with Levenberg-Marquardt exploiting sparsity—the computational heart of SfM/SLAM (see [SfM and SLAM](../04_3d_vision_and_scene/03_sfm_and_slam.md)).
 
+## Global SfM and Feed-Forward Geometry (2024–2026)
+
+**Incremental vs. global SfM.** Incremental SfM (COLMAP's classic mapper) registers images one at a time, triangulating and running bundle adjustment repeatedly. It is robust, but slow on large collections and sensitive to the initial pair. *Global* SfM instead estimates all camera rotations at once (rotation averaging over the view graph), then positions, then refines:
+
+```
+R* = argmin_{Rᵢ} Σ_{(i,j)} d(R_ij, Rⱼ Rᵢᵀ)²     # rotation averaging
+then: global positioning (points + cameras) → bundle adjustment
+```
+
+GLOMAP [Pan2024] (ECCV 2024) made global SfM competitive in accuracy with incremental SfM by replacing separate translation averaging with a *global positioning* step that jointly estimates camera positions and 3D points. Its authors report it is typically 1–2 orders of magnitude faster than incremental mapping. In **COLMAP 4.0 (March 2026)** GLOMAP was integrated as a first-class `global_mapper`, and intrinsics are estimated through view-graph calibration. **COLMAP 4.1 (June 2026)** added Caspar as a GPU bundle-adjustment backend alongside Ceres, and **COLMAP 4.2 (September 2026)** made the global mapper reconstruct disconnected view-graph components as separate models and added LoMa learned matching.
+
+**Feed-forward geometry.** A parallel line of work skips explicit correspondence-and-optimisation altogether. DUSt3R/MASt3R (2024) regressed pairwise point maps. VGGT [Wang2025] (CVPR 2025 Best Paper) predicts intrinsics, extrinsics, depth, point maps and tracks for up to hundreds of views in one forward pass. MapAnything [Keetha2025] (arXiv 2509.13414; 3DV 2026) outputs metric-scale geometry and cameras and can take optional calibration, pose or depth inputs. Depth Anything 3 (Nov 2025) recovers depth and camera rays with a plain transformer. These models do not replace the theory in this file. They amortise it: their outputs are routinely exported to COLMAP format and refined with bundle adjustment, and multi-view geometry still defines which quantities are identifiable (e.g., scale from monocular input only through learned priors).
+
+```mermaid
+graph TD
+    I["Images"] --> M["Matching (SIFT / LightGlue / LoMa)"]
+    M --> G["Geometric verification (RANSAC)"]
+    G --> INC["Incremental SfM"]
+    G --> GLO["Global SfM (GLOMAP)"]
+    I --> FF["Feed-forward (VGGT / MapAnything)"]
+    INC --> BA["Bundle adjustment"]
+    GLO --> BA
+    FF -->|"initialisation"| BA
+    BA --> OUT["Cameras + sparse 3D"]
+```
+
 ---
 
 ## Key References
@@ -84,6 +123,10 @@ Solved with Levenberg-Marquardt exploiting sparsity—the computational heart of
 | RANSAC | Fischler, Bolles | 1981 | CACM | Robust model fitting with outliers |
 | Five-point algorithm | Nistér | 2004 | TPAMI | Minimal essential-matrix estimation |
 | Camera calibration | Zhang | 2000 | TPAMI | Flexible planar calibration |
+| Global Structure-from-Motion Revisited (GLOMAP) | Pan, Baráth, Pollefeys, Schönberger | 2024 | ECCV | Global positioning makes global SfM as accurate as incremental, far faster |
+| VGGT: Visual Geometry Grounded Transformer | Wang, Chen, Karaev, Vedaldi, Rupprecht, Novotny | 2025 | CVPR (Best Paper) | Feed-forward cameras, depth, point maps and tracks |
+| SupeRANSAC: One RANSAC to Rule Them All | Barath | 2025 | arXiv 2506.04803 | Unified, carefully engineered robust-estimation pipeline across geometric problems |
+| MapAnything: Universal Feed-Forward Metric 3D Reconstruction | Keetha et al. | 2025 | arXiv 2509.13414 (3DV 2026) | Metric feed-forward reconstruction with optional geometric inputs |
 
 ---
 
@@ -95,6 +138,8 @@ Solved with Levenberg-Marquardt exploiting sparsity—the computational heart of
 | Texture/feature reliance | Needs distinctive features | Can use priors in textureless regions |
 | Generalization | Works on any rigid scene | Bounded by training distribution |
 | Robustness | RANSAC handles outliers | May hallucinate plausible-but-wrong structure |
+| Speed | Incremental SfM: minutes to hours on large sets (global SfM much faster) | Feed-forward: seconds for up to hundreds of views, then optional BA |
+| Metric scale | Needs extra sensors or known objects | Predicted from learned priors (MapAnything, MoGe-2), without guarantees |
 
 ---
 
@@ -102,9 +147,9 @@ Solved with Levenberg-Marquardt exploiting sparsity—the computational heart of
 
 - **Textureless / repetitive scenes.** Correspondence fails where features are absent or ambiguous; learned matchers help but don't fully solve it.
 - **Dynamic scenes.** Multi-view geometry assumes rigidity; non-rigid/dynamic reconstruction is much harder (links to [4D scenes](../12_research_frontier_2024_2026/05_4d_and_dynamic_scenes.md)).
-- **Scale ambiguity.** Monocular reconstruction recovers structure only up to scale without extra constraints.
-- **Robust-estimation efficiency.** RANSAC degrades with high outlier ratios; better samplers remain active research.
-- **Classical–learned integration.** Optimally combining geometric constraints with learned priors (DUSt3R-style) is an open direction (see [3D Reconstruction](../02_core_tasks/09_3d_reconstruction.md)).
+- **Scale ambiguity.** Monocular reconstruction recovers structure only up to scale without extra constraints. Metric feed-forward models (MapAnything, MoGe-2) predict scale from learned priors, but without the guarantees of sensor-based scale.
+- **Robust-estimation efficiency.** RANSAC degrades with high outlier ratios; better samplers, scoring and local optimisation (MAGSAC++, SupeRANSAC) remain active research.
+- **Classical–learned integration.** Optimally combining geometric constraints with learned priors (DUSt3R/VGGT/MapAnything-style) is an open direction (see [3D Reconstruction](../02_core_tasks/09_3d_reconstruction.md)). Open questions include when to trust feed-forward cameras, how to propagate their uncertainty into BA, and how to scale them beyond a few hundred views.
 - **Global consistency.** Drift and loop closure in large-scale reconstruction remain challenging.
 
 ---
@@ -116,3 +161,8 @@ Solved with Levenberg-Marquardt exploiting sparsity—the computational heart of
 - [RANSAC (CACM 1981)](https://dl.acm.org/doi/10.1145/358669.358692) — robust fitting
 - [COLMAP](https://colmap.github.io/) — practical SfM implementing this theory
 - [Five-Point Algorithm (Nistér 2004)](https://ieeexplore.ieee.org/document/1288525) — minimal relative pose
+- [GLOMAP (ECCV 2024)](https://github.com/colmap/glomap) — global SfM, now integrated into COLMAP 4.x
+- [COLMAP release notes](https://github.com/colmap/colmap/releases) — 4.0 global mapper, 4.1 GPU BA, 4.2 LoMa matching (2026)
+- [VGGT (CVPR 2025)](https://github.com/facebookresearch/vggt) — feed-forward multi-view geometry
+- [MapAnything (arXiv 2509.13414)](https://arxiv.org/abs/2509.13414) — universal metric feed-forward reconstruction
+- [SupeRANSAC (arXiv 2506.04803)](https://github.com/danini/superansac) — unified robust estimation
