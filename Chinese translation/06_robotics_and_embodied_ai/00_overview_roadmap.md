@@ -15,6 +15,7 @@
 > - 更新了产业格局：π0.5 开源、π\*0.6、GR00T N1.5 → N1.6 → N1.7、Gemini Robotics 1.5 / ER 1.5 / On-Device、Figure Helix + Figure 03、TRI 大型行为模型（Large Behavior Model，并应用于 Boston Dynamics Atlas）、Hugging Face SmolVLA/LeRobot、Generalist GEN-0/GEN-1、Cosmos 2.5 → Cosmos 3、V-JEPA 2/2.1、Genie 3。
 > - 更正了 GR00T N1 的参数量（论文描述的是 2.2B 模型，并未描述 34B 版本），并修复了失效的交叉链接。
 > - 新增 LIBERO 时代的基准结果行（目前已接近饱和，约 97–98%），以及新的关键论文、优缺点条目、开放问题和延伸阅读。
+> - 新增 2026 年的发布：**Figure Helix 02**（2026 年 1 月；Figure 03 上的 System 0/1/2 全身控制）、**π0.7**（2026 年 4 月；初步的组合泛化，据报道单个通用模型即可与 π\*0.6 强化学习专用模型相当）以及 **Gemini Robotics 2 / ER 2 / On-Device 2** 系列（2026 年 7 月；全身人形 VLA，ASIMOV-2 / ASIMOV-Agentic 安全评测），并补充了 Physical Intelligence 2025–2026 年的融资情况。
 
 ---
 
@@ -26,7 +27,7 @@
 
 该领域既是一项科学计划，也是一场产业竞赛。UC Berkeley BAIR、CMU、Stanford 和 ETH Zurich 等学术团体持续产出基础性的算法进展——从模仿学习、离线强化学习到世界模型（World Model）和基于扩散的策略。与此同时，Physical Intelligence (π)、Figure AI、1X Technologies、Boston Dynamics、Agility Robotics、NVIDIA、Google DeepMind、Toyota Research Institute 和 Generalist AI 等资金雄厚的公司正将这些进展转化为可部署的系统。由 RT-2 [Brohan2023] 开创、如今已成为标准做法的"大规模互联网预训练 + 机器人轨迹数据"的结合，意味着学术原型与产业部署之间的差距正以机器人史上前所未有的速度缩小。
 
-2025 年中至 2026 年 10 月，领域重心向三个方向转移。第一，**基于强化学习的后训练** 对数十亿参数的 VLA 变得切实可行，既可在仿真中进行（SimpleVLA-RL、πRL），也可在真实机器人上进行（Physical Intelligence 的 π\*0.6 与 Recap）[PI2025Recap]。第二，**推理与执行被拆分到专门化的模型中**：由具身推理 VLM 负责规划、调用工具并监控进度，由 VLA 负责执行（Gemini Robotics 1.5 + Gemini Robotics-ER 1.5）[GoogleDeepMind2025b]。第三，**视频世界模型被改造为策略**：联合预测未来视频与动作的"世界动作模型"（NVIDIA DreamZero、Cosmos Policy）在 2026 年初登顶真实世界通用策略排行榜 [Ye2026]。LIBERO 等仿真基准已接近饱和（若干开源模型约 97–98%），推动评测转向分布式真实机器人竞技场以及基于世界模型的策略评估。
+2025 年中至 2026 年 10 月，领域重心向三个方向转移。第一，**基于强化学习的后训练** 对数十亿参数的 VLA 变得切实可行，既可在仿真中进行（SimpleVLA-RL、πRL），也可在真实机器人上进行（Physical Intelligence 的 π\*0.6 与 Recap）[PI2025Recap]。第二，**推理与执行被拆分到专门化的模型中**：由具身推理 VLM 负责规划、调用工具并监控进度，由 VLA 负责执行（Gemini Robotics 1.5 + Gemini Robotics-ER 1.5 [GoogleDeepMind2025b]，2026 年 7 月由 Gemini Robotics 2 + Gemini Robotics ER 2 接替 [GoogleDeepMind2026]）。第三，**视频世界模型被改造为策略**：联合预测未来视频与动作的"世界动作模型"（NVIDIA DreamZero、Cosmos Policy）在 2026 年初登顶真实世界通用策略排行榜 [Ye2026]。LIBERO 等仿真基准已接近饱和（若干开源模型约 97–98%），推动评测转向分布式真实机器人竞技场以及基于世界模型的策略评估。2026 年又出现了两个新趋势：单一的学习型系统开始控制 **人形机器人的全身**——Figure 的 Helix 02（2026 年 1 月）引入了约 1 kHz 的新 System 0 [FigureAI2026]，Gemini Robotics 2（2026 年 7 月）亦然 [GoogleDeepMind2026]；Physical Intelligence 的 π0.7（2026 年 4 月）则报告了初步的 **组合泛化（compositional generalization）**，据报道单个通用模型即可与其经强化学习微调的 π\*0.6 专用模型相当 [PI2026]。
 
 ---
 
@@ -39,9 +40,9 @@ graph TD
     A["原始传感器输入\nRGB · 深度 · 触觉 · 本体感觉"] --> B["感知模块"]
     B --> C["场景表示\n3DGS · 占用 · 关键点 · 语义地图"]
     C --> D{"推理层"}
-    D --> E["VLA 路径\n视觉-语言-动作\nRT-2 · π0.5 / π*0.6 · GR00T N1.x · Gemini Robotics 1.5"]
+    D --> E["VLA 路径\n视觉-语言-动作\nRT-2 · π0.5 / π*0.6 / π0.7 · GR00T N1.x · Gemini Robotics 1.5 / 2"]
     D --> F["世界模型路径\n潜空间 / 视频动力学预测\nV-JEPA 2 · Dreamer 4 · Cosmos · Genie 3"]
-    D --> G["模块化路径\nLLM / ER-VLM 规划器 + 专用策略\nSayCan · Code-as-Policies · Gemini Robotics-ER 1.5"]
+    D --> G["模块化路径\nLLM / ER-VLM 规划器 + 专用策略\nSayCan · Code-as-Policies · Gemini Robotics-ER 1.5 / ER 2"]
     F --> W["世界动作模型\n联合预测视频 + 动作\nDreamZero · Cosmos Policy"]
     E --> H["动作输出\n关节角 · 末端位姿 · 力/力矩"]
     W --> H
@@ -76,7 +77,7 @@ graph TD
 
 **世界模型路径。** 世界模型并不直接从观测映射到动作，而是先学习环境的潜在动力学模型，再在潜空间中规划动作。DreamerV3 [Hafner2023] 证明单一世界模型可通过在"梦境"推演中进行基于模型的强化学习，掌握跨多个领域的 150 余项任务（2025 年发表于 *Nature*）；Dreamer 4（2025 年 9 月）则完全基于离线数据，在一个可扩展的视频世界模型内部训练出能获得钻石的 Minecraft 智能体 [Hafner2025]。NVIDIA 的 Cosmos [2025] 将这一思路扩展到物理 AI；其 2026 年的后继者 Cosmos 3 在单一的全模态 Mixture-of-Transformers 模型家族中统一了推理、世界预测、域迁移与动作生成 [NVIDIA2026Cosmos3]。V-JEPA 系列工作 [LeCun 团队] 追求在联合嵌入空间而非像素空间中进行预测；V-JEPA 2-AC 在约 62 小时机器人视频上后训练后，可在 Franka 机械臂上零样本规划抓取-放置 [Assran2025]。2026 年其与 VLA 的差距大幅缩小：基于视频扩散主干的 **世界动作模型**（DreamZero，基于 Wan2.1-14B；Cosmos Policy，基于 Cosmos-Predict2）联合预测未来帧与动作，据报道在 2026 年 2 月位列 RoboArena 和 MolmoSpaces 排行榜第一 [Ye2026]。Genie 3（2025 年 8 月）等交互式生成世界模型主要被用作智能体的训练和评测环境，而非控制器。
 
-**模块化（LLM 规划器 + 专用策略）路径。** LLM 被用作高层规划器，将自然语言任务分解为子目标，再由训练好的专用策略或运动基元执行。SayCan [Ahn2022] 提出了用价值函数可供性（affordance）来落地 LLM 输出的关键思想：LLM 对候选技能描述的合理性打分，学习得到的可供性函数对其可行性打分，二者之积决定下一步动作。Code as Policies [Liang2023] 更进一步，生成可执行的 Python 程序，将感知 API 和运动基元作为库函数调用，无需任务特定训练数据即可实现空间推理和循环逻辑。这一路径在 2025–2026 年的新形态是以 **具身推理 VLM** 作为编排器：Gemini Robotics-ER 1.5（开发者可通过 Gemini API 使用）负责空间定位、进度估计和工具调用（如网页搜索），并将自然语言子步骤分派给 Gemini Robotics 1.5 VLA [GoogleDeepMind2025b]；在 NVIDIA 技术栈中，Cosmos Reason 1/2 扮演相同角色。
+**模块化（LLM 规划器 + 专用策略）路径。** LLM 被用作高层规划器，将自然语言任务分解为子目标，再由训练好的专用策略或运动基元执行。SayCan [Ahn2022] 提出了用价值函数可供性（affordance）来落地 LLM 输出的关键思想：LLM 对候选技能描述的合理性打分，学习得到的可供性函数对其可行性打分，二者之积决定下一步动作。Code as Policies [Liang2023] 更进一步，生成可执行的 Python 程序，将感知 API 和运动基元作为库函数调用，无需任务特定训练数据即可实现空间推理和循环逻辑。这一路径在 2025–2026 年的新形态是以 **具身推理 VLM** 作为编排器：Gemini Robotics-ER 1.5（开发者可通过 Gemini API 使用）负责空间定位、进度估计和工具调用（如网页搜索），并将自然语言子步骤分派给 Gemini Robotics 1.5 VLA [GoogleDeepMind2025b]；在 NVIDIA 技术栈中，Cosmos Reason 1/2 扮演相同角色。2026 年 7 月，**Gemini Robotics ER 2**（可在 Google AI Studio 中使用）接过了这一编排器角色，服务于全身控制的 Gemini Robotics 2 VLA；它在 ASIMOV-2 安全基准以及新的 ASIMOV-Agentic 基准上接受评测，后者考察诸如在不确定时向人类求助等智能体行为 [GoogleDeepMind2026]。
 
 ### 动作表示
 
@@ -130,15 +131,21 @@ GR00T N1.7（2026）除机器人数据外，还在 **2 万小时 EgoScale 第一
 
 在前沿实验室之外，开放权重已成为常态：openpi（π0、π0-FAST、π0.5；自 2025 年 9 月起支持 PyTorch）、Isaac GR00T N1.5/N1.6/N1.7（N1.7 采用 Apache 2.0 许可）、SmolVLA（450M）与 LeRobot 策略库（到 2026 年还收录了 X-VLA、WALL-OSS、EO-1、MolmoAct2 等）、OpenVLA-OFT，以及中国的开源 VLA（InternVLA-M1、X-VLA、WALL-OSS、Galaxea G0）。
 
+### 6. 全身控制与组合式通用模型（2026）
+
+2025 年之前，学习型人形策略主要控制上半身，运动与平衡则交由独立的经典控制器或强化学习控制器负责。**Figure Helix 02**（2026 年 1 月下旬）是运行于 Figure 03 上的单一学习型系统，以三层结构统一了感知、平衡、运动与操作：System 2 负责语义推理，System 1 以高频将感知映射为全身运动，新增的 **System 0** 以约 1 kHz 运行，负责平衡与协调；其旗舰演示是约 4 分钟的自主洗碗机卸载与装载 [FigureAI2026]。**Gemini Robotics 2**（2026 年 7 月 30 日）同样将 Google DeepMind 的 VLA 从以上半身为主的控制扩展到全身人形控制——在推理的同时行走、下蹲和操作。与之一同发布的还有 ER 2 规划器，以及可在本地运行、仅需数小时数据即可适配新具身的 **Gemini Robotics On-Device 2**；其中 VLA 与 On-Device 模型仅向早期访问合作伙伴开放 [GoogleDeepMind2026]。
+
+在泛化维度上，**π0.7**（2026 年 4 月）展现出初步的 **组合泛化**：它能重新组合在不同情境中学到的技能，例如在没有该机器人任何叠衣数据的情况下用 UR5e 机械臂叠 T 恤，或在极少的口头指导后操作空气炸锅。据报道，其架构为 Gemma 3 4B VLM 主干加约 8.6 亿参数的动作专家，并在提示中加入更丰富的上下文（子任务指令、子目标图像）进行训练。据报道，单个 π0.7 通用模型在叠衣、意式咖啡和纸箱组装任务上可与针对特定任务、经强化学习微调的 π\*0.6 专用模型相当，这是通用与专用之争的直接证据（参见[通用模型与专用模型](./11_generalist_vs_specialist.md)）。不过，长任务仍需逐步指导，且尚无标准化的外部基准 [PI2026]。
+
 ---
 
 ## 产业与学术格局（2025–2026）
 
 ### 产业实验室与公司
 
-**Physical Intelligence (π)** —— 2024 年由 Sergey Levine、Chelsea Finn、Karol Hausman、Brian Ichter、Pete Florence 等人创立。发布了 π₀（2024 年 10 月）[Black2024] 和 π₀.5（2025 年 4 月）[Hejna2025]，后者在训练中从未见过的全新家庭环境中实现了有意义的泛化。其关键技术创新是在 PaliGemma 主干之上进行流匹配动作生成。截至 2024 年底融资约 4.7 亿美元。后续工作包括：**知识隔离（Knowledge Insulation）**（2025 年 5 月），在离散 FAST token 上训练 VLM 主干，同时使其不受动作专家梯度的影响；**实时分块**（2025 年 6 月，NeurIPS 2025）及其训练时变体（2025 年 12 月）；在 openpi 中开源 **π0.5** 权重（2025 年 9 月）；采用 Recap 从经验中进行强化学习的 **π\*0.6**（2025 年 11 月）；以及 2026 年面向长时程 VLA 控制的多尺度具身记忆 **MEM**。据报道，该公司于 2025 年 11 月完成了约 6 亿美元的新一轮融资。
+**Physical Intelligence (π)** —— 2024 年由 Sergey Levine、Chelsea Finn、Karol Hausman、Brian Ichter、Pete Florence 等人创立。发布了 π₀（2024 年 10 月）[Black2024] 和 π₀.5（2025 年 4 月）[Hejna2025]，后者在训练中从未见过的全新家庭环境中实现了有意义的泛化。其关键技术创新是在 PaliGemma 主干之上进行流匹配动作生成。截至 2024 年底融资约 4.7 亿美元。后续工作包括：**知识隔离（Knowledge Insulation）**（2025 年 5 月），在离散 FAST token 上训练 VLM 主干，同时使其不受动作专家梯度的影响；**实时分块**（2025 年 6 月，NeurIPS 2025）及其训练时变体（2025 年 12 月）；在 openpi 中开源 **π0.5** 权重（2025 年 9 月）；采用 Recap 从经验中进行强化学习的 **π\*0.6**（2025 年 11 月）；以及 2026 年面向长时程 VLA 控制的多尺度具身记忆 **MEM**。2026 年 4 月，该公司发布了 **π0.7**，一个可引导的通用模型（Gemma 3 4B 主干 + 约 8.6 亿参数动作专家），展现出初步的组合泛化 [PI2026]。融资方面，该公司于 2025 年 11 月完成 6 亿美元 B 轮融资，估值 56 亿美元；2026 年 3 月，Bloomberg 报道其正洽谈以超过 110 亿美元的估值融资约 10 亿美元（尚未确认完成）。
 
-**Figure AI** —— 发布了 Helix VLA（2025 年 2 月），这是首个面向全身人形灵巧操作、完全运行于机载嵌入式 GPU 的 VLA。Helix 将一个 70 亿参数的 VLM"System 2"（7–9 Hz）与一个以 200 Hz 运行、覆盖 35 自由度上半身动作空间的 8000 万参数视觉运动"System 1"Transformer 相结合。Helix 是首个同时在两台共享长时程任务的机器人上运行的 VLA。Figure 02 机器人部署于 BMW Spartanburg 工厂，累计运行 1,250+ 小时，为 30,000 辆汽车装载了 90,000+ 个零件 [FigureAI2025]。2025 年结束了与 OpenAI 的合作，以运营完全自研的 AI 技术栈，并于 2025 年 10 月推出面向家庭和商业用途的重新设计的 **Figure 03** 人形机器人。
+**Figure AI** —— 发布了 Helix VLA（2025 年 2 月），这是首个面向完整上半身人形灵巧操作、完全运行于机载嵌入式 GPU 的 VLA。Helix 将一个 70 亿参数的 VLM"System 2"（7–9 Hz）与一个以 200 Hz 运行、覆盖 35 自由度上半身动作空间的 8000 万参数视觉运动"System 1"Transformer 相结合。Helix 是首个同时在两台共享长时程任务的机器人上运行的 VLA。Figure 02 机器人部署于 BMW Spartanburg 工厂，累计运行 1,250+ 小时，为 30,000 辆汽车装载了 90,000+ 个零件 [FigureAI2025]。2025 年结束了与 OpenAI 的合作，以运营完全自研的 AI 技术栈，并于 2025 年 10 月推出面向家庭和商业用途的重新设计的 **Figure 03** 人形机器人。2026 年 1 月下旬，Figure 在 Figure 03 上推出 **Helix 02**：一个统一感知、平衡、运动与操作的单一学习型系统，由 System 2（语义推理）、System 1（以高频将感知转化为全身运动）和新增的约 1 kHz System 0（平衡与协调）组成。Figure 演示了约 4 分钟的自主洗碗机卸载与装载，并声称可连续完成 8 小时班次而无需人工干预，但尚未公布吞吐量或错误率指标 [FigureAI2026]。
 
 **1X Technologies** —— 专注于家庭场景人形机器人（NEO）和商用平台（EVE）。OpenAI 是其投资方和早期合作伙伴。研究重点是全身控制以及基于自然语言的长时程任务完成。2025 年 10 月开放 NEO 的消费者预订，并使用学习得到的 **1X World Model** 进行策略评估。
 
@@ -146,7 +153,7 @@ GR00T N1.7（2026）除机器人数据外，还在 **2 万小时 EgoScale 第一
 
 **NVIDIA** —— 发布了 GR00T N1（2025 年 3 月）[NVIDIA2025]，一个面向人形机器人的开放双系统基础模型；论文描述的是已发布的 GR00T-N1-2B 模型（22 亿参数，其中 13.4 亿位于 Eagle-2 VLM）。随后推出 **GR00T N1.5**（2025 年中：冻结的 Eagle 2.5 VLM、FLARE 目标、DreamGen 合成轨迹；GR-1 任务上的语言跟随成功率 93.3%，N1 为 46.6%）、**GR00T N1.6**（Cosmos-Reason-2B VLM、规模翻倍的 32 层 DiT、状态相对动作块、额外数千小时遥操作（teleoperation）数据）以及 **GR00T N1.7**（2026；Cosmos-Reason2-2B / Qwen3-VL 主干、相对末端执行器动作空间、2 万小时 EgoScale 人类视频、Apache 2.0）[NVIDIA2026]。Cosmos 世界模型平台从 Cosmos-Predict2.5 / Transfer2.5（2025 年 10 月）和 Cosmos-Reason2（2025 年 12 月）演进到 **Cosmos 3**（2026 年 5–6 月：Super 64B、Nano 16B、Edge 4B）。NVIDIA 还推出了 Jetson AGX Thor 机载计算机（2025 年 8 月）、Isaac Lab 训练框架以及 **DreamZero** 世界动作模型（2026 年 2 月）。
 
-**Google DeepMind** —— RT 系列（RT-1、RT-2、RT-X）确立了 VLA 范式 [Brohan2022, Brohan2023]。2025 年 3 月，DeepMind 发布了 Gemini Robotics [GoogleDeepMind2025]——一个基于 Gemini 2.0、具备先进灵巧操作能力的 VLA，以及用于具身空间推理的 Gemini Robotics-ER。Gemini Robotics On-Device 于 2025 年 6 月发布，仅需 50–100 次示范即可适应新任务。**Gemini Robotics 1.5** 与 **Gemini Robotics-ER 1.5** 于 2025 年 9 月推出（会思考的 VLA、跨具身运动迁移、ER 模型可通过 Gemini API 使用）[GoogleDeepMind2025b]。在世界模型方面，DeepMind 发布了 **Genie 3**（2025 年 8 月；实时 720p/24 fps 交互式世界，具有分钟级一致性）、SIMA 2 智能体（2025 年 11 月），以及用于评估 Gemini Robotics 策略的基于 Veo 的世界模拟器（2025 年 12 月）。
+**Google DeepMind** —— RT 系列（RT-1、RT-2、RT-X）确立了 VLA 范式 [Brohan2022, Brohan2023]。2025 年 3 月，DeepMind 发布了 Gemini Robotics [GoogleDeepMind2025]——一个基于 Gemini 2.0、具备先进灵巧操作能力的 VLA，以及用于具身空间推理的 Gemini Robotics-ER。Gemini Robotics On-Device 于 2025 年 6 月发布，仅需 50–100 次示范即可适应新任务。**Gemini Robotics 1.5** 与 **Gemini Robotics-ER 1.5** 于 2025 年 9 月推出（会思考的 VLA、跨具身运动迁移、ER 模型可通过 Gemini API 使用）[GoogleDeepMind2025b]。在世界模型方面，DeepMind 发布了 **Genie 3**（2025 年 8 月；实时 720p/24 fps 交互式世界，具有分钟级一致性）、SIMA 2 智能体（2025 年 11 月），以及用于评估 Gemini Robotics 策略的基于 Veo 的世界模拟器（2025 年 12 月）。2026 年 7 月 30 日，DeepMind 发布了 **Gemini Robotics 2** 系列：Gemini Robotics 2 是具备全身人形控制能力的 VLA（可在推理的同时行走、下蹲和操作，而上一版本主要控制上半身）；**Gemini Robotics ER 2** 是可在 Google AI Studio 中使用的具身推理/规划模型，Google 称其在 ASIMOV-2 上是自家最安全的机器人模型，并随之推出了新的 ASIMOV-Agentic 基准；**Gemini Robotics On-Device 2** 可在本地运行，仅需数小时的数据即可适配新的具身形态。VLA 与 On-Device 模型仅向早期访问合作伙伴开放 [GoogleDeepMind2026]。
 
 **Toyota Research Institute (TRI)** —— 发表了《A Careful Examination of Large Behavior Models for Multitask Dexterous Manipulation》（2025 年 7 月）[TRI2025]，这是一项严谨且具有统计功效的研究，对象是在约 1,700 小时机器人数据上预训练的扩散 Transformer 大型行为模型（LBM），报告称预训练 LBM 达到给定性能所需的任务特定数据显著少于单任务策略。
 
@@ -178,11 +185,11 @@ GR00T N1.7（2026）除机器人数据外，还在 **2 万小时 EgoScale 第一
 
 ### 长时程任务完成
 
-大多数 VLA 基准涉及 10–30 秒、包含 1–3 个子步骤的回合。真实世界的家务或工厂装配涉及在数分钟乃至数小时内完成的数十个步骤，需要持久记忆、失败时重新规划以及多步推理。π₀.5 [Hejna2025] 在这方面取得了进展，π\*0.6 在一个工作日的大部分时间内连续运行意式咖啡任务，显式记忆机制（PI 的 MEM、MemER）也于 2026 年出现，但长时程可靠性仍明显低于人类水平。
+大多数 VLA 基准涉及 10–30 秒、包含 1–3 个子步骤的回合。真实世界的家务或工厂装配涉及在数分钟乃至数小时内完成的数十个步骤，需要持久记忆、失败时重新规划以及多步推理。π₀.5 [Hejna2025] 在这方面取得了进展，π\*0.6 在一个工作日的大部分时间内连续运行意式咖啡任务，显式记忆机制（PI 的 MEM、MemER）于 2026 年出现，Figure 的 Helix 02 也完成了约 4 分钟的自主全身洗碗机卸载与装载。即便如此，长时程可靠性仍明显低于人类水平：π0.7 在长任务上仍需逐步指导，而 Figure 关于 8 小时无干预班次的说法并未附带吞吐量或错误率指标。
 
 ### 安全的物理交互
 
-在人类环境中运行的机器人必须避免伤人、损坏物体和违反物理约束。当前的学习型策略没有形式化的安全保证，失败模式可能是灾难性的。控制理论中的安全证书（控制屏障函数）、不确定性感知规划和异常检测是活跃的研究方向；此外，Gemini Robotics 系列还在规划器层面使用与最初 Gemini Robotics 一同发布的 ASIMOV 基准进行语义安全评估。
+在人类环境中运行的机器人必须避免伤人、损坏物体和违反物理约束。当前的学习型策略没有形式化的安全保证，失败模式可能是灾难性的。控制理论中的安全证书（控制屏障函数）、不确定性感知规划和异常检测是活跃的研究方向；此外，Gemini Robotics 系列还在规划器层面使用与最初 Gemini Robotics 一同发布的 ASIMOV 基准进行语义安全评估。据报道，Gemini Robotics ER 2（2026）在更新后的 ASIMOV-2 基准上是 Google 最安全的机器人模型，并且还在新的 ASIMOV-Agentic 基准上接受评测，后者考察诸如在不确定时向人类求助等行为 [GoogleDeepMind2026]。
 
 ### 实时 VLA 推理
 
@@ -223,6 +230,9 @@ GR00T N1.7（2026）除机器人数据外，还在 **2 万小时 EgoScale 第一
 | πRL: Online RL Fine-tuning for Flow-based Vision-Language-Action Models | RLinf team | 2025 | arXiv 2510.25889 | Flow-Noise / Flow-SDE 使流式 VLA 可用 PPO/GRPO 训练 |
 | π\*0.6: a VLA That Learns From Experience | Physical Intelligence | 2025 | arXiv 2511.14759 | Recap：基于自主运行 + 人类纠正的优势条件化强化学习 |
 | DreamZero: World Action Models Are Zero-Shot Policies | Ye et al. (NVIDIA) | 2026 | arXiv 2602.15922 | 14B 视频扩散世界动作模型；RoboArena / MolmoSpaces 第一（2026 年 2 月） |
+| Helix 02 (technical blog) | Figure AI | 2026 | 公司博客 | Figure 03 上的 System 0/1/2 全身控制；约 4 分钟的自主洗碗机任务 |
+| π0.7: a Steerable Generalist Robotic Foundation Model | Physical Intelligence | 2026 | arXiv 2604.15483 | Gemma 3 4B + 约 8.6 亿参数动作专家；子任务/子目标图像提示；初步组合泛化 |
+| Gemini Robotics 2 / ER 2 / On-Device 2 | Google DeepMind | 2026 | DeepMind 博客 + 模型卡 | 全身人形 VLA；ER 2 规划器（ASIMOV-2、ASIMOV-Agentic）；端侧具身适配 |
 
 ---
 
@@ -247,6 +257,7 @@ GR00T N1.7（2026）除机器人数据外，还在 **2 万小时 EgoScale 第一
 | X-VLA-0.9B | LIBERO | 成功率 | 98.1% | 软提示跨具身 VLA |
 | π0.5 + πRL | ManiSkill3 多任务 | 成功率 | 40.1% → 90.9% | 少样本 SFT → 强化学习（Flow-SDE） |
 | π\*0.6 (Recap) | 意式咖啡 / 叠衣 / 纸箱组装（真实） | 吞吐量 | 相比仅 SFT 提升 >2 倍 | 公司报告；失败率大约减半 |
+| π0.7（单个通用模型） | 意式咖啡 / 叠衣 / 纸箱组装（真实） | 任务性能 | ≈ π\*0.6 强化学习专用模型 | 公司报告；无标准化外部基准 |
 
 ---
 
@@ -261,6 +272,7 @@ GR00T N1.7（2026）除机器人数据外，还在 **2 万小时 EgoScale 第一
 | 跨具身数据集（Open X-Embodiment） | 机器人间正迁移；降低每台机器人的数据需求；使通用策略成为可能 | 动作空间异构使联合训练复杂；各实验室数据集质量参差不齐 |
 | VLA 的强化学习后训练（Recap、πRL、SimpleVLA-RL） | 超越示范者水平；提升吞吐量与恢复能力；利用自主经验 | 需要奖励/价值模型或成功检测器；真实世界强化学习缓慢且需要重置/人工监督；存在奖励投机风险 |
 | 世界动作模型（DreamZero、Cosmos Policy） | 继承视频预训练的物理先验；零样本泛化强；内置未来预测可用于规划 | 规模巨大（5–14B+ 视频主干）；延迟高；生成的未来可能违背物理 |
+| 全身人形 VLA（Helix 02、Gemini Robotics 2） | 用单一学习型系统完成平衡、运动与操作；长时间自主动作序列（约 4 分钟的洗碗机演示） | 公司报告的演示缺乏吞吐量/错误率指标；闭源或仅限早期访问；动作速度仍有限 |
 
 ---
 
@@ -276,6 +288,7 @@ GR00T N1.7（2026）除机器人数据外，还在 **2 万小时 EgoScale 第一
 - **真实世界强化学习的奖励与价值：** Recap 式强化学习依赖价值函数和成功标签；跨任务（而非逐任务）学习通用且校准良好的进度/价值估计器尚未解决，而物理世界中的奖励投机代价高昂。
 - **可信的代理评测：** 随着 LIBERO 类仿真趋于饱和，世界模型模拟器和众包竞技场在多大程度上能预测真实部署性能仍属未知。
 - **高效的世界动作模型：** 让基于视频主干的策略在边缘硬件上以控制频率运行（蒸馏、跳过测试时想象——如 Fast-WAM 所研究的那样）是一个系统与学习交叉的开放问题。
+- **无需逐步指导的组合泛化：** π0.7 展现出初步的技能重组能力，但长任务仍需逐步指导，且目前尚无标准化的外部基准能跨实验室衡量组合泛化。
 
 ---
 
@@ -296,3 +309,6 @@ GR00T N1.7（2026）除机器人数据外，还在 **2 万小时 EgoScale 第一
 - [RLinf](https://github.com/RLinf/RLinf) —— 用于 VLA 后训练的开源强化学习基础设施（πRL、RLinf-VLA）
 - [TRI 大型行为模型（arXiv 2507.05331）](https://arxiv.org/abs/2507.05331) —— 对多任务扩散策略的细致实证研究
 - [DreamZero](https://github.com/dreamzero0/dreamzero) —— 世界动作模型代码与检查点
+- [π0.7（arXiv 2604.15483）](https://arxiv.org/abs/2604.15483) 与[博客](https://www.pi.website/blog/pi07) —— 具备初步组合泛化能力的可引导通用模型
+- [Gemini Robotics 2（DeepMind 博客）](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/) —— 全身 VLA、ER 2 与 On-Device 2
+- [Figure Helix 02](https://figure.ai/news/helix-02) —— System 0/1/2 全身人形控制

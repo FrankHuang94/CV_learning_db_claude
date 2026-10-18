@@ -11,11 +11,12 @@
 > - [面向机器人的世界模型](../06_robotics_and_embodied_ai/02_world_models.md)
 
 > **🆕 2026年10月更新：**
-> - 新增 **“变化综述：2025 年中 → 2026 年 10 月”** 一节，涵盖 DINOv3、SAM 3 / SAM 3.1 / SAM 3D、Depth Anything 3、前馈式 3D/4D 重建（VGGT → D4RT）、前沿多模态大模型（GPT-5、Gemini 3、Qwen3-VL、Qwen3.5）、VLA（π₀.₅、π\*₀.₆、Gemini Robotics 1.5、GR00T N1.6/N1.7）以及世界模型（Genie 3、Waymo World Model、Marble、Cosmos 3、V-JEPA 2.1）。
+> - 新增 **“变化综述：2025 年中 → 2026 年 10 月”** 一节，涵盖 DINOv3、SAM 3 / SAM 3.1 / SAM 3D、Depth Anything 3、前馈式 3D/4D 重建（VGGT → D4RT）、前沿多模态大模型（GPT-5、Gemini 3、Qwen3-VL、Qwen3.5）、VLA（π₀.₅、π\*₀.₆、π₀.₇、Gemini Robotics 1.5 → Gemini Robotics 2 / ER 2、Figure Helix 02、GR00T N1.6/N1.7）以及世界模型（Genie 3、Waymo World Model、Marble、Cosmos 3、V-JEPA 2.1）。
 > - 新增 **会议亮点** 一节：CVPR 2026（丹佛；最佳论文 D4RT，最佳学生论文 TRELLIS.2，荣誉提名 NitroGen 与 SAM 3D）以及 ECCV 2026（马尔默；据报道最佳论文为 “Heat Kernel Textures”）。
 > - 开源模型表新增 17 个 2025–2026 年发布的模型；关键论文表与基准表同步扩充。
 > - 投资/产业背景更新至 2026 年（Skild AI、Apptronik、World Labs、AMI Labs、Physical Intelligence、Figure）。
 > - 更正了一条过时说法：2024 年代的多模态大模型并未在 MMMU 上超过 80%（前沿模型直到 2025 年才突破 80%）。
+> - 新增此前版本遗漏、现已由多个来源证实的三项 2026 年机器人发布：**Figure Helix 02**（2026 年 1 月；System 0/1/2 全身控制）、**π₀.₇**（2026 年 4 月；初步的组合泛化，据报道单个通用模型即可与 π\*₀.₆ 专用模型相当）以及 **Gemini Robotics 2 / ER 2 / On-Device 2**（2026 年 7 月；全身人形 VLA）。另补充了 Physical Intelligence 据报道于 2026 年 3 月进行的融资洽谈。
 
 ---
 
@@ -25,9 +26,9 @@
 
 三个主战场共同的催化剂是一项基础设施层面的进步：出现了超大规模、公开可用的基础模型（Foundation Model），它们能以原始训练成本的一小部分被微调或组合用于下游任务。DINOv2 [Oquab2023] 证明，在精选的大规模图像数据上训练的纯自监督 ViT 编码器，在几乎所有视觉基准上都能达到或超过有监督表征。SAM [Kirillov2023] 证明，一个在 10 亿个掩码上训练的可提示分割模型，可以零样本泛化到其创建者从未设想过的领域。SAM2 [Ravi2024] 将其扩展到视频，实现了穿越遮挡的实时提示式跟踪。Depth Anything V2 [Yang2024] 表明，长期被认为在缺乏度量尺度监督时难以解决的单目深度估计，可以通过将标注数据与海量伪标注无标签图像相结合，达到接近激光雷达的质量。这些模型共同定义了 *any-model 范式*：一类通过轻量级提示而非任务专用再训练、在任意输入上工作的新型基础模型。
 
-从 2025 年中到 2026 年末，这些趋势进一步巩固为第二代。DINOv3 [Simeoni2025] 将自监督学习扩展到在 17 亿张图像上训练的 70 亿参数 ViT；SAM 3 [Carion2025] 将“分割一切”变为根据名词短语或示例“分割某个*概念*的每一个实例”；前馈式几何 Transformer——VGGT [Wang2025]（CVPR 2025 最佳论文）、Depth Anything 3 [Lin2025]、MapAnything 以及 D4RT [Zhang2025]（CVPR 2026 最佳论文）——用一次网络前向传播取代了经典 SfM/MVS/跟踪流水线的大部分环节。前沿多模态大模型（GPT-5、Gemini 3）在 MMMU 类基准上突破 80%，而开放权重家族（Qwen3-VL、InternVL3.5、Qwen3.5）转向 MoE 主干，其中 Qwen3.5 还采用了早期融合（early-fusion）多模态预训练。交互式世界模型从研究演示（Genie 2）发展为实时产品（Genie 3、World Labs Marble）和工业级仿真器（Waymo World Model、NVIDIA Cosmos 3）。
+从 2025 年中到 2026 年末，这些趋势进一步巩固为第二代。DINOv3 [Simeoni2025] 将自监督学习扩展到在 17 亿张图像上训练的 70 亿参数 ViT；SAM 3 [Carion2025] 将“分割一切”变为根据名词短语或示例“分割某个*概念*的每一个实例”；前馈式几何 Transformer——VGGT [Wang2025]（CVPR 2025 最佳论文）、Depth Anything 3 [Lin2025]、MapAnything 以及 D4RT [Zhang2025]（CVPR 2026 最佳论文）——用一次网络前向传播取代了经典 SfM/MVS/跟踪流水线的大部分环节。前沿多模态大模型（GPT-5、Gemini 3）在 MMMU 类基准上突破 80%，而开放权重家族（Qwen3-VL、InternVL3.5、Qwen3.5）转向 MoE 主干，其中 Qwen3.5 还采用了早期融合（early-fusion）多模态预训练。交互式世界模型从研究演示（Genie 2）发展为实时产品（Genie 3、World Labs Marble）和工业级仿真器（Waymo World Model、NVIDIA Cosmos 3）。机器人基础模型从机械臂和上半身扩展到了人形机器人的全身（Figure Helix 02、Gemini Robotics 2），并首次出现了由公司报告的技能组合复用迹象（π₀.₇）。
 
-经济背景不容忽视。2024–2025 年全球机器人与具身智能初创企业获得了超过 100 亿美元投资，仅 2025 年面向机器人的融资就超过了 2024 年全年总额；据 TechCrunch 统计，2025 年机器人初创企业融资接近 140 亿美元，高于 2024 年的 82 亿美元。Physical Intelligence（pi.ai）凭借其 π₀ [BlackEtAl2024] 通用机器人策略完成 6 亿美元 B 轮融资（2025 年 11 月），公司估值达 56 亿美元。Figure AI 以 390 亿美元投后估值完成超过 10 亿美元的 C 轮融资（2025 年 9 月）。NVIDIA 通过 Isaac GR00T N1 [NVIDIA2025]——首个公开发布的人形机器人基础模型——以及用于物理感知合成数据生成的 Cosmos 世界基础模型家族，下了全面的平台赌注。2026 年节奏进一步加快：Skild AI 宣布以超过 140 亿美元的估值融资 14 亿美元（2026 年 1 月，TechCrunch 报道）；Apptronik 以约 50 亿美元估值融资 5.2 亿美元（2026 年 2 月，CNBC 报道）；李飞飞的 World Labs 完成 10 亿美元融资，Autodesk、NVIDIA 与 AMD 参投（2026 年 2 月，据报道）；Yann LeCun 于 2025 年 11 月离开 Meta 后创立、专注于 JEPA 式世界模型的巴黎公司 **AMI Labs**，以 35 亿美元投前估值融资 10.3 亿美元（2026 年 3 月，TechCrunch 报道），被称为欧洲史上最大的种子轮。这些投资反映出一种共识：长期被认为还需数十年的通用机器人智能，如今已成为近期的工程问题而非基础科学问题，前提是把视觉表征和世界模型做对。这也反映出一种对“仅靠 LLM”路线的显著反向押注：2026 年最大的两轮融资中有两轮（World Labs、AMI Labs）投给了“世界模型”公司。
+经济背景不容忽视。2024–2025 年全球机器人与具身智能初创企业获得了超过 100 亿美元投资，仅 2025 年面向机器人的融资就超过了 2024 年全年总额；据 TechCrunch 统计，2025 年机器人初创企业融资接近 140 亿美元，高于 2024 年的 82 亿美元。Physical Intelligence（pi.ai）凭借其 π₀ [BlackEtAl2024] 通用机器人策略完成 6 亿美元 B 轮融资（2025 年 11 月），公司估值达 56 亿美元；2026 年 3 月，Bloomberg 报道其正洽谈以超过 110 亿美元的估值融资约 10 亿美元（尚未确认完成）。Figure AI 以 390 亿美元投后估值完成超过 10 亿美元的 C 轮融资（2025 年 9 月）。NVIDIA 通过 Isaac GR00T N1 [NVIDIA2025]——首个公开发布的人形机器人基础模型——以及用于物理感知合成数据生成的 Cosmos 世界基础模型家族，下了全面的平台赌注。2026 年节奏进一步加快：Skild AI 宣布以超过 140 亿美元的估值融资 14 亿美元（2026 年 1 月，TechCrunch 报道）；Apptronik 以约 50 亿美元估值融资 5.2 亿美元（2026 年 2 月，CNBC 报道）；李飞飞的 World Labs 完成 10 亿美元融资，Autodesk、NVIDIA 与 AMD 参投（2026 年 2 月，据报道）；Yann LeCun 于 2025 年 11 月离开 Meta 后创立、专注于 JEPA 式世界模型的巴黎公司 **AMI Labs**，以 35 亿美元投前估值融资 10.3 亿美元（2026 年 3 月，TechCrunch 报道），被称为欧洲史上最大的种子轮。这些投资反映出一种共识：长期被认为还需数十年的通用机器人智能，如今已成为近期的工程问题而非基础科学问题，前提是把视觉表征和世界模型做对。这也反映出一种对“仅靠 LLM”路线的显著反向押注：2026 年最大的两轮融资中有两轮（World Labs、AMI Labs）投给了“世界模型”公司。
 
 ---
 
@@ -47,6 +48,12 @@ Physical Intelligence 的 π₀ [BlackEtAl2024] 更进一步：这是一个流�
 
 2025–2026 代 VLA 强调开放世界泛化和从经验中学习。**π₀.₅** [PI2025]（2025 年 9 月在 `openpi` 中开源）利用异构数据联合训练和“知识隔离”（knowledge insulation）泛化到未见过的家庭环境；**π\*₀.₆**（2025 年 11 月）加入了基于自主经验与纠正的强化学习（RECAP 方法）。Google DeepMind 的 **Gemini Robotics 1.5 / Gemini Robotics-ER 1.5**（2025 年 9 月）将具身推理与运动控制分离，并引入“先思考再行动”。NVIDIA 将 GR00T 迭代到 **N1.6**（Eagle VLM 主干、32 层扩散动作头）和 **N1.7**（30 亿参数，采用 Qwen3-VL 架构的 Cosmos-Reason2-2B 主干，132 维状态/动作空间，预训练加入 2 万小时第一人称人类视频）。参见 [VLA 与具身智能 2025–2026](./04_vla_embodied_2025_2026.md)。
 
+2026 年的三项发布再次推动了前沿，使其从桌面操作走向全身控制与组合式控制：
+
+- **Figure Helix 02**（2026 年 1 月下旬）是运行于 Figure 03 上的单一学习型系统，以三层结构统一了感知、平衡、运动与操作。System 2 负责语义推理，System 1 以高频将感知转化为全身运动，新增的 System 0 以约 1 kHz 运行，负责平衡与协调。Figure 演示了约 4 分钟的自主洗碗机卸载与装载，并声称可完成 8 小时无干预班次，但尚未公布吞吐量或错误率指标。
+- **π₀.₇**（Physical Intelligence，2026 年 4 月）据报道将 Gemma 3 4B 主干与约 8.6 亿参数的动作专家相结合，并以子任务指令和子目标图像等更丰富的上下文进行训练。它展现出初步的组合泛化，例如在没有该机器人叠衣数据的情况下用 UR5e 叠 T 恤，以及在极少指导后使用空气炸锅。据报道，单个通用模型在叠衣、意式咖啡和纸箱组装任务上可与经强化学习微调的 π\*₀.₆ 专用模型相当，不过长任务仍需逐步指导，且尚无标准化的外部基准。
+- **Gemini Robotics 2**（Google DeepMind，2026 年 7 月 30 日）是具备全身人形控制能力的 VLA（在推理的同时行走、下蹲和操作），而上一版本主要控制上半身。**Gemini Robotics ER 2** 是可在 Google AI Studio 中使用的具身推理/规划模型，在 ASIMOV-2 上是 Google 最安全的机器人模型，并随附新的 ASIMOV-Agentic 基准（例如在不确定时向人类求助）。**Gemini Robotics On-Device 2** 在本地运行，仅需数小时数据即可适配新具身。VLA 与 On-Device 模型仅向早期访问合作伙伴开放。
+
 ### 3. 面向仿真与规划的世界模型
 
 世界模型——可用于规划和数据增强的环境动力学生成模型——在 2024–2025 年跨越了视觉真实感和物理合理性的门槛。Google DeepMind 于 2024 年 12 月发布的 Genie 2 [ParmarEtAl2024] 使用自回归潜在扩散模型从单张图像生成可交互的 3D 环境，可保持长达一分钟的物理一致性，从而支持强化学习环境的快速原型开发。NVIDIA Cosmos [NVIDIA2025] 于 CES 2025 发布并持续更新至 CoRL 2025，提供一系列开放的世界基础模型，可基于文本、图像、视频和机器人动作数据进行物理感知的视频预测；Cosmos Predict 2.5（2025 年 10 月；2B 与 14B）统一了 Text2World/Image2World/Video2World，并支持多视角输出和长时程自回归生成。V-JEPA 2 [Meta2025] 走的是非生成式路线：一个在 100 万小时视频上预训练的 12 亿参数潜空间预测模型，在 Something-Something v2 上达到 77.3% 的 top-1，并通过潜空间中的模型预测控制实现零样本机器人规划。
@@ -61,7 +68,7 @@ Physical Intelligence 的 π₀ [BlackEtAl2024] 更进一步：这是一个流�
 graph LR
     A["2023-24：SAM、DINOv2、CLIP + LLM 适配器"] --> B["2025：DINOv3、PE、SigLIP 2、VGGT"]
     B --> C["2025 年末：SAM 3 / SAM 3D、DA3、Qwen3-VL、Gemini 3、Genie 3"]
-    C --> D["2026：D4RT、Qwen3.5 早期融合、Cosmos 3、V-JEPA 2.1"]
+    C --> D["2026：D4RT、Qwen3.5 早期融合、Cosmos 3、V-JEPA 2.1、Helix 02、π₀.₇、Gemini Robotics 2"]
     D --> E["趋势：感知-重建-生成-行动一体化模型"]
 ```
 
@@ -73,7 +80,8 @@ graph LR
 | 4D / 动态场景 | 深度、跟踪、位姿分属不同模型 | 单一基于查询的编码器–解码器统一处理深度、对应关系与位姿（D4RT，据作者称比以往工作快多达 300 倍） | CVPR 2026 最佳论文 |
 | 3D 生成 | TRELLIS（2024） | TRELLIS.2（4B，O-Voxel，最高 1536³ 并带 PBR 材质） | CVPR 2026 最佳学生论文 |
 | 多模态大模型 | Qwen2.5-VL / InternVL2.5 ≈ 70% MMMU | GPT-5 MMMU 84.2%；Gemini 3 Pro MMMU-Pro 81.0%；Qwen3-VL（256K→1M 上下文）、InternVL3.5、Qwen3.5（早期融合） | 官方模型报告 |
-| VLA | π₀、GR00T N1、OpenVLA | π₀.₅（开源）、π\*₀.₆（从经验中进行强化学习）、Gemini Robotics 1.5、GR00T N1.6/N1.7 | 参见 [04](./04_vla_embodied_2025_2026.md) |
+| VLA | π₀、GR00T N1、OpenVLA | π₀.₅（开源）、π\*₀.₆（从经验中进行强化学习）、π₀.₇（单个通用模型 ≈ π\*₀.₆ 专用模型；初步的组合泛化）、Gemini Robotics 1.5 → Gemini Robotics 2 / ER 2、GR00T N1.6/N1.7 | 参见 [04](./04_vla_embodied_2025_2026.md) |
+| 人形机器人控制 | 学习型上半身 VLA 叠加在独立的运动/平衡控制器之上 | 单一学习型全身技术栈：Figure Helix 02（System 0/1/2，System 0 约 1 kHz）、Gemini Robotics 2 | 公司发布（2026 年 1 月 / 7 月） |
 | 世界模型 | Genie 2、Cosmos 1、V-JEPA 2 | Genie 3 / Project Genie、Waymo World Model、Marble、Cosmos Predict 2.5 → Cosmos 3、V-JEPA 2.1 | 各实验室发布 |
 | 像素空间中的智能体 | 游戏智能体多为任务专用 | NitroGen：基于互联网游戏视频训练的开放 500M DiT 手柄动作基础模型 | CVPR 2026 荣誉提名 |
 
@@ -112,7 +120,7 @@ graph LR
 | Cosmos 3 | 统一世界推理器 + 生成器 | 2026 年 5 月 | 4B / 16B / 64B |
 | GR00T N1.7 | 人形机器人 VLA | 2026 年 | 3B |
 
-这一开源时刻并非出于利他——它反映了一种战略押注：该技术栈的价值在于平台层和部署层，而非模型权重本身。Meta、NVIDIA 和 Google DeepMind 发布权重以培育生态；Physical Intelligence 和 Figure AI 则将最好的模型保持专有，以守住与硬件深度集成部署的竞争壁垒。2025–2026 年出现了两点细微变化：（1）“开放”越来越多地意味着*以自定义许可证发布的开放权重*（例如 DINOv3 License 与 SAM License、需申请的下载、VGGT 与 MapAnything 单独的商用检查点），而非 OSI 认可的许可证；（2）中国实验室（阿里巴巴 Qwen、上海人工智能实验室 InternVL、智谱 GLM-V、OpenBMB MiniCPM-V、字节跳动 Seed）如今提供了大多数最强的开放权重多模态大模型，而 Meta 和 NVIDIA 主导开放的感知、3D 与世界模型发布。Physical Intelligence 部分开放了其技术栈（`openpi` 中的 π₀、π₀-FAST、π₀.₅），但 π\*₀.₆ 仍保持专有。
+这一开源时刻并非出于利他——它反映了一种战略押注：该技术栈的价值在于平台层和部署层，而非模型权重本身。Meta、NVIDIA 和 Google DeepMind 发布权重以培育生态；Physical Intelligence 和 Figure AI 则将最好的模型保持专有，以守住与硬件深度集成部署的竞争壁垒。2025–2026 年出现了两点细微变化：（1）“开放”越来越多地意味着*以自定义许可证发布的开放权重*（例如 DINOv3 License 与 SAM License、需申请的下载、VGGT 与 MapAnything 单独的商用检查点），而非 OSI 认可的许可证；（2）中国实验室（阿里巴巴 Qwen、上海人工智能实验室 InternVL、智谱 GLM-V、OpenBMB MiniCPM-V、字节跳动 Seed）如今提供了大多数最强的开放权重多模态大模型，而 Meta 和 NVIDIA 主导开放的感知、3D 与世界模型发布。Physical Intelligence 部分开放了其技术栈（`openpi` 中的 π₀、π₀-FAST、π₀.₅），但 π\*₀.₆ 和 π₀.₇ 仍保持专有。Google DeepMind 的 Gemini Robotics 2 VLA 与 On-Device 2 仅向早期访问合作伙伴开放，只有 ER 2 规划器广泛可用（在 Google AI Studio 中）。
 
 ---
 
@@ -156,6 +164,9 @@ graph LR
 | NitroGen: An Open Foundation Model for Generalist Gaming Agents | Magne et al. | 2026 | CVPR 2026（荣誉提名） | 从互联网游戏视频中行为克隆得到的像素→手柄动作模型 |
 | Qwen3-VL Technical Report | Qwen Team | 2025 | arXiv 2511.21631 | 稠密 + MoE 多模态大模型；Interleaved-MRoPE、DeepStack；256K 原生上下文 |
 | Heat Kernel Textures — the Geodesic Gaussians That Do Not Splat | Foti, Korkmaz, Zafeiriou, Birdal | 2026 | ECCV 2026（最佳论文，据报道） | 以表面上的热扩散测地高斯替代 UV 贴图与泼溅 |
+| Helix 02 | Figure AI | 2026 | 公司博客 | Figure 03 上用于全身人形控制的单一学习型 System 0/1/2 技术栈 |
+| π0.7: a Steerable Generalist Robotic Foundation Model | Physical Intelligence | 2026 | arXiv 2604.15483 | 富上下文提示（子任务、子目标图像）；初步的组合泛化；通用模型 ≈ π\*₀.₆ 专用模型 |
+| Gemini Robotics 2 / ER 2 / On-Device 2 | Google DeepMind | 2026 | DeepMind 博客 + 模型卡 | 全身人形 VLA；ER 2 规划器（ASIMOV-2、ASIMOV-Agentic）；端侧具身适配 |
 
 ---
 
@@ -180,6 +191,7 @@ graph LR
 | VGGT-1B-Commercial | Co3D | AUC@30 | 90.37 | 前馈式相机位姿 |
 | GPT-5 | MMMU | 准确率 | 84.2% | 闭源；2025 年 8 月 |
 | Gemini 3 Pro | MMMU-Pro / Video-MMMU | 准确率 | 81.0% / 87.6% | 闭源；2025 年 11 月 |
+| π₀.₇ | 叠衣 / 意式咖啡 / 纸箱组装（真实） | 任务性能 | ≈ 经强化学习微调的 π\*₀.₆ 专用模型 | 单个通用模型；公司报告；无标准化外部基准 |
 
 ---
 
@@ -199,15 +211,15 @@ graph LR
 
 ## 开放问题与研究空白
 
-1. **VLA 的长时程任务泛化。** 当前 VLA 模型擅长 5–30 秒的操作基元，但在需要数分钟连贯多步执行的任务上失败。π₀ 和 OpenVLA 都尚未展示在无人工干预下可靠地从桌面任务扩展到完整厨房任务。π₀.₅（清洁未见过的住宅）与 π\*₀.₆（从部署经验中进行强化学习）提供了部分答案，但在精心设置的环境之外，鲁棒的小时级自主性仍未得到验证。
+1. **VLA 的长时程任务泛化。** 当前 VLA 模型擅长 5–30 秒的操作基元，但在需要数分钟连贯多步执行的任务上失败。π₀ 和 OpenVLA 都尚未展示在无人工干预下可靠地从桌面任务扩展到完整厨房任务。π₀.₅（清洁未见过的住宅）与 π\*₀.₆（从部署经验中进行强化学习）提供了部分答案，但在精心设置的环境之外，鲁棒的小时级自主性仍未得到验证。2026 年，Helix 02 约 4 分钟的自主全身洗碗机动作序列和 π₀.₇ 在指导下完成的长任务进一步延长了时程，但二者均为公司报告，且 Figure 关于 8 小时班次的说法没有附带吞吐量或错误率指标。
 
 2. **世界模型的物理保真度。** Genie 2/3、Cosmos 和 V-JEPA 2 能生成视觉上合理的未来，但尚不能准确建模接触力、可变形物体或流体动力学。Genie 3 将一致性从约 1 分钟延长到数分钟，但把这些模型作为灵巧操作训练的即插即用物理引擎仍是开放问题。
 
-3. **组合泛化。** VLM 能描述包含新颖物体组合的场景，但在操作规划所需的 3D 层面组合式空间推理上失败（例如“把蓝色杯子放进那摞东西左边的红碗里”）。神经-符号混合方法仍研究不足；将 MLLM 与概念分割器配对的 SAM 3“智能体”流水线是一种新兴替代方案。
+3. **组合泛化。** VLM 能描述包含新颖物体组合的场景，但在操作规划所需的 3D 层面组合式空间推理上失败（例如“把蓝色杯子放进那摞东西左边的红碗里”）。神经-符号混合方法仍研究不足；将 MLLM 与概念分割器配对的 SAM 3“智能体”流水线是一种新兴替代方案。在动作方面，π₀.₇ 报告了初步的组合泛化（在新机器人和新电器上重新组合技能），但在长任务上仍需逐步指导，且缺乏标准化的外部基准。
 
 4. **以极少演示实现高效适配。** 对新任务和新机器人形态的少样本和单样本适配尚未解决。Octo 和 OpenVLA 都需要数百条微调轨迹才能可靠专门化；这对罕见任务部署而言不切实际。
 
-5. **安全与不确定性量化。** 目前没有任何 VLA 或世界模型框架能提供校准的置信度分数或可证明的安全证书。在人类近旁部署这些系统，需要同时处理认知不确定性（新场景）和偶然不确定性（接触歧义）。
+5. **安全与不确定性量化。** 目前没有任何 VLA 或世界模型框架能提供校准的置信度分数或可证明的安全证书。在人类近旁部署这些系统，需要同时处理认知不确定性（新场景）和偶然不确定性（接触歧义）。Google 的 ASIMOV-2 与新的 ASIMOV-Agentic 基准（用于 Gemini Robotics ER 2）评估语义与智能体式安全，例如在不确定时向人类求助，但它们并不提供物理安全证书。
 
 6. **标准化评估。** 该领域缺乏一个类似 ImageNet、被普遍接受的具身智能基准。LIBERO、BridgeV2 和 Open X-Embodiment 部分填补了这一空白，但未覆盖移动操作、人机协作或长时程任务。LIBERO 已接近被 π₀.₅ 级策略饱和。
 
@@ -246,3 +258,6 @@ graph LR
 - [Genie 3 发布公告](https://deepmind.google/discover/blog/genie-3-a-new-frontier-for-world-models/) — Google DeepMind 2025
 - [Waymo World Model](https://waymo.com/blog/2026/02/the-waymo-world-model-a-new-frontier-for-autonomous-driving-simulation) — Waymo 2026
 - [CVPR 2026 闭幕新闻稿](https://cvpr.thecvf.com/Conferences/2026/News/Closing) — 奖项与统计数据
+- [π0.7（arXiv:2604.15483）](https://arxiv.org/abs/2604.15483) — Physical Intelligence 2026
+- [Gemini Robotics 2（DeepMind 博客）](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/) — Google DeepMind 2026
+- [Figure Helix 02](https://figure.ai/news/helix-02) — Figure AI 2026

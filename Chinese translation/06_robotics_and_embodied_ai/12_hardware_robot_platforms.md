@@ -13,8 +13,9 @@
 > **🆕 2026年10月更新：**
 > - 新平台：**Figure 03**（2025 年 10 月，为 Helix 和家庭场景打造；BotQ 工厂）、**宇树 H2** 与低价的**宇树 R1**、CES 2026 上展示的 **Boston Dynamics 电动 Atlas** 产品版、**优必选（UBTech）Walker S2**（自主换电）；更新了 Figure 02（试点结束后从 BMW 退役）、**1X NEO**（2025 年 10 月开放消费者预订，\$20k 或 \$499/月）以及 **Tesla Optimus**（2026 年 1 月宣布改造 Fremont 产线）的状态。
 > - 新增**产业现状、融资与资本市场**一节：Figure 的 \$39B C 轮、Physical Intelligence 与 Skild AI 的融资、Apptronik 的 \$403M A 轮、宇树的科创板 IPO 进程、智元收购上市公司、现代汽车的 Atlas 部署计划。
-> - 计算：Jetson Thor 全面上市（2025 年 8 月）以及端侧 VLA（Gemini Robotics On-Device；可导出 TensorRT 的 GR00T N1.7）。
+> - 计算：Jetson Thor 全面上市（2025 年 8 月）以及端侧 VLA（Gemini Robotics On-Device 与 On-Device 2；可导出 TensorRT 的 GR00T N1.7）。
 > - 新的开放问题：供应链风险（稀土磁体）、家用机器人中的遥操作辅助自主与隐私、人形机器人安全标准。
+> - 新增 2026 年在这些本体上实现的全身控制里程碑：Figure 03 上的 **Helix 02**（2026 年 1 月；以单一学习型 System 0/1/2 技术栈完成平衡、运动与操作，其中 System 0 约 1 kHz），以及 **Gemini Robotics 2** 全身人形控制和 On-Device 2（2026 年 7 月，早期访问）。另补充了 Physical Intelligence 的 \$600M B 轮（估值 \$5.6B，2025 年 11 月），以及据报道 2026 年 3 月估值超过 \$11B 的融资洽谈。
 
 ---
 
@@ -26,7 +27,7 @@
 
 一个反复出现的主题是**披露差距**：研究级平台（宇树、Franka、Universal Robots）发布完整的数据手册，而旗舰人形机器人（Boston Dynamics 电动 Atlas、Figure 02、Apptronik Apollo）则以保密协议（NDA）为由隐藏关键规格——总自由度、价格、执行器细节。以下规格均据此加以标注。
 
-从 2025 年末开始，故事的主线从*原型机*转向了*产能与资本*：Figure 启用了 BotQ 工厂并发布 Figure 03，Boston Dynamics 展示了带有现代汽车部署计划的产品版 Atlas，1X 开放了 NEO 的消费者预订，Tesla 宣布将 Fremont 的整车产能改造用于 Optimus，而中国厂商（宇树、优必选、智元）正走向或已进入公开股票市场。然而，真实部署仍停留在试点阶段，每个场地的数量只有数十台到一两百台。
+从 2025 年末开始，故事的主线从*原型机*转向了*产能与资本*：Figure 启用了 BotQ 工厂并发布 Figure 03，Boston Dynamics 展示了带有现代汽车部署计划的产品版 Atlas，1X 开放了 NEO 的消费者预订，Tesla 宣布将 Fremont 的整车产能改造用于 Optimus，而中国厂商（宇树、优必选、智元）正走向或已进入公开股票市场。然而，真实部署仍停留在试点阶段，每个场地的数量只有数十台到一两百台。在软件方面，2026 年为这些本体带来了学习型的**全身**控制：Figure 03 上的 Figure Helix 02（1 月）和 Google DeepMind 的 Gemini Robotics 2（7 月）都以单一学习型技术栈完成行走、平衡与操作，而不是在独立的运动控制器之上叠加一个上半身 VLA。
 
 ---
 
@@ -35,7 +36,7 @@
 | 机器人 | 身高 | 体重 | 自由度 | 负载 | 速度 | 价格 | 状态（2025–26） |
 |-------|--------|--------|-----|---------|-------|-------|------------------|
 | Figure 02 | 168 cm | 70 kg | NDA（每只手 16） | 25 kg | 1.2 m/s | 约 \$150k（估计） | BMW Spartanburg 试点已完成；2025 年 11 月退役 |
-| Figure 03 | NDA | 比 F.02 轻约 9% | NDA（触觉指尖） | NDA | NDA | NDA | 2025 年 10 月发布；BotQ 生产；家庭 + 商用 |
+| Figure 03 | NDA | 比 F.02 轻约 9% | NDA（触觉指尖） | NDA | NDA | NDA | 2025 年 10 月发布；BotQ 生产；家庭 + 商用；运行 Helix 02（2026 年 1 月） |
 | Tesla Optimus Gen 2 / V2.5 | 173 cm | 57 kg | 身体 28+，每只手 11–22 | 20 kg | 约 2.2 m/s | 目标约 \$20–30k | Tesla 内部试点；2026 年 1 月宣布 V3 与 Fremont 产线 |
 | 宇树 G1 | 127 cm | 35 kg | 43（含手） | 2–3 kg | 2 m/s | \$13.5k–\$73.9k | 量产（2025 年 5,500+ 台） |
 | 宇树 H1 | 180 cm | 47 kg | 19（H1-2：27） | 30 kg | 3.3 m/s | \$99.9k | 研究 / 在售 |
@@ -45,7 +46,7 @@
 | Boston Dynamics Atlas（产品版，CES 2026） | NDA | NDA | 56（据报道） | 约 50 kg 举重能力（据报道） | NDA | 未披露 | 计划自 2028 年起部署于现代汽车 Metaplant |
 | 优必选 Walker S2 | 约 176 cm（据报道） | NDA | 52（据报道） | 15 kg（据报道） | NDA | NDA | 自主换电；在中国开展工厂试点 |
 | Agility Digit v5 | 175 cm | 76 kg | 16+ | 16 kg | 1.5 m/s | 约 \$250k | GXO 仓库（100k+ 周转箱） |
-| Apptronik Apollo | 173 cm | 72.5 kg | NDA | 25 kg | NDA | NDA | 工厂试点 |
+| Apptronik Apollo | 173 cm | 72.5 kg | NDA | 25 kg | NDA | NDA | 工厂试点；Gemini Robotics 2 全身演示（Apollo 2，2026 年 7 月） |
 | Sanctuary Phoenix（第 7 代） | 170 cm | 70 kg | NDA（每只手 20–21） | 25 kg | NDA | 约 \$65k（估计） | 零售 / 制造试点 |
 | 傅利叶 GR-2 | 175 cm | 65 kg | 53（每只手 12） | 每臂 3 kg | NDA | 约 \$150k+ | 研究 / 企业 |
 | 1X NEO | 约 168 cm | 约 30 kg | 75（每只手 22） | 约 25 kg 搬运 | 1.4 m/s | \$20k / \$499 每月 | 2025 年 10 月开放消费者预订；2026 年在美国交付 |
@@ -57,6 +58,10 @@
 ### 新平台与状态变化（2025 年 10 月 – 2026 年）
 
 **Figure 03** [Figure2025F03]（2025 年 10 月 9 日发布）是首款明确围绕 VLA 协同设计的旗舰人形机器人。Figure 表示，与 Figure 02 相比，新相机系统每个相机的帧率约提高一倍、延迟降至约四分之一、视场角宽约 60%；每只手新增一个掌心相机，指尖触觉传感器可分辨几克量级的力——这些感知输入直接服务于 Helix 的系统 1。其他改动面向家庭场景：柔软、可清洗的织物外壳，质量比 F.02 低约 9%，以及通过脚部线圈实现的 **2 kW 无线感应充电**，使机器人能自主停靠充电。Figure 的 **BotQ** 工厂初期设计产能约为每年 12,000 台人形机器人，并提出四年内生产 100,000 台的目标。Figure 于 2025 年 11 月报告，其 Figure 02 机队在 BMW Spartanburg 部署结束后已退役；部署期间，这些机器人参与生产班次，上料超过 90,000 个钣金件，并为 30,000 余辆 X3 的生产作出贡献（公司自报）。
+
+**Figure 03 上的 Helix 02** [Figure2026]（2026 年 1 月下旬）是 Figure 首个用到 Figure 03 全身的软件版本。它是一个统一感知、平衡、运动与操作的单一学习型系统，分为三层：System 2 负责语义推理，System 1 以高频将感知转化为全身运动，新增的 **System 0** 以约 1 kHz 运行，负责平衡与协调。约 1 kHz 的回路是一项与硬件相关的变化：平衡如今作为学习型控制器以这一频率运行，而该频率以往只属于经典的关节级控制。Figure 的旗舰演示是约 4 分钟的自主洗碗机卸载与装载，公司声称可完成 8 小时无干预班次，但尚未公布吞吐量或错误率指标。
+
+**人形机器人上的 Gemini Robotics 2。** Google DeepMind 的 Gemini Robotics 2（2026 年 7 月 30 日）从以上半身为主的控制转向**全身人形控制**：它可以在推理的同时行走、下蹲和操作，并在 Apptronik 的 Apollo 2 上进行了演示。配套的 **Gemini Robotics On-Device 2** 在机器人本地运行，仅需数小时数据即可适配新的具身形态。这两个模型仅向早期访问合作伙伴开放，而 ER 2 规划器可在 Google AI Studio 中使用 [GeminiRobotics2026]。
 
 **Boston Dynamics Atlas（产品版）。** 在 CES 2026（2026 年 1 月）上，现代汽车与 Boston Dynamics 展示了面向量产的电动 Atlas：现代汽车表示计划自 2028 年起将其部署在佐治亚州 Metaplant 工厂，并在美国建设机器人制造产能；Boston Dynamics 则确认与 Google DeepMind 合作，将 Gemini Robotics 模型引入 Atlas。发布会相关报道称其拥有 56 个自由度、约 50 kg 的举重能力和可自主更换的电池；截至撰写本文时，Boston Dynamics 仍未发布完整的数据手册。另外，Boston Dynamics 与 TRI 展示了用单个语言条件的**大型行为模型**驱动 Atlas 全身完成长时程任务（2025 年 8 月；见[通用 vs. 专用](./11_generalist_vs_specialist.md)）。
 
@@ -82,12 +87,15 @@
 | 2025 年 8 月 | NVIDIA | Jetson Thor 全面上市（开发套件 \$3,499） | 人形 VLA 的标准机载计算平台 |
 | 2025 年 9 月 | Figure AI | 超过 \$1B 的 C 轮，投后估值 \$39B；与 Brookfield 合作 | 估值最高的人形机器人初创公司；为 BotQ 和 Go-Big 数据提供资金 |
 | 2025 年 10 月 | 1X | NEO 开放消费者预订（\$20k / \$499 每月） | 美国首个面向大众市场的家用人形机器人产品 |
-| 2025 年 11 月 | Physical Intelligence | 约 \$600M 融资，估值约 \$5.6B（据报道） | 规模最大的“机器人大脑”（仅做模型）公司 |
+| 2025 年 11 月 | Physical Intelligence | \$600M B 轮融资，估值 \$5.6B | 规模最大的“机器人大脑”（仅做模型）公司 |
 | 2026 年 1 月 | 现代汽车 / Boston Dynamics | CES 上发布产品版 Atlas；自 2028 年起部署于 Metaplant | 汽车主机厂承诺以生产规模采用人形机器人 |
 | 2026 年 1 月 | Tesla | Fremont 产能将改用于 Optimus | 整车产线向人形机器人产线转换 |
 | 2026 年 1 月 | Skild AI | 约 \$1.4B 融资，估值约 \$14B（据报道） | 跨具身“Skild Brain”基础模型 |
+| 2026 年 1 月 | Figure AI | 为 Figure 03 发布 Helix 02 | 用于全身控制的单一学习型 System 0/1/2 技术栈；声称可完成 8 小时班次，但未公布指标 |
+| 2026 年 3 月 | Physical Intelligence | 洽谈以超过 \$11B 的估值融资约 \$1B（Bloomberg 报道；尚未确认完成） | 估值将在四个月内大致翻倍；π0.7 随后于 2026 年 4 月发布 |
+| 2026 年 7 月 | Google DeepMind | Gemini Robotics 2 / ER 2 / On-Device 2 | 全身人形 VLA；VLA 与 On-Device 仅向早期访问合作伙伴开放 |
 
-三种结构性模式尤为突出。**(1) 大脑 vs. 本体：** 仅做模型的公司（Physical Intelligence、Skild AI、Generalist AI、Google DeepMind 的 Gemini Robotics）如今的融资额和估值已与硬件厂商相当，押注价值将由策略而非本体获取。**(2) 垂直整合：** Figure、Tesla 和 1X 同时自研本体和模型，认为数据飞轮需要拥有已部署的机队。**(3) 中国的数量优势：** 宇树、优必选、智元、银河通用（Galbot）、傅利叶等以最低的价格交付最大的出货量，背后有地方政府补贴、国家支持的数据采集中心，以及世界人形机器人运动会（北京，2025 年 8 月）等公开活动的支撑；它们通往公开市场的路径（宇树的 IPO 进程、智元收购上市公司、优必选已在香港上市）使其能够获得美国同行需通过私募获取的资本。
+三种结构性模式尤为突出。**(1) 大脑 vs. 本体：** 仅做模型的公司（Physical Intelligence、Skild AI、Generalist AI、Google DeepMind 的 Gemini Robotics）如今的融资额和估值已与硬件厂商相当，押注价值将由策略而非本体获取。据报道，Physical Intelligence 的估值在 2025 年 11 月至 2026 年 3 月间大致翻了一番。**(2) 垂直整合：** Figure、Tesla 和 1X 同时自研本体和模型，认为数据飞轮需要拥有已部署的机队。**(3) 中国的数量优势：** 宇树、优必选、智元、银河通用（Galbot）、傅利叶等以最低的价格交付最大的出货量，背后有地方政府补贴、国家支持的数据采集中心，以及世界人形机器人运动会（北京，2025 年 8 月）等公开活动的支撑；它们通往公开市场的路径（宇树的 IPO 进程、智元收购上市公司、优必选已在香港上市）使其能够获得美国同行需通过私募获取的资本。
 
 > ⚠️ 该领域的部署数据绝大多数为公司自报。截至 2026 年，尚无人形机器人厂商公布过经审计的、在付费、自主、全班次运行中超出试点规模的机器人数量。
 
@@ -123,7 +131,7 @@ graph LR
     style A fill:#1d3557,color:#fff
 ```
 
-**计算。** **Jetson AGX Orin**（最高 275 INT8 TOPS，64 GB）是 2022–2025 年的参考机器人 SoC（用于 Apptronik Apollo）。其继任者 **Jetson Thor**（Blackwell GPU，14 核 Neoverse-V3AE，128 GB，约 2,070 FP4 TFLOPS，40–130 W；2025 年 8 月全面上市）宣称相对 Orin 实现 **7.5 倍性能和 3.5 倍能效**，是 1X NEO 和 NVIDIA GR00T 参考人形机器人的机载大脑。需要注意，**GR00T 是软件/AI 平台**，而非芯片：GR00T N1 双系统 VLA *运行于* Thor 之上，而*训练于* H100/B100 集群（见 [VLA 模型](./01_vla_models.md)）。自 Thor 于 2025 年 8 月全面上市（开发套件 \$3,499）以来，**端侧 VLA** 已从例外变为常态：Google DeepMind 发布了 **Gemini Robotics On-Device**（2025 年 6 月），这是一个经过优化、可在机器人本地运行的 VLA，面向对延迟和网络连接敏感的场景；NVIDIA 的 **GR00T N1.7**（3B）提供 ONNX/TensorRT 导出和服务端-客户端策略 API，便于在 Jetson 级硬件上部署。Figure 的 Helix 同样将其两个系统都运行在嵌入式 GPU 上，不依赖云端。
+**计算。** **Jetson AGX Orin**（最高 275 INT8 TOPS，64 GB）是 2022–2025 年的参考机器人 SoC（用于 Apptronik Apollo）。其继任者 **Jetson Thor**（Blackwell GPU，14 核 Neoverse-V3AE，128 GB，约 2,070 FP4 TFLOPS，40–130 W；2025 年 8 月全面上市）宣称相对 Orin 实现 **7.5 倍性能和 3.5 倍能效**，是 1X NEO 和 NVIDIA GR00T 参考人形机器人的机载大脑。需要注意，**GR00T 是软件/AI 平台**，而非芯片：GR00T N1 双系统 VLA *运行于* Thor 之上，而*训练于* H100/B100 集群（见 [VLA 模型](./01_vla_models.md)）。自 Thor 于 2025 年 8 月全面上市（开发套件 \$3,499）以来，**端侧 VLA** 已从例外变为常态：Google DeepMind 发布了 **Gemini Robotics On-Device**（2025 年 6 月），这是一个经过优化、可在机器人本地运行的 VLA，面向对延迟和网络连接敏感的场景，随后又推出了 **On-Device 2**（2026 年 7 月，面向早期访问合作伙伴），仅需数小时数据即可适配新具身；NVIDIA 的 **GR00T N1.7**（3B）提供 ONNX/TensorRT 导出和服务端-客户端策略 API，便于在 Jetson 级硬件上部署。Figure 的 Helix 同样将其两个系统都运行在嵌入式 GPU 上，不依赖云端。
 
 **传感器。** **Intel RealSense** D435/D455 仍是无处不在的 RGB-D 相机（D455 的 95 mm 基线和全局快门 RGB 在远距离下深度效果更好），尽管 Intel 正在逐步收缩其消费级产品线。**视觉触觉传感器**——**GelSight**（25–50 µm/像素的表面几何）和 **DIGIT**（320×240 @ 60 fps，由 Meta 开源）——将触觉转换为可与 RGB-D 融合的类图像信号；2024 年的 **Digit 360**（GelSight + Meta）将其推进到约 830 万个触觉单元（taxel），具备全向、多模态传感能力。它们在灵巧操作中的作用详见[机器人感知](./08_perception_for_robotics.md)。
 
@@ -145,6 +153,8 @@ graph LR
 | DexUMI | Xu, Zhang, Hou, Xu, Fan, Veloso, Song | 2025 | CoRL | 与目标机器人手协同设计、用于数据采集的外骨骼硬件 |
 | Gemini Robotics On-Device | Google DeepMind | 2025 | 模型发布（2025 年 6 月） | 在机器人硬件本地运行的 VLA |
 | GR00T N1.7 | NVIDIA | 2026 | 开放模型（GitHub） | 支持 TensorRT 导出和全身控制器的 3B 人形 VLA |
+| Introducing Helix 02 | Figure AI | 2026 | 公司博客（2026 年 1 月） | Figure 03 上的 System 0/1/2 全身控制；约 1 kHz 的学习型平衡层 |
+| Gemini Robotics 2 / On-Device 2 | Google DeepMind | 2026 | 模型发布（2026 年 7 月） | 全身人形 VLA；端侧仅需数小时数据即可适配新具身 |
 
 ---
 
@@ -165,6 +175,8 @@ graph LR
 | 宇树 R1 | 起售价 | ¥39,900 起（约 \$5.9k） | 高（官方发布价） |
 | 1X NEO | 价格 | \$20,000 或 \$499/月 | 高（官方） |
 | Boston Dynamics 产品版 Atlas | 自由度 / 举重能力 | 56 / 约 50 kg | 低–中（媒体报道，CES 2026） |
+| Helix 02 System 0（Figure 03） | 控制频率 | 约 1 kHz | 中（公司自报） |
+| Figure 03 上的 Helix 02 | 自主洗碗机卸载/装载 | 连续约 4 分钟；声称可完成 8 小时班次 | 低–中（公司演示；无吞吐量/错误率指标） |
 
 ---
 
@@ -193,7 +205,7 @@ graph LR
 - **安全认证。** 目前尚无公认标准能针对特定硬件平台认证学习式策略在人员附近运行的安全性。ISO 委员会正在制定专门针对动态稳定（足式/人形）工业机器人的标准，但截至 2026 年尚未定稿。
 - **供应链风险。** 人形机器人执行器依赖稀土永磁体；Tesla 曾指出中国 2025 年 4 月对稀土磁体的出口限制影响了 Optimus 的生产，凸显了大多数非中国厂商对单一国家的依赖。
 - **遥操作辅助的自主性。** 以远程操作员兜底方式上市的家用机器人（1X NEO 的“专家模式”）引发了隐私、劳动和责任方面的问题，也使“自主”说法难以审计。
-- **从试点到机队。** 已宣布的工厂产能（BotQ 每年约 1.2 万台、Tesla 每年 100 万台的目标、现代汽车的计划）远超已证实的部署规模；没有任何厂商公开报告机队规模下的可靠性（平均故障/干预间隔时间）。
+- **从试点到机队。** 已宣布的工厂产能（BotQ 每年约 1.2 万台、Tesla 每年 100 万台的目标、现代汽车的计划）远超已证实的部署规模；没有任何厂商公开报告机队规模下的可靠性（平均故障/干预间隔时间）。Figure 关于 Helix 02 可完成 8 小时无干预班次的说法，同样没有附带吞吐量或错误率指标。
 
 ---
 
@@ -210,3 +222,5 @@ graph LR
 - [Boston Dynamics Atlas](https://bostondynamics.com/atlas/) — 电动 Atlas 与现代汽车部署
 - [宇树开源 SDK 与遥操作](https://github.com/unitreerobotics) — xr_teleoperate、unitree_lerobot、UnifoLM
 - [Isaac GR00T (GitHub)](https://github.com/NVIDIA/Isaac-GR00T) — 支持 TensorRT 部署和 GEAR-SONIC 全身控制的 N1.7
+- [Figure Helix 02](https://figure.ai/news/helix-02) — Figure 03 上的 System 0/1/2 全身控制
+- [Gemini Robotics 2（DeepMind 博客）](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/) — 全身人形 VLA 与 On-Device 2

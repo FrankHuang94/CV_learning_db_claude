@@ -6,9 +6,10 @@
 
 > **🆕 October 2026 update:**
 > - Roadmaps refreshed against what actually shipped. Physical Intelligence open-sourced π0.5 (Sept 2025) and released RL-refined π*0.6 (Nov 2025). Google DeepMind shipped Gemini Robotics 1.5 / ER 1.5 (Sept 2025). NVIDIA shipped GR00T N1.6 → **N1.7** (3B, Apache 2.0, pretrained with 20K h of human video), **Cosmos 3** (May 2026) and **Newton 1.0** (Mar 2026). On the humanoid side, Figure 03 was unveiled (Oct 2025, earlier than the "2026–27" previously projected) and 1X NEO opened consumer pre-orders.
-> - The **dual-system convergence thesis** (Part VII) is now the dominant industrial architecture: Gemini Robotics 1.5 + ER, GR00T System 1/2, Figure Helix, InternVLA-N1 and DexGraspVLA.
+> - The **dual-system convergence thesis** (Part VII) is now the dominant industrial architecture: Gemini Robotics 1.5 / 2 + ER, GR00T System 1/2, Figure Helix (three-tier in Helix 02), InternVLA-N1 and DexGraspVLA.
 > - New evidence for the **bitter-lesson debate**: data scaling laws over environment-object diversity, human-video pretraining at 10⁴-hour scale, and robustness audits (LIBERO-Plus, VLN-PE) showing benchmark gains overstate deployability.
 > - World-model-as-policy evidence (V-JEPA 2-AC zero-shot planning, Cosmos Policy), a status check on the 2028 predictions, and new open problems on evaluation and human-to-robot transfer.
+> - Added the main 2026 releases: **Figure Helix 02** (Jan 2026; three-tier System 0/1/2 whole-body control on Figure 03), **π0.7** (Apr 2026; early compositional generalization, with one generalist reportedly matching the RL-fine-tuned π*0.6 specialists) and **Gemini Robotics 2 / ER 2 / On-Device 2** (Jul 2026; whole-body humanoid VLA, ASIMOV-2 / ASIMOV-Agentic). The moat table, roadmaps, dual-system table and 2028 status check were updated accordingly, including Physical Intelligence's funding.
 
 ---
 
@@ -26,11 +27,12 @@ A fourth approach, **Modular LLM + Specialist Policy**, is better described as a
 
 The deeper question animating this document is whether robotics will follow the same scaling trajectory as NLP: a "bitter lesson" path where scale and data overwhelm hand-crafted inductive biases, producing general-purpose behavior without domain-specific engineering. The evidence as of 2026 is sharply mixed, and we argue that the correct framing is not "does scale work" but "which aspects of robot competence respond to scale, on what data, and with what sample efficiency."
 
-**What changed between mid-2025 and October 2026.** The paradigm boundaries blurred in three ways:
+**What changed between mid-2025 and October 2026.** The paradigm boundaries blurred in four ways:
 
 - **VLAs absorbed diffusion.** Most frontier VLAs now use flow-matching or diffusion action heads: π0/π0.5 and GR00T N1.x, whose DiT head is flow-matching.
 - **World models became policies.** V-JEPA 2-AC plans pick-and-place zero-shot in latent space; Cosmos Policy post-trains a video world model to output actions; Cosmos 3's generator emits actions natively.
 - **Systems became explicitly hierarchical.** Slow reasoning models drive fast controllers.
+- **Learned control extended to the whole body.** Figure Helix 02 (Jan 2026) and Gemini Robotics 2 (Jul 2026) moved learned humanoid policies from upper-body manipulation to walking, crouching and manipulating as one system.
 
 The competitive question is therefore shifting from "which paradigm?" to "how should a hybrid stack be partitioned, trained and evaluated?"
 
@@ -42,7 +44,7 @@ The competitive question is therefore shifting from "which paradigm?" to "how sh
 
 VLAs such as RT-2 [Brohan2023], OpenVLA [Kim2024], Octo [Team2024] and π0 [Black2024] treat robot control as a language-modeling problem. Images and instructions are tokenized, and a transformer predicts discrete action tokens auto-regressively or continuous action chunks. The paradigm inherits the data-efficiency gains of large-scale vision-language pretraining. A model pretrained on internet-scale image-text data brings rich semantic priors to manipulation tasks, which sharply reduces the number of robot demonstrations needed for new tasks.
 
-The fundamental limitation is the **latency-accuracy tradeoff** imposed by auto-regressive generation. Generating a 6-DOF action token sequence with a 7B-parameter model takes 50–500 ms on a single A100. That frequency floor rules out reactive control for dynamic tasks such as catching or avoiding moving objects. Architectural mitigations (action chunking, parallel decoding) help but do not fully close the gap. The 2025–26 generation narrows it further. Continuous flow-matching heads generate a full action chunk in a few denoising steps. On-device variants (Gemini Robotics On-Device, June 2025; Cosmos3-Edge 4B, July 2026) target local inference. Small open VLAs (GR00T N1.7 at 3B parameters) trade capacity for deployability.
+The fundamental limitation is the **latency-accuracy tradeoff** imposed by auto-regressive generation. Generating a 6-DOF action token sequence with a 7B-parameter model takes 50–500 ms on a single A100. That frequency floor rules out reactive control for dynamic tasks such as catching or avoiding moving objects. Architectural mitigations (action chunking, parallel decoding) help but do not fully close the gap. The 2025–26 generation narrows it further. Continuous flow-matching heads generate a full action chunk in a few denoising steps. On-device variants (Gemini Robotics On-Device, June 2025; Gemini Robotics On-Device 2, July 2026, which adapts to new embodiments within hours of data; Cosmos3-Edge 4B, July 2026) target local inference. Small open VLAs (GR00T N1.7 at 3B parameters) trade capacity for deployability.
 
 ### Paradigm 2: World Model-Based Planning
 
@@ -72,7 +74,7 @@ A critical missing dimension in most robot learning evaluations is a precise cha
 | **L4** | Task transfer | Related but distinct tasks, zero/few-shot without finetuning | Train on pick-and-place, test on sorting |
 | **L5** | Long-horizon compositional | Novel task decomposable from known primitives, chained reasoning required | "Make me breakfast" from scratch |
 
-Most current benchmarks test L1–L2. The VLA paradigm's main claimed advance is L3–L4 via vision-language pretraining. L5 remains largely unsolved by every paradigm. The best results (SayCan [Ahn2022], InnerMonologue [Huang2022]) rely on privileged enumeration of available skills and a closed-world assumption.
+Most current benchmarks test L1–L2. The VLA paradigm's main claimed advance is L3–L4 via vision-language pretraining. L5 remains largely unsolved by every paradigm. The best results (SayCan [Ahn2022], InnerMonologue [Huang2022]) rely on privileged enumeration of available skills and a closed-world assumption. Physical Intelligence's π0.7 (Apr 2026) gives the first company-reported signs of *compositional* generalization in an end-to-end VLA: it recombines skills, e.g. folding t-shirts on a UR5e with no laundry data for that robot, or using an air fryer after minimal coaching. However, it still needs step-by-step guidance for long tasks and has no standardized external benchmark, so it sits at the L4–L5 boundary rather than solving L5.
 
 **A caveat surfaced in 2025: L1 is not solved either.** LIBERO-Plus [Fei2025] shows that VLAs scoring ~95% on clean LIBERO drop below 30% under modest *camera-viewpoint* or *robot-initial-state* perturbations, which are L1 changes in this taxonomy. Headline L3–L4 claims should therefore be read alongside L1 robustness curves.
 
@@ -91,7 +93,7 @@ Most current benchmarks test L1–L2. The VLA paradigm's main claimed advance is
 | **Interpretability** | Low (black-box end-to-end) | Partial (world model visualizable) | Low (diffusion process opaque) | High (LLM chain-of-thought auditable; modular) |
 | **Key failure mode** | Slow inference; fine-grained manipulation; compounding tokenization error | Distribution shift during rollout; contact prediction failure | No semantic understanding; stuck in demonstration support | Tool-calling hallucination; skill boundary mismatch |
 | **Hardware requirements** | GPU inference (A100/H100) for large models; edge deployment needs quantization | Modest GPU; compact world model | Modest GPU; DDPM slow on CPU | LLM: cloud/large GPU; skill policies: embedded |
-| **Open-source** | OpenVLA (7B), Octo (multi-modal); π0 weights released Feb 2025; π0.5 weights Sept 2025 (openpi); GR00T N1.7 3B (Apache 2.0) | DreamerV3 (JAX); V-JEPA 2 / 2-AC (Meta); Cosmos-Predict2.5 and Cosmos 3 (NVIDIA open models) | Diffusion Policy (Columbia); 3D-DP (Ze2024) | Code-as-Policies (Google); SayCan partially; Gemini Robotics-ER 1.5 via API (not open weights) |
+| **Open-source** | OpenVLA (7B), Octo (multi-modal); π0 weights released Feb 2025; π0.5 weights Sept 2025 (openpi); GR00T N1.7 3B (Apache 2.0) | DreamerV3 (JAX); V-JEPA 2 / 2-AC (Meta); Cosmos-Predict2.5 and Cosmos 3 (NVIDIA open models) | Diffusion Policy (Columbia); 3D-DP (Ze2024) | Code-as-Policies (Google); SayCan partially; Gemini Robotics-ER 1.5 / ER 2 via API and AI Studio (not open weights) |
 | **Tech Readiness Level (TRL)** | TRL 4–6 | TRL 3–5 | TRL 5–7 | TRL 5–7 |
 | **Best use case** | Language-guided pick-and-place; generalizing across scene backgrounds | Long-horizon planning; simulation-heavy training | Precise dexterous manipulation; bimanual tasks with rich demos | Multi-step household instructions; task sequencing |
 
@@ -115,6 +117,8 @@ The "bitter lesson" [Sutton2019] holds that general methods that leverage comput
 
 **[Pro6]** *(2025–26)* **Human video is becoming usable robot data.** NVIDIA's GR00T N1.7 (2026) pretrains on **20K hours of EgoScale egocentric human video** alongside robot data. It uses a *relative end-effector action space shared by human and robot embodiments*, and NVIDIA credits this for improved generalization and language following. If human video transfers at scale, the data-cost argument in [Con3] weakens substantially.
 
+**[Pro7]** *(2026)* **Generalists are catching up with specialists.** Physical Intelligence reports that a single π0.7 generalist (Gemma 3 4B backbone + ~860M action expert, trained with subtask instructions and subgoal images as context) matches its own RL-fine-tuned π*0.6 specialists on laundry, espresso and box building. If confirmed externally, this is the clearest sign yet that breadth need not cost per-task performance (see [Generalist vs. Specialist](./11_generalist_vs_specialist.md)).
+
 ### Arguments AGAINST scaling solving robotics
 
 **[Con1]** **The physics bottleneck:** Robot learning requires sample-efficient learning of continuous physical dynamics, not just pattern recognition over discrete tokens. A language model learning to "say" the right action token is not the same as a controller learning to maintain contact force under compliance. Current action tokenization schemes discard the continuous-time physics that makes manipulation hard.
@@ -127,7 +131,7 @@ The "bitter lesson" [Sutton2019] holds that general methods that leverage comput
 
 **[Con5]** *(2025–26)* **Benchmark gains overstate deployable gains.** LIBERO-Plus shows near-saturated VLAs collapsing under camera and initial-state shifts. VLN-PE [Wang2025] shows navigation success falling by ~12 points when idealized motion is replaced with physical controllers. Scale has raised clean-split scores faster than robustness, so scaling claims measured on saturated benchmarks are weak evidence.
 
-**Synthesis:** Scale will solve the *semantic and compositional* aspects of robot intelligence — the "what to do" layer. It will not by itself solve the *motor execution* layer — the "how to do it precisely and safely." The field's near-term path requires coupling large-scale pretrained semantic priors with specialized high-bandwidth control policies, not a single monolithic scaling solution. The 2025–26 evidence refines this. *Diversity* scaling (environments, objects, human video) looks real. Reinforcement learning from deployment experience, as in π*0.6 and its Recap method, is emerging as the mechanism that converts semantic competence into execution reliability.
+**Synthesis:** Scale will solve the *semantic and compositional* aspects of robot intelligence — the "what to do" layer. It will not by itself solve the *motor execution* layer — the "how to do it precisely and safely." The field's near-term path requires coupling large-scale pretrained semantic priors with specialized high-bandwidth control policies, not a single monolithic scaling solution. The 2025–26 evidence refines this. *Diversity* scaling (environments, objects, human video) looks real. Reinforcement learning from deployment experience, as in π*0.6 and its Recap method, is emerging as the mechanism that converts semantic competence into execution reliability. π0.7 suggests that these specialist gains can then be folded back into a single generalist.
 
 ---
 
@@ -153,11 +157,11 @@ graph TD
 
 | Company / Lab | Data source | Data scale (est. 2026) | Flywheel status |
 |--------------|-------------|----------------------|----------------|
-| Physical Intelligence (π) | Diverse partner deployments; 7-robot training; homes (π0.5) | ~68 tasks at π0 launch, scaling | Active; π0.5 open-sourced (Sept 2025); π*0.6 (Nov 2025) uses RL from real experience and corrections (Recap) |
-| Google DeepMind | RT-X OXE; Everyday Robots legacy; ALOHA 2, Apptronik and partner data | 1M+ episodes (OXE) | Active; Gemini Robotics 1.5 + ER 1.5 (Sept 2025), On-Device (June 2025); trusted-tester program |
+| Physical Intelligence (π) | Diverse partner deployments; 7-robot training; homes (π0.5) | ~68 tasks at π0 launch, scaling | Active; π0.5 open-sourced (Sept 2025); π*0.6 (Nov 2025) uses RL from real experience and corrections (Recap); π0.7 (Apr 2026) generalist matches the π*0.6 specialists; $600M Series B at $5.6B (Nov 2025), ~$1B at >$11B reported in talks (Mar 2026) |
+| Google DeepMind | RT-X OXE; Everyday Robots legacy; ALOHA 2, Apptronik and partner data | 1M+ episodes (OXE) | Active; Gemini Robotics 1.5 + ER 1.5 (Sept 2025), On-Device (June 2025); Gemini Robotics 2 / ER 2 / On-Device 2 (Jul 2026, whole-body; VLA and On-Device early-access only); trusted-tester program |
 | NVIDIA | Isaac Lab synthetic; Cosmos augmentation; partner data; EgoScale human video | Largely synthetic + 20K h human video (GR00T N1.7) | Accelerating; Cosmos 3 (May 2026) as data engine; Newton 1.0 physics; open GR00T N1.7 |
 | Tesla | Optimus factory deployment (Fremont, Austin) | Millions of cycles in restricted domains | Nascent; battery sorting, parts handling |
-| Figure / 1X / Unitree | BMW factory (Figure); home pilots (1X); Amazon (Digit) | Tens of thousands of episodes | Early-stage; Figure 03 (Oct 2025) and 1X NEO consumer pre-orders (Oct 2025) aim to start home-data flywheels |
+| Figure / 1X / Unitree | BMW factory (Figure); home pilots (1X); Amazon (Digit) | Tens of thousands of episodes | Early-stage; Figure 03 (Oct 2025) with Helix 02 (Jan 2026; 8-hour intervention-free shifts claimed, no metrics released) and 1X NEO consumer pre-orders (Oct 2025) aim to start home-data flywheels |
 
 The moat is not model architecture, which is widely published. It is **proprietary demonstration data collected in real deployment environments**. Since late 2025 it is increasingly also **deployment experience usable for RL** (autonomous rollouts plus human corrections). This is why deployment speed matters independently of policy quality: earlier deployment starts the data-collection flywheel earlier. A countervailing trend is that open weights (π0.5, GR00T N1.7, Cosmos) commoditize the base model, which pushes differentiation further toward data and post-training.
 
@@ -167,10 +171,11 @@ The moat is not model architecture, which is widely published. It is **proprieta
 
 ### Physical Intelligence
 
-π0 was released in October 2024. π0.5 (April 2025) introduced open-world generalization in unseen homes, and its weights were open-sourced in openpi (Sept 2025, with knowledge-insulation training and PyTorch support). π*0.6 (November 2025) added RL-from-experience fine-tuning via Recap. The 2026–2028 trajectory plausibly involves:
+π0 was released in October 2024. π0.5 (April 2025) introduced open-world generalization in unseen homes, and its weights were open-sourced in openpi (Sept 2025, with knowledge-insulation training and PyTorch support). π*0.6 (November 2025) added RL-from-experience fine-tuning via Recap. π0.7 (April 2026) moved to a Gemma 3 4B backbone with a ~860M action expert, trained with richer context (subtask instructions, subgoal images). It shows early compositional generalization, and a single generalist reportedly matches the π*0.6 specialists. On funding, the company closed a $600M Series B at a $5.6B valuation in November 2025, and in March 2026 Bloomberg reported talks to raise about $1B at a valuation above $11B (close unconfirmed). The remaining 2026–2028 trajectory plausibly involves:
 - Scaling the architecture and data mix using additional partner deployment data (larger backbones are likely; specific sizes are not public)
 - Extending to bimanual and mobile manipulation at industrial scale
 - RL from autonomous experience and human corrections (the Recap direction) as a standard post-training stage, the robot analogue of RLHF
+- Reducing the step-by-step guidance π0.7 still needs on long tasks, and submitting compositional generalization to external benchmarks
 
 ### NVIDIA (Cosmos + Isaac Lab + GR00T)
 
@@ -185,11 +190,12 @@ Following RT-X, DeepMind's Gemini Robotics integrates Gemini's multimodal reason
 - **Gemini Robotics** (Mar 2025) and **Gemini Robotics-ER** (embodied reasoning)
 - **Gemini Robotics On-Device** (June 2025), for local low-latency execution
 - **Gemini Robotics 1.5 + ER 1.5** (Sept 2025). The VLA "thinks before acting", and skills transfer across embodiments (ALOHA 2, Franka, Apptronik Apollo). ER 1.5 acts as an orchestrator that can call tools and is available to developers through the Gemini API.
-- **2026–2028:** broader embodiment coverage, humanoids via Apptronik, and integration with Google's manufacturing and logistics partners
+- **Gemini Robotics 2 + ER 2 + On-Device 2** (30 Jul 2026). The VLA adds whole-body humanoid control (walking, crouching and manipulating while reasoning), where the previous version was mostly upper-body. ER 2, an embodied-reasoning/planning model available in Google AI Studio, is Google's safest robotics model on ASIMOV-2 and ships with a new ASIMOV-Agentic benchmark (e.g. asking for human help when uncertain). On-Device 2 runs locally and adapts to new embodiments within hours of data. The VLA and On-Device models are early-access only.
+- **2026–2028 (remaining):** wider availability beyond early-access partners, broader embodiment coverage, humanoids via Apptronik, and integration with Google's manufacturing and logistics partners
 
 ### Humanoid Platforms: Figure, 1X, Unitree
 
-- **Figure:** Figure 02 (Aug 2024) was deployed at BMW, and the Helix dual-system VLA was introduced in Feb 2025. **Figure 03** was unveiled in Oct 2025, earlier than the previously projected 2026–27. It was redesigned for Helix and home use, with improved hands and tactile sensing.
+- **Figure:** Figure 02 (Aug 2024) was deployed at BMW, and the Helix dual-system VLA was introduced in Feb 2025. **Figure 03** was unveiled in Oct 2025, earlier than the previously projected 2026–27. It was redesigned for Helix and home use, with improved hands and tactile sensing. **Helix 02** (late Jan 2026) runs on Figure 03 as a single learned system for perception, balance, locomotion and manipulation, with a new ~1 kHz System 0. Figure showed ~4 minutes of autonomous dishwasher unloading and reloading and claims 8-hour shifts without intervention, but has not released throughput or error metrics.
 - **1X NEO:** Consumer-oriented humanoid. Pre-orders opened in Oct 2025 (US$20,000, or a subscription), with deliveries planned for 2026. Early units rely partly on teleoperated "expert mode" assistance, which doubles as data collection.
 - **Unitree:** The G1 at about $16K democratizes research hardware, and the lower-cost R1 was announced in 2025. H1/H2-class full-size humanoids target industrial use, and data collection runs at academic scale.
 
@@ -199,7 +205,7 @@ Based on current trajectories, reasonable 2028 predictions (not guarantees), wit
 
 | # | Prediction | Status (Oct 2026) |
 |---|-----------|-------------------|
-| 1 | A deployed humanoid robot completes 5+ sequential manipulation tasks in an unstructured home environment with <10% failure rate | Not yet demonstrated under independent evaluation. Consumer humanoids (1X NEO, Figure 03) are entering homes, but with teleoperation fallback |
+| 1 | A deployed humanoid robot completes 5+ sequential manipulation tasks in an unstructured home environment with <10% failure rate | Not yet demonstrated under independent evaluation. Consumer humanoids (1X NEO, Figure 03) are entering homes, but with teleoperation fallback. The closest public demo is Helix 02's ~4-minute autonomous dishwasher sequence (company-reported, no error metrics) |
 | 2 | Simulation-trained policies (using world models for augmentation) match teleoperation-trained policies on 80% of standard benchmark tasks | Partial. Sim-only navigation (NavDP) transfers zero-shot, and DreamGen-style neural trajectories teach new verbs, but manipulation still relies on real teleoperation |
 | 3 | Diffusion-based action generation achieves <10 ms inference on Jetson Thor, enabling real-time reactive control | Plausible. Edge-tier models (Cosmos3-Edge 4B, GR00T N1.7 with TensorRT export) target Thor; no standardized latency benchmark yet |
 | 4 | A data-scaling paper demonstrates quantitative manipulation scaling laws analogous to Chinchilla laws in NLP | Partial. Power-law diversity scaling [Lin2024] and industry-reported scaling (GEN-0) exist, but there is no joint model-size × data-size × diversity law |
@@ -233,15 +239,20 @@ This mirrors the dual-process cognitive architecture (System 1 / System 2 of [Ka
 | System | Slow system | Fast system | Interface |
 |--------|-------------|-------------|-----------|
 | Figure Helix (Feb 2025) | VLM "System 2" | Visuomotor "System 1" | Latent vector |
+| Figure Helix 02 (Jan 2026) | VLM "System 2" (semantic reasoning) | Whole-body visuomotor "System 1" + new ~1 kHz "System 0" for balance and coordination | Latent vector (S2 → S1); learned whole-body control (S1 → S0) |
 | GR00T N1.x (NVIDIA) | VLM backbone (Eagle → Cosmos-Reason2) | Flow-matching DiT action head | Cross-attention over VLM tokens |
 | Gemini Robotics 1.5 + ER 1.5 | ER 1.5 orchestrator (planning, tool calls) | Gemini Robotics 1.5 VLA | Natural-language sub-instructions |
+| Gemini Robotics 2 + ER 2 (Jul 2026) | ER 2 planner (AI Studio; ASIMOV-2 / ASIMOV-Agentic safety) | Gemini Robotics 2 whole-body VLA | Natural-language sub-instructions |
 | π0.5 | Same VLM predicts a language subtask | Flow-matching action expert | Text subtask + shared backbone |
+| π0.7 (Apr 2026) | Gemma 3 4B VLM, steerable with subtask instructions | ~860M action expert | Text subtasks + subgoal images |
 | InternVLA-N1 (navigation) | Video-LLM System 2 | NavDP diffusion System 1 | Pixel goals / learned latent plans |
 | DexGraspVLA | Pre-trained VLM planner | Diffusion grasp controller | Grounded target (mask/box) |
 
 The slow system handles semantic generalization (L3–L5 of our generalization framework). The fast system handles precision execution (L1–L2). Crucially, the two systems operate on different timescales and can be trained with different data regimes:
 - Slow system: large-scale internet + robot data, slow update
 - Fast system: task-specific demonstrations, fast adaptation via finetuning or in-context imitation
+
+Helix 02 adds a third tier below the fast system. This suggests that the "dual" system is becoming a hierarchy of timescales: semantic reasoning, high-frequency whole-body visuomotor control, and ~1 kHz balance.
 
 The design space that remains open is the **interface** (see Open Problem 6). Language sub-instructions are auditable but lossy, latent vectors are expressive but opaque, and pixel or mask goals sit in between.
 
@@ -263,6 +274,9 @@ The design space that remains open is the **interface** (see Open Problem 6). La
 | Do As I Can, Not As I Say: Grounding Language in Robotic Affordances | Ahn et al. | 2022 | arXiv / CoRL | SayCan: LLM planning + value function affordance grounding |
 | Open X-Embodiment: Robotic Learning Datasets and RT-X Models | OXE Collab | 2023 | ICRA 2024 | 22-robot, 21-institution dataset; 50% improvement with data pooling |
 | LIBERO-Plus: In-depth Robustness Analysis of Vision-Language-Action Models | Fei et al. | 2025 | arXiv:2510.13626 | Shows L1 perturbations collapse saturated VLA benchmark scores |
+| Helix 02 | Figure AI | 2026 | Company blog | Three-tier System 0/1/2 whole-body humanoid control on Figure 03 |
+| π0.7: a Steerable Generalist Robotic Foundation Model | Physical Intelligence | 2026 | arXiv:2604.15483 | Early compositional generalization; one generalist ≈ RL-fine-tuned π*0.6 specialists |
+| Gemini Robotics 2 / ER 2 / On-Device 2 | Google DeepMind | 2026 | DeepMind blog + model card | Whole-body humanoid VLA; ER 2 planner with ASIMOV-2 / ASIMOV-Agentic safety evaluation |
 
 ---
 
@@ -278,6 +292,7 @@ The design space that remains open is the **interface** (see Open Problem 6). La
 | DreamerV3 [Hafner2023] | Atari 57 + DMC + others | Human-norm. score | SOTA across all three | Single hyperparameter set |
 | V-JEPA 2-AC [Assran2025] | Real Franka, zero-shot pick-and-place (cup) | Success Rate | 80% | vs. Octo 10%, Cosmos planner 0%; no task-specific data |
 | OpenVLA-OFT | LIBERO-Plus (7 perturbation axes) | Success Rate | 69.6% | vs. ~95%+ on clean LIBERO; 56.4% under camera shifts |
+| π0.7 | Laundry / espresso / box building (real) | Task performance | ≈ RL-fine-tuned π*0.6 specialists | Single generalist; company-reported; no standardized external benchmark |
 
 ---
 
@@ -289,8 +304,8 @@ The design space that remains open is the **interface** (see Open Problem 6). La
 | **World model paradigm** | Sample efficient; enables mental simulation; latent planning interpretable; doubles as data engine (DreamGen, Cosmos) | Contact prediction failure; sim-to-real gap in learned dynamics; requires RL infrastructure; grasp success still below teleop-trained VLAs |
 | **Diffusion policy** | Best-in-class for dexterous imitation; handles multimodal action distributions; fast deployment | No semantic generalization; demo-bound; DDPM inference slow without distillation |
 | **Modular LLM + Policy** | Interpretable; compositional reasoning; leverages off-the-shelf LLMs | Skill boundary mismatch; LLM hallucination in tool calls; latency from LLM planning |
-| **Dual-system hybrids** (Helix, GR00T, Gemini Robotics 1.5 + ER) | Combine semantic generalization with reactive control; separate data regimes per layer; now industry standard | Interface design ad hoc; credit assignment across layers; failures at the boundary hard to diagnose |
-| **Scale as a solution** | Empirical scaling laws encouraging; semantic priors transfer well; industry investment accelerating; human video emerging as a cheap data source | Data collection bottleneck; embodiment diversity hurts transfer; safety failures not tolerated; benchmark saturation masks robustness gaps |
+| **Dual-system hybrids** (Helix / Helix 02, GR00T, Gemini Robotics 1.5 / 2 + ER) | Combine semantic generalization with reactive control; separate data regimes per layer; now industry standard | Interface design ad hoc; credit assignment across layers; failures at the boundary hard to diagnose |
+| **Scale as a solution** | Empirical scaling laws encouraging; semantic priors transfer well; industry investment accelerating; human video emerging as a cheap data source; a single generalist (π0.7) reportedly matches RL-tuned specialists | Data collection bottleneck; embodiment diversity hurts transfer; safety failures not tolerated; benchmark saturation masks robustness gaps |
 
 ---
 
@@ -300,13 +315,13 @@ The design space that remains open is the **interface** (see Open Problem 6). La
 
 2. **Dexterous manipulation at human level:** Current systems achieve pick-and-place at >90% success but in-hand manipulation (re-grasping, pivot grasp, finger gaiting) at <30%. The gap between gross and fine manipulation is not addressed by scale alone.
 
-3. **Safety and failure recovery:** No current paradigm provides systematic guarantees about failure rates or recovery behavior. Deploying a robot with 95% task success but 5% unsafe failure rate is not acceptable in human-occupied spaces.
+3. **Safety and failure recovery:** No current paradigm provides systematic guarantees about failure rates or recovery behavior. Deploying a robot with 95% task success but 5% unsafe failure rate is not acceptable in human-occupied spaces. Gemini Robotics ER 2's ASIMOV-2 and ASIMOV-Agentic evaluations address semantic and agentic safety at the planner level (e.g. asking for help when uncertain), but they provide no physical guarantees.
 
 4. **Causal understanding of physical dynamics:** Current models learn correlations in observation space. A robot that understands *why* objects behave as they do (mass, friction, gravity) would generalize to novel physical configurations far more robustly.
 
 5. **Lifelong learning without catastrophic forgetting:** Robots deployed continuously must accumulate skills without forgetting prior ones. Standard fine-tuning on new tasks degrades performance on prior tasks by 20–50%; this is an unsolved systems problem. RL from deployment experience (π*0.6) makes this more urgent, because each round of on-robot improvement risks regressions elsewhere.
 
-6. **The slow-fast interface:** Dual-system architectures need a principled interface between the semantic planner and the reactive controller. How should subgoals be specified (images, language, latent vectors, masks)? How are failures detected and escalated? The table in Part VII shows that every major 2025–26 system made a different choice, with no comparative study.
+6. **The slow-fast interface:** Dual-system architectures need a principled interface between the semantic planner and the reactive controller. How should subgoals be specified (images, language, latent vectors, masks)? How are failures detected and escalated? The table in Part VII shows that every major 2025–26 system made a different choice, with no comparative study. Helix 02's three tiers add a further interface, between the visuomotor policy and a ~1 kHz balance controller.
 
 7. **Embodiment-agnostic policies:** Despite OXE and OpenVLA, cross-embodiment transfer remains fragile for embodiments with very different kinematics (e.g., 2-finger gripper vs. 5-finger hand). The right representation for embodiment-agnostic action is an open research question. Relative end-effector actions shared with humans (GR00T N1.7) are one candidate, though they do not cover hand articulation.
 
@@ -330,3 +345,6 @@ The design space that remains open is the **interface** (see Open Problem 6). La
 - [DreamerV3 Paper (arXiv:2301.04104)](https://arxiv.org/abs/2301.04104)
 - [Diffusion Policy Project Page](https://diffusion-policy.cs.columbia.edu/)
 - [Physical Intelligence Blog](https://www.pi.website/blog)
+- [π0.7 (arXiv:2604.15483)](https://arxiv.org/abs/2604.15483)
+- [Gemini Robotics 2 (DeepMind blog)](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/)
+- [Figure Helix 02](https://figure.ai/news/helix-02)

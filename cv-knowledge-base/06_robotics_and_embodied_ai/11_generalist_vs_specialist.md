@@ -10,10 +10,11 @@
 
 > **🆕 October 2026 update:**
 > - New generalist evidence: π0.5 (unseen homes), **π\*0.6 with Recap RL** (generalist + on-task RL from experience and corrections), Gemini Robotics 1.5 Motion Transfer, Generalist AI's **GEN-0** scaling results, and TRI's careful **Large Behavior Model** study.
-> - New specialist evidence: HIL-SERL (near-perfect success after 1–2.5 h of real-world RL) and the persistence of learned RL **whole-body controllers** beneath every humanoid VLA.
-> - Updated the dual-system lineage: GR00T N1.5 → N1.6 → **N1.7** (3B, Cosmos-Reason2 backbone, EgoScale human-video pre-training, GEAR-SONIC whole-body control), Helix on Figure 03, Galaxea G0, AgiBot GO-1.
+> - New specialist evidence: HIL-SERL (near-perfect success after 1–2.5 h of real-world RL) and the persistence of a dedicated, specially trained **whole-body/balance tier** in every humanoid stack, as a separate RL controller or, in Helix 02, as a learned ~1 kHz System 0.
+> - Updated the dual-system lineage: GR00T N1.5 → N1.6 → **N1.7** (3B, Cosmos-Reason2 backbone, EgoScale human-video pre-training, GEAR-SONIC whole-body control), Helix → **Helix 02** on Figure 03 (three-tier System 0/1/2), Gemini Robotics 2 + ER 2, Galaxea G0, AgiBot GO-1.
 > - New framing: the 2025–26 consensus is **"generalist pre-training, specialist post-training"**—a single foundation model specialized per deployment by fine-tuning and RL—rather than either pure camp.
 > - New Key Papers/benchmark rows, open problems and Further Reading links.
+> - Added the most direct 2026 evidence in this debate: **π0.7** (Apr 2026), a single generalist that reportedly matches the RL-fine-tuned π\*0.6 specialists on laundry, espresso and box building, plus **Gemini Robotics 2** (Jul 2026) whole-body control. Figure's 8-hour-shift claim is now qualified as company-reported, without throughput or error metrics.
 
 ---
 
@@ -21,7 +22,7 @@
 
 One of the deepest open debates in embodied AI is architectural: should a robot be controlled by a single large "robot GPT" trained on all available data, or by a modular pipeline of specialist components each optimized for its particular subtask? The question mirrors debates from NLP (BERT/GPT versus ensemble methods), but with a critical physical twist — robots must act in real time, respect hard physical constraints, and fail safely in ways that text generators do not. Neither camp has won decisively as of October 2026, and the emergent consensus is a *dual-system* or *hierarchical* hybrid that tries to capture the best of both paradigms.
 
-The 2025–26 evidence sharpened this consensus into a recipe that mirrors LLM practice: **pre-train one generalist, then specialize it**. Physical Intelligence's π\*0.6 is a generalist VLA that is further improved on each target task with reinforcement learning from its own deployment experience; Gemini Robotics and GR00T ship as base models to be fine-tuned per embodiment; and even the most generalist humanoid stacks still rely on specialist, RL-trained whole-body controllers for balance and contact. The live question is therefore less "one model or many?" than *where* the boundary between shared pre-training and per-task specialization should sit.
+The 2025–26 evidence sharpened this consensus into a recipe that mirrors LLM practice: **pre-train one generalist, then specialize it**. Physical Intelligence's π\*0.6 is a generalist VLA that is further improved on each target task with reinforcement learning from its own deployment experience; Gemini Robotics and GR00T ship as base models to be fine-tuned per embodiment; and even the most generalist humanoid stacks still rely on a dedicated balance tier, either a separately RL-trained whole-body controller or, in Figure's Helix 02, a learned ~1 kHz System 0 inside the stack. In April 2026 π0.7 pushed the other way: a single generalist reportedly matched the RL-fine-tuned π\*0.6 specialists on their own tasks [PI2026], suggesting that specialist gains can be folded back into the generalist. The live question is therefore less "one model or many?" than *where* the boundary between shared pre-training and per-task specialization should sit.
 
 This section structures the debate as an intellectual confrontation, surveys the strongest evidence on each side, and describes the hybrid architectures that are currently attracting the most investment from both academia and industry.
 
@@ -52,6 +53,8 @@ The key claim is that internet-scale pre-training gives robots commonsense physi
 - **Cross-embodiment skill sharing.** Gemini Robotics 1.5 [GeminiRobotics2025] uses *Motion Transfer* so that skills learned on one robot (ALOHA) transfer to others (bi-arm Franka, Apptronik Apollo) without retraining per embodiment.
 - **Industrial-scale scaling curves.** Generalist AI's GEN-0 [GeneralistAI2025] reports power-law improvement of downstream error with ~270,000 hours of pre-training data, and an apparent **~7B-parameter threshold** below which models stop benefiting from more data—direct, if company-reported, evidence that capacity and data must co-scale.
 - **Careful multitask evidence.** TRI's Large Behavior Model study [TRI2025] used blind, statistically powered evaluation and found that fine-tuned multitask LBMs outperform single-task policies and reach a given performance with substantially less task-specific data, improving smoothly with pre-training scale. With Boston Dynamics, TRI also ran a single language-conditioned LBM controlling the whole body of the electric Atlas on long-horizon tasks (Aug 2025).
+- **A generalist matches its own specialists.** π0.7 [PI2026] (Apr 2026; Gemma 3 4B backbone + ~860M action expert, trained with richer context such as subtask instructions and subgoal images) is reported to match the task-specific, RL-fine-tuned π\*0.6 specialists on laundry, espresso and box building with a single model. It also shows early **compositional generalization**, recombining skills to fold t-shirts on a UR5e with no laundry data for that robot and to use an air fryer after minimal coaching. This is the most direct evidence so far for the generalist camp. The caveats are that it needs step-by-step guidance for long tasks and has no standardized external benchmark.
+- **Whole-body generalists.** Gemini Robotics 2 [GeminiRobotics2026] (Jul 2026) extends a single VLA from mostly upper-body control to whole-body humanoid control (walking, crouching and manipulating while reasoning). Its companion On-Device 2 model adapts to new embodiments within hours of data, although the VLA and On-Device models are limited to early-access partners.
 
 ### Simpler End-to-End Design
 
@@ -124,7 +127,7 @@ Training a VLA from scratch on a new task typically requires thousands to tens o
 ### New Specialist Evidence (2025–2026)
 
 - **Real-world RL specialists.** HIL-SERL [Luo2025] (Science Robotics 2025) trains task-specific vision-based policies with human-in-the-loop RL directly on real robots and reaches **near-perfect success with fast cycle times after only 1–2.5 hours of training** on precise, dynamic and dual-arm tasks (e.g. assembly, insertion, flipping)—outperforming imitation baselines trained on far more data. For a known, fixed task in a factory cell this remains the most sample-efficient route to reliability.
-- **Whole-body control stays specialist.** Every deployed humanoid VLA in 2025–26 sits on top of a separately trained RL locomotion/whole-body controller (e.g. NVIDIA's GEAR-SONIC controller shipped with GR00T N1.7 [NVIDIA2026]); none of the generalist models closes the balance-and-contact loop at kHz rates itself.
+- **Whole-body control stays specialized.** Through 2025, every deployed humanoid VLA sat on top of a separately trained RL locomotion/whole-body controller (e.g. NVIDIA's GEAR-SONIC controller shipped with GR00T N1.7 [NVIDIA2026]). In 2026 Figure's Helix 02 [Figure2026] folded balance into a single learned system, but it did so through a dedicated ~1 kHz **System 0** trained separately on human motion data and sim-to-real RL. Gemini Robotics 2 likewise controls the whole body. Specialization has therefore moved *inside* the stack rather than disappearing: the kHz balance loop is still a distinct, specially trained tier.
 - **Reliability gap in deployment.** Generalist demos emphasize breadth, while commercial deployments (logistics tote handling, factory part loading) are narrow, repetitive and judged on uptime and throughput—metrics on which tuned specialists and heavily post-trained generalists, not zero-shot generalists, have delivered.
 
 ---
@@ -169,7 +172,7 @@ graph TD
 
 **GR00T N1** [NVIDIA2025]: Released March 2025. System 2 is a 1.34B-parameter VLM; System 1 is a fast reactive policy. Total 2.2B parameters. Samples 16 actions in 63.9 ms on L40 GPU. Trained on 780,000 synthetic + real trajectories across Fourier GR-1 and 1X humanoid embodiments. Outperforms SOTA imitation learning baselines on simulation benchmarks across multiple embodiments.
 
-**Helix** [Figure2025]: Developed by Figure AI, released February 2025. System 2 is a 7B-parameter VLM operating at 7–9 Hz; System 1 is an 80M-parameter visuo-motor controller at 200 Hz. Both run on onboard embedded GPUs with no cloud dependency. Demonstrated full 8-hour autonomous manufacturing shifts as of May 2026.
+**Helix** [Figure2025]: Developed by Figure AI, released February 2025. System 2 is a 7B-parameter VLM operating at 7–9 Hz; System 1 is an 80M-parameter visuo-motor controller at 200 Hz. Both run on onboard embedded GPUs with no cloud dependency. Helix controls the upper body. For its successor, Helix 02, Figure claims 8-hour shifts without intervention but has released no throughput or error metrics.
 
 **π₀** [Black2024]: Physical Intelligence's generalist policy uses flow matching (continuous normalizing flow) as the action head, with PaliGemma as the language backbone. π₀-FAST [PhysicalIntelligence2024] further accelerates action generation using DCT-space (FAST) tokenization, achieving 7× compression of action sequences and 5× faster training convergence.
 
@@ -177,8 +180,11 @@ graph TD
 
 - **GR00T N1.5 → N1.6 → N1.7** [NVIDIA2026]: N1.5 (mid-2025) froze the VLM to preserve language grounding; N1.6 used an Eagle-based VLM with a 32-layer DiT action head; **N1.7** (2026, GA release, 3B parameters) swaps in the reasoning VLM **Cosmos-Reason2-2B** (Qwen3-VL architecture) as System 2, halves the DiT head to 16 layers, uses a **relative end-effector action space shared by robot and human data**, pre-trains on ~20K hours of EgoScale human video, extends the action horizon from 16 to 40 steps and the state/action dimension from 29 to 132, and exports to TensorRT for Jetson-class deployment.
 - **Helix on Figure 03** [Figure2025]: Figure's third-generation humanoid (Oct 2025) was designed around Helix, with a redesigned camera system and tactile fingertips feeding System 1.
+- **Helix 02** [Figure2026] (late Jan 2026): a single learned system on Figure 03 that unifies perception, balance, locomotion and manipulation in three tiers. System 2 handles semantic reasoning, System 1 turns perception into whole-body motion at high frequency, and a new System 0 runs at ~1 kHz for balance and coordination. Its flagship demo is ~4 minutes of autonomous dishwasher unloading and reloading.
 - **π0.5 / π0.6** [PI2025]: rather than two separate networks, a single VLA first decodes a high-level sub-task (slow, discrete) and then an action chunk through a flow-matching action expert (fast, continuous), trained with *knowledge insulation* so that action-expert gradients do not degrade the VLM.
 - **Gemini Robotics 1.5 + ER 1.5** [GeminiRobotics2025]: an explicit two-model system in which an embodied-reasoning VLM orchestrates a "thinking" VLA (see [Language-Conditioned Control](./10_language_conditioned_control.md)).
+- **Gemini Robotics 2 + ER 2** [GeminiRobotics2026] (Jul 2026): the same two-model split, now with a whole-body VLA executor and an ER 2 planner (available in Google AI Studio) that Google rates as its safest robotics model on ASIMOV-2 and evaluates on a new ASIMOV-Agentic benchmark.
+- **π0.7** [PI2026] (Apr 2026): continues the single-network design of π0.5, but the prompt carries subtask instructions and subgoal images, so the slow "planning" signal can come from a human coach or a higher-level model.
 - **Galaxea G0** and **AgiBot GO-1** (2025): open Chinese dual-system/latent-planner VLAs trained on single-vendor fleet data (see [Robot Data & Teleoperation](./09_robot_data_and_teleoperation.md)).
 
 ### Hierarchical Control
@@ -260,7 +266,7 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 | GR00T N1: An Open Foundation Model for Generalist Humanoid Robots | NVIDIA Research (Fox et al.) | 2025 | arXiv | Dual-system 2.2B VLA; 780k synthetic trajectories; 63.9 ms inference on L40 |
 | Octo: An Open-Source Generalist Robot Policy | Ghosh et al. (Berkeley, Stanford, CMU, Google DeepMind) | 2024 | RSS 2024 | 93M transformer-diffusion policy; 800k episodes; modular observation heads |
 | Factored Task and Motion Planning with Combined Optimization, Sampling and Learning | Toussaint et al. | 2024 | ICRA 2024 | Factor-graph TAMP; specialist controllers per logic mode; formal guarantees |
-| Helix: A Vision-Language-Action Model for Generalist Humanoid Control | Figure AI | 2025 | Technical Report | 7B S2 + 80M S1; 200 Hz reactive; no cloud; full 8-hour autonomous shifts |
+| Helix: A Vision-Language-Action Model for Generalist Humanoid Control | Figure AI | 2025 | Technical Report | 7B S2 + 80M S1; 200 Hz reactive; no cloud; upper-body control |
 | π0.5: a Vision-Language-Action Model with Open-World Generalization | Physical Intelligence | 2025 | CoRL 2025 | Hierarchical in-model reasoning + co-training; long-horizon tasks in unseen homes |
 | π\*0.6: a VLA That Learns From Experience (Recap) | Physical Intelligence | 2025 | Technical report | Advantage-conditioned RL on deployment experience + corrections; >2× throughput on hard tasks |
 | Gemini Robotics 1.5 | Gemini Robotics Team (Google DeepMind) | 2025 | Technical report | ER orchestrator + thinking VLA; Motion Transfer across embodiments |
@@ -268,6 +274,9 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 | HIL-SERL: Precise and Dexterous Robotic Manipulation via Human-in-the-Loop RL | Luo, Xu, Wu, Levine | 2024 | Science Robotics 2025 | Real-world RL specialists: near-perfect success in 1–2.5 h |
 | GEN-0: Embodied Foundation Models That Scale with Physical Interaction | Generalist AI | 2025 | Technical blog | 270k h pre-training; data power law; ~7B capacity threshold |
 | GR00T N1.7 | NVIDIA | 2026 | Open model release | 3B; Cosmos-Reason2 System 2; human-video pre-training; GEAR-SONIC whole-body control |
+| Helix 02 | Figure AI | 2026 | Company blog | Three-tier System 0/1/2; learned ~1 kHz balance tier; whole-body control on Figure 03 |
+| π0.7: a Steerable Generalist Robotic Foundation Model | Physical Intelligence | 2026 | arXiv:2604.15483 | Single generalist ≈ RL-fine-tuned π\*0.6 specialists; early compositional generalization |
+| Gemini Robotics 2 / ER 2 / On-Device 2 | Google DeepMind | 2026 | DeepMind blog + model card | Whole-body humanoid VLA; ER 2 planner; On-Device 2 adapts to new embodiments within hours of data |
 
 ---
 
@@ -281,9 +290,10 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 | Octo-Base (93M) | Language-conditioned manipulation | vs. RT-2-X | Comparable on language tasks | 800k training episodes |
 | GR00T N1 (2.2B) | Fourier GR-1 + 1X humanoid tasks | vs. SOTA IL | Outperforms SOTA simulation benchmarks | 40% improvement from +synthetic data |
 | π₀ | 9 benchmark categories, 5 embodiments | Task completion | State-of-the-art on deformable + long-horizon manipulation | Flow matching; 10k+ demo hours |
-| Helix (Figure AI) | Factory manipulation | Deployment | 8-hour autonomous shifts | 200 Hz System 1; 7–9 Hz System 2 |
+| Helix / Helix 02 (Figure AI) | Factory and household manipulation | Deployment | 8-hour shifts claimed | Company claim; no throughput or error metrics released; Helix 02 demo: ~4-min autonomous dishwasher task |
 | π\*0.6 + Recap | Espresso, laundry, box assembly | Throughput / failure rate | >2× / ~½ | Company-reported; generalist + task RL [PI2025b] |
 | HIL-SERL | Real-world precise/dynamic tasks | Success after 1–2.5 h training | Near-perfect | Task-specific RL specialist [Luo2025] |
+| π0.7 (single generalist) | Laundry, espresso, box building | Task performance vs. specialists | ≈ RL-fine-tuned π\*0.6 specialists | Company-reported; no standardized external benchmark [PI2026] |
 | GEN-0 | Real-world downstream tasks | Post-training error vs data | Power law; ≥7B needed | Company-reported [GeneralistAI2025] |
 | AgiBot GO-1 | AgiBot World tasks | Avg. perf. vs OXE pre-training | ~+30% | Fleet data vs aggregated data [AgiBot2025] |
 
@@ -293,7 +303,7 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 
 | Aspect | Generalist VLA Pros | Specialist/Modular Pros |
 |---|---|---|
-| **Generalization** | Zero-shot to novel objects and language instructions via web pre-training; emergent cross-task transfer [Zitkovich2023] | Provable performance guarantees within task domain; no distribution shift from out-of-domain instructions |
+| **Generalization** | Zero-shot to novel objects and language instructions via web pre-training; emergent cross-task transfer [Zitkovich2023]; early compositional generalization (π0.7) | Provable performance guarantees within task domain; no distribution shift from out-of-domain instructions |
 | **Data efficiency** | Amortizes data cost across all tasks; pre-training reduces per-task fine-tuning requirement | Requires only ~50–200 demonstrations per task; factor of 100× improvement in sample efficiency for known tasks |
 | **Control latency** | Dual-system architectures achieve 5–10 ms for fast path; full-speed LLM call is 50–200 ms which is incompatible with kHz force control | Model-based specialists run at 1–4 kHz with hard timing guarantees; composable with real-time OS schedulers |
 | **Safety / verifiability** | Black-box neural network; no formal stability certificates; interpretability research ongoing | Lyapunov functions, reachability analysis, formal verification (Drake) applicable; regulatorily auditable |
@@ -304,7 +314,7 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 
 ## Open Problems & Research Gaps
 
-1. **Closing the control frequency gap without losing generality.** The 5 ms System 1 / 100 ms System 2 split in dual-system models remains a pragmatic engineering hack rather than a principled solution. Can System 2 be made to predict physical state well enough that System 1 can extrapolate across a full 100 ms gap without re-querying? Quantifying the compounding error over multi-step extrapolation is an open research problem.
+1. **Closing the control frequency gap without losing generality.** The 5 ms System 1 / 100 ms System 2 split in dual-system models remains a pragmatic engineering hack rather than a principled solution. Can System 2 be made to predict physical state well enough that System 1 can extrapolate across a full 100 ms gap without re-querying? Quantifying the compounding error over multi-step extrapolation is an open research problem. Helix 02's learned ~1 kHz System 0 is the first industrial attempt to close this gap with a learned tier rather than a classical controller, but no metrics have been published.
 
 2. **The robot Chinchilla problem.** No work has yet derived principled optimal compute allocation curves for robot policies of the form "given N real demonstrations and M simulation hours, what is the optimal policy size?" The Chinchilla methodology applied to robot data would likely yield qualitatively different results due to data ceiling effects.
 
@@ -318,9 +328,9 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 
 7. **Evaluating generalization vs. memorization.** Current benchmarks conflate zero-shot generalization with performance on tasks that appear in pre-training web data. A clean benchmark that tests on tasks verifiably absent from web training distributions is needed to make the VLA generalization argument rigorous.
 
-8. **Where to put the specialization boundary.** "Generalist pre-training, specialist post-training" (π\*0.6 Recap, per-embodiment GR00T fine-tuning) is now standard, but there is no theory of how much task-specific RL or fine-tuning erodes generality (catastrophic forgetting) or how to share post-training gains back into the base model.
+8. **Where to put the specialization boundary.** "Generalist pre-training, specialist post-training" (π\*0.6 Recap, per-embodiment GR00T fine-tuning) is now standard, but there is no theory of how much task-specific RL or fine-tuning erodes generality (catastrophic forgetting) or how to share post-training gains back into the base model. π0.7's reported parity with the π\*0.6 specialists is a first data point that such gains can be absorbed into a generalist, but it is company-reported.
 
-9. **Reproducible real-world comparison.** Many 2025–26 generalist claims (GEN-0 scaling, Recap throughput, Helix shift lengths) are company-reported. Blind, statistically powered protocols (TRI LBM, RoboArena) exist but are not yet adopted for headline results.
+9. **Reproducible real-world comparison.** Many 2025–26 generalist claims (GEN-0 scaling, Recap throughput, π0.7's parity with specialists, Helix / Helix 02 shift lengths) are company-reported. Blind, statistically powered protocols (TRI LBM, RoboArena) exist but are not yet adopted for headline results.
 
 10. **Generalist–specialist distillation.** Can a generalist be distilled into compact, verifiable specialist controllers for safety-critical cells, or conversely can specialist RL policies (HIL-SERL) be absorbed into a generalist without losing their reliability?
 
@@ -341,3 +351,6 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 - [HIL-SERL arXiv](https://arxiv.org/abs/2410.21845) — Real-world human-in-the-loop RL specialists
 - [GEN-0 (Generalist AI)](https://generalistai.com/blog/nov-04-2025-GEN-0) — Robot scaling laws from 270k hours of real-world data
 - [Isaac GR00T (GitHub)](https://github.com/NVIDIA/Isaac-GR00T) — GR00T N1.x open humanoid foundation models
+- [π0.7 arXiv](https://arxiv.org/abs/2604.15483) — Steerable generalist that reportedly matches the π\*0.6 specialists
+- [Gemini Robotics 2 (DeepMind blog)](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/) — Whole-body VLA, ER 2 and On-Device 2
+- [Figure Helix 02](https://figure.ai/news/helix-02) — Three-tier whole-body humanoid control

@@ -13,6 +13,7 @@
 > - New section on **RL fine-tuning of VLAs** (RL4VLA, VLA-RL, RIPT-VLA, SimpleVLA-RL, πRL, DSRL, Recap, world-model RL) with a method table.
 > - New action-head material: Knowledge Insulation, Real-Time Chunking (RTC), discrete-diffusion action decoding.
 > - Corrected GR00T N1 facts (2.2B released model; no 34B variant in the paper; authors Bjorck et al.); added LIBERO-era benchmark rows and noted saturation; refreshed open problems and Further Reading.
+> - Added 2026 model summaries for **Figure Helix 02** (System 0/1/2 whole-body control on Figure 03), **π0.7** (Gemma 3 4B + ~860M action expert; early compositional generalization; one generalist reportedly matching the π\*0.6 RL specialists) and the **Gemini Robotics 2 / ER 2 / On-Device 2** family (whole-body humanoid VLA; ASIMOV-2 / ASIMOV-Agentic), with new rows in the backbone, comparative, Key Papers, benchmark and Pros & Cons tables. Corrected the original Helix description (upper-body, not whole-body).
 
 ---
 
@@ -22,7 +23,7 @@ Vision-Language-Action (VLA) models are neural architectures that condition robo
 
 Architecturally, every VLA shares three components. First, a **vision encoder** maps one or more RGB images (and sometimes depth, wrist cameras, or proprioceptive readings) into a sequence of visual tokens. Second, a **language model backbone** processes the interleaved visual and text tokens, producing a rich contextual representation. Third, an **action head** maps the final hidden states of the backbone to robot actions. The design choices that differentiate VLAs are: (a) the scale and pretraining regime of the backbone, (b) the architecture and output format of the action head, and (c) the data pipeline that bridges robot trajectories with Internet-scale pretraining data.
 
-The field has moved rapidly. RT-1 [Brohan2022] (late 2022) trained a compact transformer from scratch on 130k in-house demonstrations, achieving impressive results within a fixed kitchen environment but no web pretraining. RT-2 [Brohan2023] (mid-2023) demonstrated that co-fine-tuning a 55B vision-language model on robot data transferred Internet knowledge—including object concepts and chain-of-thought reasoning—to robot policies, more than doubling success on unseen objects relative to RT-1. The 2024–2025 generation introduced flow-matching action heads (π₀ [Black2024]), open-weight models (OpenVLA [Kim2024]), and humanoid-specific dual-system architectures (GR00T N1 [NVIDIA2025]). By mid-2026, VLAs are being deployed in commercial settings—BMW factories, domestic pilots—and the research frontier has shifted to long-horizon generalisation, on-device inference efficiency, and multi-robot coordination. Three developments define the late-2025 to October-2026 period: (i) **RL post-training** of VLAs, culminating in Physical Intelligence's π\*0.6, which improves from its own deployment experience via the Recap algorithm [PI2025Recap]; (ii) the separation of **embodied reasoning** from **action generation** in frontier systems (Gemini Robotics-ER 1.5 orchestrating the Gemini Robotics 1.5 VLA) [GoogleDeepMind2025b]; and (iii) a rich **open-weight ecosystem**—π0.5 in openpi, GR00T N1.5/N1.6/N1.7, SmolVLA, OpenVLA-OFT, X-VLA—that has pushed the standard LIBERO benchmark to ~97–98% and forced the field toward harder real-world evaluation (RoboArena) and world-model-based policy evaluation.
+The field has moved rapidly. RT-1 [Brohan2022] (late 2022) trained a compact transformer from scratch on 130k in-house demonstrations, achieving impressive results within a fixed kitchen environment but no web pretraining. RT-2 [Brohan2023] (mid-2023) demonstrated that co-fine-tuning a 55B vision-language model on robot data transferred Internet knowledge—including object concepts and chain-of-thought reasoning—to robot policies, more than doubling success on unseen objects relative to RT-1. The 2024–2025 generation introduced flow-matching action heads (π₀ [Black2024]), open-weight models (OpenVLA [Kim2024]), and humanoid-specific dual-system architectures (GR00T N1 [NVIDIA2025]). By mid-2026, VLAs are being deployed in commercial settings—BMW factories, domestic pilots—and the research frontier has shifted to long-horizon generalisation, on-device inference efficiency, and multi-robot coordination. Three developments define the late-2025 to October-2026 period: (i) **RL post-training** of VLAs, culminating in Physical Intelligence's π\*0.6, which improves from its own deployment experience via the Recap algorithm [PI2025Recap]; (ii) the separation of **embodied reasoning** from **action generation** in frontier systems (Gemini Robotics-ER 1.5 orchestrating the Gemini Robotics 1.5 VLA [GoogleDeepMind2025b], and from July 2026 Gemini Robotics ER 2 orchestrating the whole-body Gemini Robotics 2 [GoogleDeepMind2026]); and (iii) a rich **open-weight ecosystem**—π0.5 in openpi, GR00T N1.5/N1.6/N1.7, SmolVLA, OpenVLA-OFT, X-VLA—that has pushed the standard LIBERO benchmark to ~97–98% and forced the field toward harder real-world evaluation (RoboArena) and world-model-based policy evaluation. During 2026 the frontier moved further, to **whole-body** humanoid VLAs (Figure Helix 02, Gemini Robotics 2) and to early **compositional generalization** in a single generalist (π0.7) [FigureAI2026, PI2026].
 
 ---
 
@@ -52,6 +53,8 @@ The backbone provides the "reasoning engine" of the VLA. Its scale has grown sub
 | 2025 | X-VLA | Soft-prompted Transformer encoder + flow matching | 0.9B |
 | 2025 | GR00T N1.6 | Cosmos-Reason-2B variant + 32-layer DiT | 3B |
 | 2026 | GR00T N1.7 | Cosmos-Reason2-2B (Qwen3-VL) + 16-layer DiT | 3B |
+| 2026 | π0.7 | Gemma 3 4B + action expert | 4B + ~0.86B (reported) |
+| 2026 | Gemini Robotics 2 | Gemini (undisclosed size) | — |
 
 The backbone processes a flat token sequence: `[image tokens] [task description tokens] [history tokens]`, and its output at the final layer is used by the action head. For discrete-action VLAs (RT-2, OpenVLA), the backbone's language modelling head is repurposed directly to predict action tokens. For continuous-action VLAs (π₀, GR00T N1), the backbone produces a latent vector that conditions a separate generative action head.
 
@@ -282,11 +285,23 @@ Architectural changes from π₀ include replacing MLP-based diffusion timestep 
 
 ### Helix (Figure AI, 2025)
 
-Helix (announced February 2025) is Figure AI's proprietary VLA for whole-body humanoid dexterity on the Figure 02 platform. Architecturally it is a dual system: **System 2** is a 7B-parameter open-weight-derived VLM running at 7–9 Hz for scene and language understanding, and **System 1** is an 80M-parameter cross-attention visuomotor transformer running at 200 Hz that outputs continuous control over a 35-DoF action space, conditioned on a latent vector from System 2. Figure reports training on ~500 hours of teleoperated data with auto-labelled instructions. Its distinguishing features are (a) running entirely on onboard embedded low-power GPUs (no cloud inference), (b) outputting simultaneous continuous control of the full humanoid upper body—wrists, torso, head, and individual fingers at high rate, and (c) enabling two-robot coordination, where two Helix-equipped robots share a long-horizon manipulation task involving objects neither robot has encountered before.
+Helix (announced February 2025) is Figure AI's proprietary VLA for full upper-body humanoid dexterity on the Figure 02 platform. Architecturally it is a dual system: **System 2** is a 7B-parameter open-weight-derived VLM running at 7–9 Hz for scene and language understanding, and **System 1** is an 80M-parameter cross-attention visuomotor transformer running at 200 Hz that outputs continuous control over a 35-DoF action space, conditioned on a latent vector from System 2. Figure reports training on ~500 hours of teleoperated data with auto-labelled instructions. Its distinguishing features are (a) running entirely on onboard embedded low-power GPUs (no cloud inference), (b) outputting simultaneous continuous control of the full humanoid upper body—wrists, torso, head, and individual fingers at high rate, and (c) enabling two-robot coordination, where two Helix-equipped robots share a long-horizon manipulation task involving objects neither robot has encountered before.
 
 Helix was developed entirely in-house after Figure AI ended its partnership with OpenAI in 2025 to build a fully proprietary AI stack. Commercial deployment at BMW's Spartanburg, South Carolina plant has logged 1,250+ runtime hours and 90,000+ parts loaded across 30,000 vehicles.
 
 Benchmark numbers for Helix have not been publicly reported against standard academic benchmarks. Through 2025 Figure published Helix extensions to logistics package handling and household tasks, and in October 2025 launched the redesigned **Figure 03** humanoid built around Helix (new hand tactile sensing and cameras, home-oriented design); the BMW Figure 02 fleet was retired after its deployment run.
+
+---
+
+### Helix 02 (Figure AI, January 2026)
+
+Helix 02 (announced late January 2026) runs on the **Figure 03** humanoid and replaces the upper-body-only Helix with a **single learned system that unifies perception, balance, locomotion and manipulation** [FigureAI2026]. It extends the dual-system design to three tiers:
+
+- **System 2** performs semantic reasoning over the scene and the instruction, as in Helix.
+- **System 1** turns perception into **whole-body motion** at high frequency, now covering locomotion as well as manipulation.
+- **System 0** (new) is a learned controller running at **~1 kHz** for balance and whole-body coordination. Figure describes it as trained on 1,000+ hours of human motion data plus sim-to-real RL.
+
+Figure's flagship demo is **~4 minutes of autonomous dishwasher unloading and reloading** across a kitchen, combining walking, balancing and dexterous manipulation without resets or teleoperation. Figure claims Helix 02 can work 8-hour shifts without intervention, but it has released no throughput or error metrics and no academic benchmark numbers. The results should therefore be read as company-reported demonstrations.
 
 ---
 
@@ -326,6 +341,18 @@ This **agentic two-model design** (ER planner + VLA executor) generalises the du
 
 ---
 
+### Gemini Robotics 2, ER 2 and On-Device 2 (Google DeepMind, July 2026)
+
+Announced on 30 July 2026, the second-generation family keeps the ER-planner + VLA-executor split but extends the executor from mostly upper-body manipulation to the whole humanoid body [GoogleDeepMind2026]:
+
+- **Gemini Robotics 2** is a VLA with **whole-body humanoid control**: it walks, crouches and manipulates while reasoning, whereas the previous version mainly controlled the upper body. It was demonstrated on Apptronik's Apollo 2 humanoid and is available only to early-access partners.
+- **Gemini Robotics ER 2** is the embodied-reasoning and planning model. It is available to developers in Google AI Studio, and Google describes it as its safest robotics model on the **ASIMOV-2** safety benchmark. It ships with a new **ASIMOV-Agentic** benchmark, which tests agentic safety behaviours such as asking a human for help when uncertain.
+- **Gemini Robotics On-Device 2** runs locally on the robot and adapts to new embodiments within hours of data. Like the VLA, it is limited to early-access partners.
+
+The results so far come from Google's announcement and model card rather than independent evaluation.
+
+---
+
 ### π\*0.6 and Recap (Physical Intelligence, November 2025)
 
 π0.6 is an upgraded base VLA (larger backbone and action expert than π0.5); **π\*0.6** is π0.6 further trained with **Recap** (*RL with Experience and Corrections via Advantage-conditioned Policies*) [PI2025Recap]. The pipeline: (1) pretrain with offline RL on diverse data; (2) deploy on a task and collect autonomous episodes plus **expert teleoperated corrections** when the robot errs; (3) train a distributional **value function** (predicting progress / time-to-success) on all data; (4) compute advantages and train the policy conditioned on a binarised **improvement indicator**; at inference, condition on "high advantage".
@@ -340,6 +367,16 @@ L = - log π_θ(a_t | o_t, ℓ, I_t)                       # supervised loss on 
 ```
 
 Because the policy is trained with a supervised loss on all data rather than a policy gradient, Recap scales to a multi-billion-parameter flow-matching VLA. Physical Intelligence reports that π\*0.6 more than doubles throughput and roughly halves the failure rate on the hardest tasks (espresso making, folding diverse laundry, assembling cardboard boxes), with success rates above 90% and multi-hour continuous operation (e.g., espresso service from early morning to late night). These are company-reported results without an independent benchmark.
+
+---
+
+### π0.7 (Physical Intelligence, April 2026, arXiv 2604.15483)
+
+π0.7 is a steerable generalist VLA [PI2026]. Its reported architecture pairs a **Gemma 3 4B** VLM backbone with an action expert of roughly **860M parameters**. The main change is the training context: prompts carry not only the task description but **richer context**, such as subtask instructions in language and subgoal images. This lets the model absorb heterogeneous robot and non-robot data, and lets users steer it step by step at inference.
+
+- **Early compositional generalization.** π0.7 recombines skills learned in different settings to solve new tasks. Examples include folding t-shirts on a UR5e arm for which no laundry data existed, and operating an air fryer after minimal verbal coaching.
+- **Generalist matches specialists.** A single π0.7 model reportedly matches the task-specific π\*0.6 specialists, which were RL-fine-tuned with Recap, on laundry folding, espresso making and box building. This is direct evidence for the generalist side of the [generalist-vs-specialist](./11_generalist_vs_specialist.md) debate.
+- **Caveats.** Long tasks still need step-by-step guidance rather than a single command. The results are company-reported, and there is no standardized external benchmark.
 
 ---
 
@@ -408,11 +445,14 @@ The open **RLinf** framework (RLinf-VLA, RSS 2026; OSDI 2026 systems paper) supp
 | GR00T N1 | Eagle-2 (2.2B total, 1.34B VLM) | Diffusion Transformer (DiT) + embodiment-specific Action Decoder | 50k trajectories + 3M egocentric videos + Isaac Sim synthetic | Yes (2.2B on HuggingFace) | Humanoid whole-body control; strong sim-to-real pipeline; variable-DoF support | Benchmark numbers limited to internal evaluation at release |
 | π0.5 | PaliGemma-based (~3B class) | Flow-matching expert (+ FAST tokens with KI) | Heterogeneous: robot, mobile manipulation, web, verbal instructions | Yes (openpi, Sept 2025) | Open-world generalisation to unseen homes; hierarchical sub-task prediction | Training data proprietary; long-horizon reliability still limited |
 | π\*0.6 | π0.6 (larger than π0.5) | Flow-matching expert, advantage-conditioned | π0.6 data + autonomous experience + human corrections | No | Learns from deployment; >2× throughput on complex tasks | Requires value model, corrections and per-task RL; company-reported results only |
+| π0.7 | Gemma 3 4B | Action expert (~860M) | Heterogeneous robot + non-robot data with subtask / subgoal-image context | No | Early compositional generalization; one generalist ≈ π\*0.6 specialists | Needs step-by-step guidance on long tasks; no standardized external benchmark |
 | Gemini Robotics 1.5 | Gemini (undisclosed) | Proprietary | Multi-embodiment (ALOHA, Franka, Apollo) | No (ER 1.5 via API) | Thinking before acting; Motion Transfer; ER orchestration with tools | Closed weights; limited third-party evaluation |
+| Gemini Robotics 2 | Gemini (undisclosed) | Proprietary, whole-body | Undisclosed | No (ER 2 in AI Studio; VLA and On-Device 2 early access only) | Whole-body humanoid control; ER 2 planner rated safest on ASIMOV-2 | Closed; early-access only; limited third-party evaluation |
 | GR00T N1.6 / N1.7 | Cosmos-Reason(2)-2B | Flow-matching DiT, relative actions | 10k+ h robot data; N1.7 adds 20K h human video | Yes (N1.7 Apache 2.0) | Strong open baseline (~97% LIBERO); edge deployment | Humanoid-centric; generalist real-world performance below frontier closed models |
 | SmolVLA | SmolVLM2 (truncated), 450M | Flow-matching expert | Community LeRobot datasets | Yes | Runs on consumer GPUs/CPUs; async inference | Lower ceiling on complex dexterous tasks |
 | OpenVLA-OFT | Prismatic-7B | Parallel-decoded continuous chunks (L1) | OXE + task data | Yes | 97.1% LIBERO; 26× faster than OpenVLA | 7B memory footprint; single-embodiment fine-tuning |
 | Helix (Figure) | 7B VLM (S2) + 80M visuomotor (S1) | Continuous 35-DoF at 200 Hz | ~500 h teleop (reported) | No | Onboard whole-upper-body humanoid control | No academic benchmark numbers |
+| Helix 02 (Figure) | VLM (S2) + visuomotor policy (S1) + ~1 kHz controller (S0) | Continuous whole-body control | Undisclosed (teleop + 1,000+ h human motion for S0, reported) | No | One learned stack for balance, locomotion and manipulation; ~4-min autonomous dishwasher demo | No throughput/error metrics or academic benchmarks |
 
 ---
 
@@ -439,6 +479,9 @@ The open **RLinf** framework (RLinf-VLA, RSS 2026; OSDI 2026 systems paper) supp
 | X-VLA: Soft-Prompted Transformer as Scalable Cross-Embodiment Vision-Language-Action Model | Zheng et al. | 2025 | arXiv 2510.10274 | Embodiment soft prompts; 0.9B; 98.1% LIBERO |
 | πRL: Online RL Fine-tuning for Flow-based Vision-Language-Action Models | RLinf team | 2025 | arXiv 2510.25889 | Flow-Noise / Flow-SDE for PPO/GRPO on π0/π0.5 |
 | π\*0.6: a VLA That Learns From Experience | Physical Intelligence | 2025 | arXiv 2511.14759 | Recap advantage-conditioned real-world RL |
+| Helix 02 | Figure AI | 2026 | Company blog | System 0/1/2 whole-body humanoid control on Figure 03 |
+| π0.7: a Steerable Generalist Robotic Foundation Model | Physical Intelligence | 2026 | arXiv 2604.15483 | Rich-context prompting (subtasks, subgoal images); early compositional generalization; generalist ≈ π\*0.6 specialists |
+| Gemini Robotics 2 / ER 2 / On-Device 2 | Google DeepMind | 2026 | DeepMind blog + model card | Whole-body humanoid VLA; ER 2 planner with ASIMOV-2 / ASIMOV-Agentic safety evaluation |
 
 ---
 
@@ -468,6 +511,8 @@ The open **RLinf** framework (RLinf-VLA, RSS 2026; OSDI 2026 systems paper) supp
 | π0 + πRL | MetaWorld MT50 | Success rate | 50.8% → 85.8% | Few-shot SFT → RL (Flow-Noise) |
 | π0.5 + πRL | ManiSkill3 multi-task | Success rate | 40.1% → 90.9% | Few-shot SFT → RL (Flow-SDE) |
 | π\*0.6 (Recap) | Real espresso / laundry / box tasks | Throughput, failure rate | >2× throughput; ~½ failures | Company-reported |
+| π0.7 (single generalist) | Real laundry / espresso / box building | Task performance | ≈ π\*0.6 RL specialists | Company-reported; no standardized external benchmark |
+| Helix 02 (Figure AI) | Autonomous dishwasher unload/reload (Figure 03) | Continuous autonomous duration | ~4 min | Company demo; 8-hour shifts claimed without throughput/error metrics |
 | DreamZero-DROID | RoboArena (real, crowd-sourced) | Leaderboard rank | #1 (Feb 2026) | World Action Model trained only on DROID |
 
 ---
@@ -483,21 +528,23 @@ The open **RLinf** framework (RLinf-VLA, RSS 2026; OSDI 2026 systems paper) supp
 | Cross-embodiment training (Open X-Embodiment) | Positive transfer across robots; reduces per-robot data requirements; more robust representations | Action space heterogeneity (joint angles vs. EE pose vs. delta actions) complicates joint training; dataset quality and annotation consistency vary |
 | RL post-training (Recap, πRL, SimpleVLA-RL) | Exceeds demonstrator performance; learns recovery; improves speed/throughput | Needs reward or value models; real-world RL is costly and safety-critical; simulation RL may not transfer |
 | Small VLAs (SmolVLA, X-VLA-0.9B) | Train and run on modest hardware; fast iteration; accessible to academia | Lower capacity for semantic generalisation and long-horizon tasks |
-| ER-planner + VLA executor (Gemini Robotics 1.5) | Language interface is interpretable; tool use; reuses frontier-model reasoning | Two-model latency; errors at the language interface; closed models |
+| ER-planner + VLA executor (Gemini Robotics 1.5 / 2) | Language interface is interpretable; tool use; reuses frontier-model reasoning | Two-model latency; errors at the language interface; closed models |
+| Three-tier whole-body control (Helix 02 System 0/1/2) | Learned ~1 kHz balance layer lets one stack walk and manipulate; long autonomous sequences | No public metrics; proprietary hardware and data; hard to replicate |
 
 ---
 
 ## Open Problems & Research Gaps
 
 - **Bridging discrete and continuous action representations at scale:** Discrete tokenisation preserves VLM structure but loses action fidelity; flow matching gains fidelity but loses the simplicity of next-token prediction. A principled approach that achieves both simultaneously—possibly via vector-quantised latent action spaces or adaptive tokenisation—is an open problem.
-- **On-device inference for large backbones:** Deploying a 7B+ parameter VLA at 50 Hz on embedded hardware (e.g., NVIDIA Jetson Orin, 40 TOPS NPUs) requires aggressive quantisation, speculative decoding, or dedicated inference engines. The 2025 Gemini Robotics On-Device release is a significant step, but generalising the approach across architectures remains unsolved.
+- **On-device inference for large backbones:** Deploying a 7B+ parameter VLA at 50 Hz on embedded hardware (e.g., NVIDIA Jetson Orin, 40 TOPS NPUs) requires aggressive quantisation, speculative decoding, or dedicated inference engines. The Gemini Robotics On-Device releases (2025, and On-Device 2 in 2026, which adapts to new embodiments within hours of data) are significant steps, but generalising the approach across architectures remains unsolved.
 - **Contact-rich and deformable manipulation:** VLAs trained primarily on pick-and-place tasks generalise poorly to insertion, peg-in-hole, cloth manipulation, or liquid pouring. These tasks require force feedback integration into the VLA loop, which no current architecture handles robustly.
 - **Action distribution shift between human demonstrations and robot execution:** Demonstrations collected via teleoperation exhibit human motion artefacts (hesitation, overshoot, retries) that are suboptimal for the robot to imitate. Learning to extract intent rather than trajectory-level behaviour from imperfect demonstrations is an active research direction (see DAgger variants, implicit behavioural cloning).
-- **Principled uncertainty quantification:** VLAs do not have well-calibrated uncertainty estimates. A policy should recognise when it is out-of-distribution and either request human intervention or attempt a conservative fallback—capabilities that current autoregressive and flow-matching heads do not provide.
+- **Principled uncertainty quantification:** VLAs do not have well-calibrated uncertainty estimates. A policy should recognise when it is out-of-distribution and either request human intervention or attempt a conservative fallback—capabilities that current autoregressive and flow-matching heads do not provide. Gemini Robotics ER 2's ASIMOV-Agentic benchmark, which checks whether a model asks a human for help when uncertain, is an early attempt to evaluate this at the planner level.
 - **Multi-task interference in shared backbone weights:** Co-fine-tuning a VLM on both text tasks and robot control risks catastrophic forgetting of language capabilities and task interference among robot tasks. The optimal data mixture ratios and training curricula are not well understood theoretically.
 - **Evaluation standardisation:** The field lacks a universally adopted benchmark comparable to ImageNet or BOP for manipulation. Each paper uses different robot platforms, tasks, and success criteria, making cross-paper comparisons unreliable. Community-driven efforts (LIBERO, SimplerEnv, RoboSuite) became widely used in 2025, but LIBERO is now saturated (~97–98% for many models) and perturbation variants show brittle generalisation behind those scores. Distributed real-robot evaluation (RoboArena, arXiv 2506.18123), large household simulators (BEHAVIOR-1K, RoboCasa) and world-model-based evaluation (Veo world simulator, Ctrl-World) are the 2026 candidates.
 - **Reward, value and success detection for RL:** Recap and related methods hinge on value functions and success labels. General, cross-task progress estimators—possibly provided by ER-VLMs—are needed for RL to scale beyond a handful of hand-picked tasks.
 - **Memory and long context:** VLAs typically condition on one or a few frames. Multi-scale memory (PI's MEM, 2026; MemER, ICLR 2026) is an early answer to tasks that require remembering what was done minutes ago.
+- **Compositional generalization:** π0.7 shows early skill recombination (e.g. folding laundry on a robot with no laundry data), but it still needs step-by-step coaching on long tasks, and no standardized external benchmark yet measures compositional generalization.
 
 ---
 
@@ -521,3 +568,6 @@ The open **RLinf** framework (RLinf-VLA, RSS 2026; OSDI 2026 systems paper) supp
 - [πRL (arXiv 2510.25889)](https://arxiv.org/abs/2510.25889) and [RLinf](https://github.com/RLinf/RLinf) — RL fine-tuning of flow-based VLAs
 - [SimpleVLA-RL (arXiv 2509.09674)](https://arxiv.org/abs/2509.09674) — Open RL framework for VLAs
 - [TRI LBM study (arXiv 2507.05331)](https://arxiv.org/abs/2507.05331) — Careful examination of large behavior models
+- [π0.7 (arXiv 2604.15483)](https://arxiv.org/abs/2604.15483) and [blog](https://www.pi.website/blog/pi07) — Steerable generalist with early compositional generalization
+- [Gemini Robotics 2 (DeepMind blog)](https://deepmind.google/blog/gemini-robotics-2-brings-whole-body-intelligence-to-robots/) and [ER 2 model card](https://deepmind.google/models/model-cards/gemini-robotics-er-2/) — Whole-body VLA, ER 2 and On-Device 2
+- [Figure Helix 02](https://figure.ai/news/helix-02) — System 0/1/2 whole-body humanoid control
