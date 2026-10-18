@@ -4,7 +4,7 @@
 
 > **最后更新：** 2026年10月
 > **难度级别：** 中级 → 高级
-> **相关章节：** [CNN 架构](../03_architectures/00_cnn_architectures.md) · [视觉 Transformer](../03_architectures/01_vision_transformers.md) · [数据集与基准](../11_datasets_and_benchmarks/00_imagenet_and_large_scale.md) · [研究前沿](../12_research_frontier_2024_2026/00_foundation_models.md)
+> **相关章节：** [CNN 架构](../03_architectures/00_cnn_architectures.md) · [视觉 Transformer](../03_architectures/01_vision_transformers.md) · [数据集与基准](../11_datasets_and_benchmarks/00_core_datasets.md) · [研究前沿](../12_research_frontier_2024_2026/00_overview_latest.md)
 
 > **🆕 2026年10月更新：**
 > - 新增 **DINOv3** [Simeoni2025]（Meta，2025年8月）：在 LVD-1689M 上以 Gram anchoring（Gram 锚定）训练的 70 亿参数自监督 ViT；冻结骨干的线性探测在 ImageNet-ReaL 上达到 90.4 %、在 ImageNet-R 上达到 91.1 %，并提供蒸馏得到的 ViT-S→H+ 与 ConvNeXt 学生模型。

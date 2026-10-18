@@ -2,7 +2,7 @@
 
 > **Last Updated:** October 2026
 > **Level:** Intermediate → Advanced
-> **Related Sections:** [CNN Architectures](../03_architectures/00_cnn_architectures.md) · [Vision Transformers](../03_architectures/01_vision_transformers.md) · [Datasets & Benchmarks](../11_datasets_and_benchmarks/00_imagenet_and_large_scale.md) · [Research Frontier](../12_research_frontier_2024_2026/00_foundation_models.md)
+> **Related Sections:** [CNN Architectures](../03_architectures/00_cnn_architectures.md) · [Vision Transformers](../03_architectures/01_vision_transformers.md) · [Datasets & Benchmarks](../11_datasets_and_benchmarks/00_core_datasets.md) · [Research Frontier](../12_research_frontier_2024_2026/00_overview_latest.md)
 
 > **🆕 October 2026 update:**
 > - Added **DINOv3** [Simeoni2025] (Meta, Aug 2025): 7B-parameter SSL ViT trained on LVD-1689M with Gram anchoring; frozen linear probe reaches 90.4 % ImageNet-ReaL and 91.1 % ImageNet-R, plus distilled ViT-S→H+ and ConvNeXt students.

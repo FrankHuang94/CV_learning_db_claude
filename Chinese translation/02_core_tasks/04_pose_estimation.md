@@ -4,7 +4,7 @@
 
 > **最后更新：** 2026年10月
 > **难度级别：** 高级
-> **相关章节：** [深度估计](./05_depth_estimation.md) | [光流与跟踪](./06_optical_flow_tracking.md) | [机器人感知](../06_robotics_and_embodied_ai/08_perception_for_robotics.md) | [三维视觉与场景理解](../04_3d_vision_and_scene/00_overview.md)
+> **相关章节：** [深度估计](./05_depth_estimation.md) | [光流与跟踪](./06_optical_flow_tracking.md) | [机器人感知](../06_robotics_and_embodied_ai/08_perception_for_robotics.md) | [三维视觉与场景理解](../04_3d_vision_and_scene/00_3d_representations.md)
 
 > **🆕 2026年10月更新：**
 > - 新增 **SAM 3D Body**（Meta，2025年11月；论文 arXiv 2602.15989）：基于新的 **Momentum Human Rig（MHR）** 人体模型的可提示全身人体网格恢复（HMR），采用 DINOv3-H+ 骨干，在 3DPW 上 MPJPE 为 54.8 mm，在 EMDB 上为 61.7 mm。

@@ -6,7 +6,7 @@
 > - [Efficient Architectures](./01_efficient_architectures.md)
 > - [Hardware Acceleration](./02_hardware_acceleration.md)
 > - [Edge Deployment](./03_edge_deployment.md)
-> - [Core Architectures](../03_architectures/00_cnns_and_convolutions.md)
+> - [Core Architectures](../03_architectures/00_cnn_architectures.md)
 
 > **🆕 October 2026 update:**
 > - New subsection on **block-scaled low-precision formats**: FP8 (E4M3/E5M2), OCP **MXFP4** and NVIDIA **NVFP4** (E2M1 values + FP8 micro-block scales), now native on Blackwell-class GPUs and Jetson Thor, with W4A4 NVFP4 + quantization-aware distillation (QAD) recipes.

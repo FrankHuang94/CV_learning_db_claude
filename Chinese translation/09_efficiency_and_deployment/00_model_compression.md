@@ -8,7 +8,7 @@
 > - [高效架构](./01_efficient_architectures.md)
 > - [硬件加速](./02_hardware_acceleration.md)
 > - [边缘部署](./03_edge_deployment.md)
-> - [核心架构](../03_architectures/00_cnns_and_convolutions.md)
+> - [核心架构](../03_architectures/00_cnn_architectures.md)
 
 > **🆕 2026年10月更新：**
 > - 新增**块缩放低精度格式**小节：FP8（E4M3/E5M2）、OCP **MXFP4** 和 NVIDIA **NVFP4**（E2M1 数值 + FP8 微块缩放因子），如今在 Blackwell 级 GPU 和 Jetson Thor 上获得原生支持，并配有 W4A4 NVFP4 + 量化感知蒸馏（quantization-aware distillation, QAD）方案。

@@ -123,8 +123,8 @@ cv-knowledge-base/
 ## 🚀 Start Here — Recommended Reading Path for a New PhD Student
 
 1. **Ground yourself in the field's shape:** [Embodied AI Overview & Roadmap](06_robotics_and_embodied_ai/00_overview_roadmap.md) — the perception→reasoning→action pipeline and where the field is converging.
-2. **The control paradigm that defines the frontier:** [VLA Models](06_robotics_and_embodied_ai/01_vla_models.md) — RT-1 → RT-2 → π₀ → OpenVLA → GR00T N1.
-3. **The principal alternative:** [World Models](06_robotics_and_embodied_ai/02_world_models.md) — DreamerV3, JEPA, Genie, Cosmos.
+2. **The control paradigm that defines the frontier:** [VLA Models](06_robotics_and_embodied_ai/01_vla_models.md) — RT-1 → RT-2 → OpenVLA → π₀ → GR00T N1 → π₀.₅ / π\*₀.₆ → Gemini Robotics 1.5 → π₀.₇ → Gemini Robotics 2 / GR00T N1.7 (2026).
+3. **The principal alternative:** [World Models](06_robotics_and_embodied_ai/02_world_models.md) — DreamerV3 / Dreamer 4, V-JEPA 2, Genie 3, Cosmos 3, and world-action models.
 4. **The core intellectual debate:** [Generalist vs. Specialist](06_robotics_and_embodied_ai/11_generalist_vs_specialist.md).
 5. **Where it's all going:** [Future Trends](12_research_frontier_2024_2026/07_future_trends.md).
 6. **Supporting depth:** [Diffusion Policy](06_robotics_and_embodied_ai/03_diffusion_policy.md), [Cross-Embodiment Learning](06_robotics_and_embodied_ai/04_cross_embodiment.md), [Manipulation & Navigation](06_robotics_and_embodied_ai/06_manipulation_navigation.md), [Perception for Robotics](06_robotics_and_embodied_ai/08_perception_for_robotics.md).

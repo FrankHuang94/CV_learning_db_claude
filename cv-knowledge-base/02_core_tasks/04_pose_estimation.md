@@ -2,7 +2,7 @@
 
 > **Last Updated:** October 2026
 > **Level:** Advanced
-> **Related Sections:** [Depth Estimation](./05_depth_estimation.md) | [Optical Flow & Tracking](./06_optical_flow_tracking.md) | [Perception for Robotics](../06_robotics_and_embodied_ai/08_perception_for_robotics.md) | [3D Vision and Scene Understanding](../04_3d_vision_and_scene/00_overview.md)
+> **Related Sections:** [Depth Estimation](./05_depth_estimation.md) | [Optical Flow & Tracking](./06_optical_flow_tracking.md) | [Perception for Robotics](../06_robotics_and_embodied_ai/08_perception_for_robotics.md) | [3D Vision and Scene Understanding](../04_3d_vision_and_scene/00_3d_representations.md)
 
 > **🆕 October 2026 update:**
 > - Added **SAM 3D Body** (Meta, Nov 2025; paper arXiv 2602.15989): promptable full-body HMR on the new **Momentum Human Rig (MHR)** body model, DINOv3-H+ backbone, 54.8 mm MPJPE on 3DPW and 61.7 mm on EMDB.
