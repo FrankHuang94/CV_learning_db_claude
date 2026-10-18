@@ -127,7 +127,7 @@ A further alternative keeps actions as discrete tokens but decodes them with **m
 
 #### Real-Time Chunking (RTC, 2025)
 
-Action-chunking policies execute open-loop for H steps; if the next chunk takes longer to compute than the control period, naive switching produces pauses or discontinuities. **Real-Time Chunking** [Black2025RTC] (NeurIPS 2025) generates the next chunk *while the current one executes*, freezing the actions that will be executed during the inference delay and **inpainting** the rest with a guided flow-matching sampler; a training-time variant (arXiv 2512.05964) conditions on the committed prefix directly during training, removing inference-time guidance overhead. RTC is now supported in GR00T N1.6 tooling, LeRobot and RLinf.
+Action-chunking policies execute open-loop for H steps; if the next chunk takes longer to compute than the control period, naive switching produces pauses or discontinuities. **Real-Time Chunking** [Black2025RTC] (NeurIPS 2025) generates the next chunk *while the current one executes*, freezing the actions that will be executed during the inference delay and **inpainting** the rest with a guided flow-matching sampler; a training-time variant (arXiv 2512.05964) conditions on the committed prefix directly during training, removing inference-time guidance overhead. RTC wrappers were announced with the GR00T N1.6 tooling, and RLinf added RTC support for simulation (LIBERO) and real Franka robots in 2026.
 
 ---
 
@@ -268,7 +268,7 @@ The DiT action decoder uses adaptive layer normalisation to condition on both th
 
 ---
 
-### π₀.5 (Hejna et al., Physical Intelligence, April 2025, arXiv)
+### π₀.5 (Physical Intelligence, April 2025, arXiv 2504.16054)
 
 π₀.5 extends π₀ to achieve meaningful generalisation to entirely novel home environments unseen during training. The core training change is **heterogeneous co-training**: the model is trained simultaneously on robot manipulation trajectories, high-level semantic prediction tasks (predicting what action to take next given an image), and web-scale vision-language data. Ablations show that web data is the single most important factor for out-of-distribution object generalisation, while cross-robot data is critical for general task competence.
 

@@ -187,6 +187,8 @@ $$W \approx G \times_1 U_1 \times_2 U_2$$
 
 where $G$ is a smaller core tensor and $U_1, U_2$ are factor matrices along output and input channel dimensions.
 
+**LoRA [Hu2022]**, originally designed for LLM fine-tuning, applies low-rank decomposition not to compress a pretrained model but to parameterize fine-tuning updates as $\Delta W = BA$ where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$. During fine-tuning, only $A$ and $B$ are updated; the original $W_0$ is frozen. LoRA achieves competitive fine-tuning performance at <1% of the full-parameter update cost, and its adapters are mergeable with the base weights at inference (zero added latency).
+
 ---
 
 ## Visual-Token Reduction for Vision-Language Models
@@ -210,10 +212,6 @@ Generic attention-guided pruning at LLM layer K:
 | FastVLM / FastViTHD | Vision encoder design | Fewer tokens emitted by a hybrid encoder | CVPR 2025; 85× faster TTFT than LLaVA-OneVision-0.5B for the smallest variant |
 
 Two lessons have emerged: (1) *text-guided* pruning inside the LLM preserves accuracy best but conflicts with prefix/KV caching and with fused attention kernels that never materialise attention maps; (2) aggressive fixed-ratio pruning hurts dense-text tasks (OCR, charts, documents), which is why adaptive schemes (VisionThink, ViR) and compact document encoders (see [Document & OCR](../05_multimodal_vision_language/04_document_and_ocr.md)) are preferred there.
-
----
-
-**LoRA [Hu2022]**, originally designed for LLM fine-tuning, applies low-rank decomposition not to compress a pretrained model but to parameterize fine-tuning updates as $\Delta W = BA$ where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$. During fine-tuning, only $A$ and $B$ are updated; the original $W_0$ is frozen. LoRA achieves competitive fine-tuning performance at <1% of the full-parameter update cost, and its adapters are mergeable with the base weights at inference (zero added latency).
 
 ---
 

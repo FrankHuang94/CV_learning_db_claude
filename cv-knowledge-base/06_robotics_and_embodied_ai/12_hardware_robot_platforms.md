@@ -9,8 +9,8 @@
 > - [Pros, Cons & Roadmaps](./07_pros_cons_roadmaps.md)
 
 > **🆕 October 2026 update:**
-> - New platforms: **Figure 03** (Oct 2025, built for Helix and the home; BotQ factory), **Unitree H2** and the low-cost **Unitree R1**, the product version of **Boston Dynamics' electric Atlas** shown at CES 2026, **UBTech Walker S2** (autonomous battery swap); updated status of Figure 02 (retired from BMW after the pilot), **1X NEO** (consumer pre-orders Oct 2025, $20k or $499/month) and **Tesla Optimus** (Fremont line conversion announced Jan 2026).
-> - New section **Industry Status, Funding & Capital Markets**: Figure's $39B Series C, Physical Intelligence and Skild AI rounds, Apptronik's $403M Series A, Unitree's STAR Market IPO process, AgiBot's acquisition of a listed company, Hyundai's Atlas deployment plan.
+> - New platforms: **Figure 03** (Oct 2025, built for Helix and the home; BotQ factory), **Unitree H2** and the low-cost **Unitree R1**, the product version of **Boston Dynamics' electric Atlas** shown at CES 2026, **UBTech Walker S2** (autonomous battery swap); updated status of Figure 02 (retired from BMW after the pilot), **1X NEO** (consumer pre-orders Oct 2025, \$20k or \$499/month) and **Tesla Optimus** (Fremont line conversion announced Jan 2026).
+> - New section **Industry Status, Funding & Capital Markets**: Figure's \$39B Series C, Physical Intelligence and Skild AI rounds, Apptronik's \$403M Series A, Unitree's STAR Market IPO process, AgiBot's acquisition of a listed company, Hyundai's Atlas deployment plan.
 > - Compute: Jetson Thor general availability (Aug 2025) and on-device VLAs (Gemini Robotics On-Device; TensorRT-exported GR00T N1.7).
 > - New open problems: supply-chain exposure (rare-earth magnets), teleoperation-assisted autonomy and privacy in home robots, humanoid safety standards.
 

@@ -119,6 +119,8 @@ The progression in scene representation has been:
 
 **ST-4DGS** [SIGGRAPH2024] focuses on spatial-temporal consistency — ensuring that a person walking across a scene maintains consistent geometry and texture across frames, which is required for stable robot scene representations.
 
+**D4RT** [Zhang2026] (Google DeepMind / UCL / Oxford, CVPR 2026 Best Paper) encodes a video once into a global scene representation and answers independent queries for the 3D position of any pixel at any time in any camera frame, unifying depth, point-cloud, camera-pose and 3D-tracking estimation; DeepMind reports up to 300× efficiency gains over prior methods. **VGGT-Ω** (CVPR 2026 Best Paper Finalist) shows that feed-forward reconstruction of static and dynamic scenes scales predictably with model and data size. See [4D and Dynamic Scenes](./05_4d_and_dynamic_scenes.md).
+
 ### Connection to World Models for Robotics
 
 The critical insight linking 4D scene understanding to robotics is that a robot needs not just a *representation* of the current scene, but a *predictive model* of how the scene will change under different actions:
@@ -133,8 +135,6 @@ World model goal:
   - Counterfactual reasoning: "Which action reaches the goal state fastest?"
   - Safe exploration: "Does any reachable state lead to damage?"
 ```
-
-**D4RT** [Zhang2026] (Google DeepMind / UCL / Oxford, CVPR 2026 Best Paper) encodes a video once into a global scene representation and answers independent queries for the 3D position of any pixel at any time in any camera frame, unifying depth, point-cloud, camera-pose and 3D-tracking estimation; DeepMind reports up to 300× efficiency gains over prior methods. **VGGT-Ω** (CVPR 2026 Best Paper Finalist) shows that feed-forward reconstruction of static and dynamic scenes scales predictably with model and data size. See [4D and Dynamic Scenes](./05_4d_and_dynamic_scenes.md).
 
 V-JEPA 2 [Meta2025] from Meta, released June 2025, addresses exactly this problem. A 1.2B-parameter model trained on 1 million hours of video and 1 million images learns abstract predictive representations of physical dynamics. In a second stage, action-conditioned learning on ~62 hours of robot data enables planning in image space. V-JEPA 2-AC was deployed zero-shot on Franka arms in two different labs and achieved pick-and-place via image-goal planning without collecting any environment-specific data — a significant demonstration of world model utility for robotics. **V-JEPA 2.1** (March 2026) updated the recipe to learn high-quality, temporally consistent *dense* features (dense predictive loss, deep self-supervision, multi-modal tokenizers).
 
@@ -188,7 +188,7 @@ None of these approaches has fully solved the action label problem. It remains o
 
 ### 2025–2026 Progress
 
-Two pragmatic answers gained traction. (1) **Shared action spaces for humans and robots**: NVIDIA's GR00T N1.7 represents actions as *relative end-effector deltas* consistent across human and robot data, which lets it pretrain on 20K hours of EgoScale egocentric human video; Generalist sidesteps retargeting by having humans wear robot-like "data hands" grippers, reaching ~500K hours. (2) **Video generation as policy (approach D) became competitive**: *World Action Models* that jointly predict video and actions—NVIDIA's **Cosmos Policy** and **DreamZero**—reached the top of the real-world RoboArena and MolmoSpaces leaderboards in early 2026, with DreamZero adapting to new robots from ~30 minutes of play data. Inference cost (seconds per step on an H100 without caching) is the main remaining obstacle for approach D.
+Two pragmatic answers gained traction. (1) **Shared action spaces for humans and robots**: NVIDIA's GR00T N1.7 represents actions as *relative end-effector deltas* consistent across human and robot data, which lets it pretrain on 20K hours of EgoScale egocentric human video; Generalist sidesteps retargeting by having humans wear robot-like "data hands" grippers, reaching ~500K hours. (2) **Video generation as policy (approach D) became competitive**: *World Action Models* that jointly predict video and actions—NVIDIA's **Cosmos Policy** and **DreamZero**—gained traction, with DreamZero reaching the top of the real-world RoboArena and MolmoSpaces leaderboards in early 2026 and adapting to new robots from ~30 minutes of play data. Inference cost (seconds per step on an H100 without caching) is the main remaining obstacle for approach D.
 
 ---
 
@@ -467,8 +467,8 @@ The main surprise relative to the original forecasts is how quickly **world mode
 | Aspect | Current Strengths | Current Weaknesses |
 |---|---|---|
 | **Embodied foundation models** | Strong in-distribution generalization; OXE-scale training validates cross-embodiment transfer; synthetic data (Genesis) now scalable | Out-of-distribution generalization remains poor; no solved contact-rich household tasks; data ceiling ~10× below NLP equivalent |
-| **Spatial intelligence** | SpatialVLM demonstrates metric estimation is learnable; RGB-D integration (SpatialBot) improves grounding | Most VLMs still fail ordinal spatial questions near-randomly; 3D spatial reasoning not yet integrated into mainstream VLA pipelines |
-| **4D scene / world models** | Real-time 4D-GS at 82 FPS; V-JEPA 2 zero-shot robot deployment; Genesis enables fast counterfactual simulation | Sim-to-real gap for deformable/liquid; world model action conditioning is approximate; predicting contact events reliably is open |
+| **Spatial intelligence** | SpatialVLM demonstrates metric estimation is learnable; RGB-D integration (SpatialBot) improves grounding; curated spatial data lets 8B open models exceed GPT-5 on VSI-Bench (2026) | Many general VLMs still fail ordinal and multi-view spatial questions (MMSI-Bench best ~40–43); 3D spatial reasoning not yet integrated into mainstream VLA pipelines |
+| **4D scene / world models** | Real-time 4D-GS at 82 FPS; feed-forward 4D reconstruction in seconds (D4RT); V-JEPA 2 zero-shot robot deployment; Genesis enables fast counterfactual simulation | Sim-to-real gap for deformable/liquid; world model action conditioning is approximate; predicting contact events reliably is open |
 | **Safety/alignment** | Constraint layers deployable today; provable probabilistic bounds available; formal LTL methods demonstrated on simple tasks | Specification problem unsolved; RLHF for physical actions poorly validated; no ISO-equivalent safety standard for general-purpose AI-controlled robots yet ratified |
 | **World Action Models / generative world models** | Exploit internet-scale video pretraining; top real-world leaderboards (DreamZero); interactive worlds (Genie 3, Marble) | Slow inference; physical accuracy and contact dynamics unverified; evaluation inside learned simulators may be optimistic |
 | **Human-centric data scaling** | Egocentric video and wearable grippers reach 10⁵-hour scale cheaply (GR00T N1.7, GEN-1) | Embodiment gap and action retargeting remain approximate; data largely proprietary |
