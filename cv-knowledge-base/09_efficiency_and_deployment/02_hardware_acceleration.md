@@ -64,7 +64,6 @@ Mapping a model to hardware efficiently requires a compilation/runtime stack:
 - **ONNX / ONNX Runtime** — interchange format + cross-platform runtime with execution providers.
 - **XLA** (TensorFlow/JAX) and **torch.compile / TorchInductor** — graph compilers that fuse operators and generate optimized kernels.
 - **TVM**, **OpenVINO** (Intel), vendor SDKs — hardware-specific compilation.
-
 - **NVIDIA Model Optimizer** (renamed from TensorRT Model Optimizer, Dec 2025) — produces FP8/NVFP4/INT4 checkpoints (PTQ, QAT, QAD), pruning and distillation, exported to TensorRT, TensorRT-LLM, vLLM or SGLang.
 - **TensorRT Edge-LLM** — NVIDIA's C++ runtime for text, vision, audio and action models on Jetson, DRIVE and DGX Spark, with Thor-specific NVFP4 kernels, FP8 KV cache, speculative decoding, and support for VLMs (Qwen3-VL/3.5, Gemma 4) and experimental VLA policies (π0.5).
 - **vLLM / SGLang** — the de-facto open serving engines for VLMs in the data center, with multimodal prefix caching and FP8/FP4 kernels.
