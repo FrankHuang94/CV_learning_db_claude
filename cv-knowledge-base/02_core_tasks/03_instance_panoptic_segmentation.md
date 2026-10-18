@@ -104,18 +104,6 @@ Results with ResNet-50: 51.9 PQ panoptic, 44.2 AP instance, 57.7 mIoU semantic o
 
 **OneFormer** [Jain2023] (CVPR 2023): trains a single Mask2Former-style model with a task-conditioning token ("the task is {semantic/instance/panoptic}") that modulates both the text queries and the loss function. During inference, selecting the appropriate task token routes the model. Achieves Mask2Former-level SOTA on all three tasks with a single set of weights, outperforming task-specific models in some settings. Authors: Jitesh Jain, Jiachen Li, MangTik Chiu et al.
 
-### Encoder-Only Universal Segmentation (2025–2026)
-
-**EoMT** [Kerssies2025] (CVPR 2025 Highlight) feeds N learnable query tokens into the last blocks of a plain ViT alongside the patch tokens; class logits come from the query tokens and masks from query–patch dot products, with masked attention used only during training and *annealed away* for inference. On COCO panoptic (640×640, DINOv2 backbones, H100) EoMT-L reaches **56.0 PQ at 128 FPS**, and EoMT-7B reaches **58.4 PQ**, equal to ViT-Adapter-7B + Mask2Former but about 2× faster. With DINOv3 backbones, EoMT-L reports **58.9 PQ** (panoptic) and **49.9 mask AP** (instance) at 1280×1280. **VidEoMT** (CVPR 2026) extends the encoder-only design to video segmentation (up to ~10× faster than competing video segmenters), and **PMT** (2026) adapts it to frozen foundation encoders.
-
-### Real-Time Instance Segmentation (2025–2026)
-
-**RF-DETR-Seg** [Robinson2026] (ICLR 2026) adds a mask head to the NAS-searched RF-DETR family (DINOv2 backbone + LW-DETR decoder). In Roboflow's reproducible benchmark (COCO val2017; T4, TensorRT FP16, batch 1) it ranges from **40.3 mask AP at 3.4 ms (Nano)** to **49.9 mask AP at 21.8 ms (2XL)**, versus 30.0–40.1 for YOLO11-seg. **YOLO26-seg** (Ultralytics, 2026) adds a semantic-segmentation auxiliary loss and a multi-scale prototype module to YOLACT-style prototype masks, and runs NMS-free end-to-end: 33.9 (n) to 47.0 (x) mask AP at 2.1–16.4 ms on a T4.
-
-### Open-Vocabulary Instance Segmentation: SAM 3
-
-**SAM 3** [Carion2025] (Meta, Nov 2025) performs **Promptable Concept Segmentation**: for a noun phrase or exemplar it returns masks and identities for *every* matching instance in an image or video. A DETR-style detector (with a presence token separating recognition from localisation) and a SAM 2-style tracker share one vision encoder (848 M params). It reports **48.5 mask AP on LVIS** and 54.1 cgF1 on SA-Co/Gold (human: 72.8), and its SA-Co benchmark (270 K unique concepts) uses **cgF1**, a classification-gated F1 that also penalises predictions for absent concepts—a better match to open-vocabulary use than AP. SAM 3.1 (Mar 2026) makes multi-object video tracking ~7× faster at 128 objects.
-
 ```mermaid
 flowchart TD
     A[Input Image] --> B[Backbone + Pixel Decoder\nMulti-scale features P2-P5]
@@ -131,6 +119,18 @@ flowchart TD
     style D fill:#dfd,stroke:#5a5
     style B fill:#ddf,stroke:#55a
 ```
+
+### Encoder-Only Universal Segmentation (2025–2026)
+
+**EoMT** [Kerssies2025] (CVPR 2025 Highlight) feeds N learnable query tokens into the last blocks of a plain ViT alongside the patch tokens; class logits come from the query tokens and masks from query–patch dot products, with masked attention used only during training and *annealed away* for inference. On COCO panoptic (640×640, DINOv2 backbones, H100) EoMT-L reaches **56.0 PQ at 128 FPS**, and EoMT-7B reaches **58.4 PQ**, equal to ViT-Adapter-7B + Mask2Former but about 2× faster. With DINOv3 backbones, EoMT-L reports **58.9 PQ** (panoptic) and **49.9 mask AP** (instance) at 1280×1280. **VidEoMT** (CVPR 2026) extends the encoder-only design to video segmentation (up to ~10× faster than competing video segmenters), and **PMT** (2026) adapts it to frozen foundation encoders.
+
+### Real-Time Instance Segmentation (2025–2026)
+
+**RF-DETR-Seg** [Robinson2026] (ICLR 2026) adds a mask head to the NAS-searched RF-DETR family (DINOv2 backbone + LW-DETR decoder). In Roboflow's reproducible benchmark (COCO val2017; T4, TensorRT FP16, batch 1) it ranges from **40.3 mask AP at 3.4 ms (Nano)** to **49.9 mask AP at 21.8 ms (2XL)**, versus 30.0–40.1 for YOLO11-seg. **YOLO26-seg** (Ultralytics, 2026) adds a semantic-segmentation auxiliary loss and a multi-scale prototype module to YOLACT-style prototype masks, and runs NMS-free end-to-end: 33.9 (n) to 47.0 (x) mask AP at 2.1–16.4 ms on a T4.
+
+### Open-Vocabulary Instance Segmentation: SAM 3
+
+**SAM 3** [Carion2025] (Meta, Nov 2025) performs **Promptable Concept Segmentation**: for a noun phrase or exemplar it returns masks and identities for *every* matching instance in an image or video. A DETR-style detector (with a presence token separating recognition from localisation) and a SAM 2-style tracker share one vision encoder (848 M params). It reports **48.5 mask AP on LVIS** and 54.1 cgF1 on SA-Co/Gold (human: 72.8), and its SA-Co benchmark (270 K unique concepts) uses **cgF1**, a classification-gated F1 that also penalises predictions for absent concepts—a better match to open-vocabulary use than AP. SAM 3.1 (Mar 2026) makes multi-object video tracking ~7× faster at 128 objects.
 
 ---
 
