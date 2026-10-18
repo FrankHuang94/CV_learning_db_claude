@@ -326,7 +326,7 @@ The debate crystallises around two incompatible prior beliefs about what world m
 | **Use as robot policy (2026)** | Goal-image planning (V-JEPA 2-AC, CEM) | World Action Models (DreamZero, Cosmos Policy) |
 | **Physical plausibility** | No ground-truth guarantee | FID/FVD optimised; physics may be violated |
 
-**Hybrid trend (2025–2026):** Several groups have merged both paradigms. V-JEPA 2-AC [Bardes et al. 2025] predicts in latent space but adds an action-conditioned post-training stage — effectively a JEPA with a thin generative head. DIAMOND [Alonso et al. 2024] generates pixels but uses them as RL observations, not as training targets for the policy backbone. The emerging consensus is that **pure pixel generation is unnecessary** for robot control but that **some form of decoding back to observable space** remains useful for sim data generation and interpretability. The 2026 World Action Model results complicate this picture: generative video pretraining appears to be an excellent *initialisation* for policies even when the generated pixels are discarded at inference (Fast-WAM), suggesting that the debate is less about the training signal's modality than about which representation transfers best to action.
+**Hybrid trend (2025–2026):** Several groups have merged both paradigms. V-JEPA 2-AC [Assran et al. 2025] predicts in latent space but adds an action-conditioned post-training stage — effectively a JEPA with a thin generative head. DIAMOND [Alonso et al. 2024] generates pixels but uses them as RL observations, not as training targets for the policy backbone. The emerging consensus is that **pure pixel generation is unnecessary** for robot control but that **some form of decoding back to observable space** remains useful for sim data generation and interpretability. The 2026 World Action Model results complicate this picture: generative video pretraining appears to be an excellent *initialisation* for policies even when the generated pixels are discarded at inference (Fast-WAM), suggesting that the debate is less about the training signal's modality than about which representation transfers best to action.
 
 ---
 
@@ -420,7 +420,7 @@ The debate crystallises around two incompatible prior beliefs about what world m
 
 - [DreamerV3 arXiv](https://arxiv.org/abs/2301.04104) — Hafner et al., "Mastering Diverse Domains through World Models"
 - [I-JEPA CVPR 2023](https://openaccess.thecvf.com/content/CVPR2023/html/Assran_Self-Supervised_Learning_From_Images_With_a_Joint-Embedding_Predictive_Architecture_CVPR_2023_paper.html) — Assran et al., official proceedings
-- [V-JEPA 2 arXiv](https://arxiv.org/abs/2506.09985) — Bardes et al., "V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning" (June 2025)
+- [V-JEPA 2 arXiv](https://arxiv.org/abs/2506.09985) — Assran et al., "V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning" (June 2025)
 - [DIAMOND project page](https://diamond-wm.github.io/) — with videos, code, and per-game Atari results
 - [NVIDIA Cosmos arXiv](https://arxiv.org/abs/2501.03575) — full technical report on the WFM platform
 - [LeCun 2022 white paper](https://openreview.net/pdf?id=BZ5a1r-kVsf) — "A Path Towards Autonomous Machine Intelligence" — the foundational JEPA manifesto
