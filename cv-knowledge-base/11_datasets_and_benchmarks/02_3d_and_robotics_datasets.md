@@ -263,7 +263,7 @@ Simulated benchmarks remain the cheapest way to compare VLAs, but the most popul
 | Open X-Embodiment | Cross-embodiment; standardized format; directly enables generalist policies | Quality variance across contributed datasets; action spaces differ |
 | DROID | High diversity, in-the-wild; strong policy training results; language annotations | Single robot platform (Franka); predominantly tabletop manipulation |
 | AgiBot World | OXE-scale trajectories with uniform hardware/protocol; dexterous + tactile sensing | Single vendor's embodiments; replicated (staged) scenes rather than truly in-the-wild homes |
-| EgoDex | Native 3D hand/finger pose at scale; cheap to scale (no robot) | Human-to-robot embodiment gap; tabletop only; requires retargeting |
+| EgoDex | Native 3D hand pose at scale; cheap to scale (no robot) | Human-to-robot embodiment gap; tabletop only; requires retargeting |
 | WOD-E2E | Long-tail scenarios; human-preference metric tolerates multimodal futures | Rated subset is small; camera-only; rater subjectivity |
 | NAVSIM v2 | Closed-loop-correlated scores at open-loop cost | Synthetic observations may carry rendering artefacts; non-reactive agents |
 | LIBERO | Cheap, reproducible VLA comparisons | Saturated; LIBERO-Plus shows scores reflect memorisation of fixed viewpoints/initial states |

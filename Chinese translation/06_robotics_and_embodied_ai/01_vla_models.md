@@ -396,3 +396,130 @@ graph LR
 | WoVR | 2026 (arXiv 2602.13977) | VLAs | 在作为模拟器的学习世界模型中进行强化学习 | 降低真实/仿真推演成本 |
 
 开源的 **RLinf** 框架（RLinf-VLA，RSS 2026；OSDI 2026 系统论文）在多种仿真器（ManiSkill、LIBERO、RoboTwin、BEHAVIOR、Isaac Lab）和真实机器人上支持上述大部分算法，并被 Isaac Lab 3.0 采用于 VLA 后训练。
+
+---
+
+## 模型对比表
+
+| 模型 | 主干 | 动作头 | 数据规模 | 是否开源 | 主要优势 | 主要劣势 |
+|-------|----------|-------------|------------|-------------|--------------|--------------|
+| RT-1 | FiLM-EfficientNet + 自定义 Transformer (35M) | 离散 256 区间 token，11 维 | 13 万回合，13 台机器人，17 个月 | 否 | 在已知任务上成功率高（97%）；3 Hz 高效推理 | 无网络预训练；对新物体/场景脆弱 |
+| RT-2 | PaLI-X 55B 或 PaLM-E 12B | 离散动作 token（VLM 词表） | 机器人数据 + 互联网 VLM 数据 | 否 | 涌现思维链；在未见物体上比 RT-1 提升 2 倍 | 55B 推理成本；离散动作；专有权重 |
+| OpenVLA | Prismatic-7B (Llama-2 + DINOv2 + SigLIP) | 每维离散 256 区间 token | 97 万回合（Open X-Embodiment） | 是（权重 + 代码） | 首个达到 RT-2 水平的开放权重 VLA；基准表现强 | 离散动作头；无动作分块；7B 推理显存 |
+| π₀ | PaliGemma 3B | 流匹配动作专家（约 3 亿参数），H=50 动作块 | 10,000+ 小时专有多机器人数据 | 部分（公开架构描述；权重未完全公开） | 灵巧高频操作；多模态动作分布；50 Hz | 专有数据；73 ms 推理延迟；开放世界泛化有限 |
+| GR00T N1 | Eagle-2（总计 2.2B，VLM 1.34B） | 扩散 Transformer (DiT) + 特定具身的动作解码器 | 5 万条轨迹 + 300 万段第一人称视频 + Isaac Sim 合成数据 | 是（2.2B 版本在 HuggingFace） | 人形全身控制；强大的仿真到真实流水线；支持可变自由度 | 发布时基准数据仅限内部评估 |
+| π0.5 | 基于 PaliGemma（~3B 量级） | 流匹配专家（+ 采用 KI 的 FAST token） | 异构：机器人、移动操作、网络、口头指令 | 是（openpi，2025 年 9 月） | 对未见家庭的开放世界泛化；分层子任务预测 | 训练数据专有；长时程可靠性仍有限 |
+| π\*0.6 | π0.6（大于 π0.5） | 流匹配专家，优势条件化 | π0.6 数据 + 自主经验 + 人类纠正 | 否 | 从部署中学习；复杂任务吞吐量 >2 倍 | 需要价值模型、纠正与逐任务强化学习；仅有公司报告结果 |
+| Gemini Robotics 1.5 | Gemini（未公开） | 专有 | 多具身（ALOHA、Franka、Apollo） | 否（ER 1.5 通过 API 提供） | 先思考后行动；运动迁移；带工具的 ER 编排 | 权重封闭；第三方评估有限 |
+| GR00T N1.6 / N1.7 | Cosmos-Reason(2)-2B | 流匹配 DiT，相对动作 | 10k+ 小时机器人数据；N1.7 增加 2 万小时人类视频 | 是（N1.7 为 Apache 2.0） | 强大的开源基线（LIBERO 约 97%）；支持边缘部署 | 以人形为中心；通用真实世界表现低于前沿闭源模型 |
+| SmolVLA | SmolVLM2（截断），450M | 流匹配专家 | 社区 LeRobot 数据集 | 是 | 可在消费级 GPU/CPU 上运行；异步推理 | 在复杂灵巧任务上上限较低 |
+| OpenVLA-OFT | Prismatic-7B | 并行解码的连续动作块（L1） | OXE + 任务数据 | 是 | LIBERO 97.1%；比 OpenVLA 快 26 倍 | 7B 显存占用；单具身微调 |
+| Helix (Figure) | 7B VLM (S2) + 80M 视觉运动模型 (S1) | 200 Hz 连续 35 自由度 | 约 500 小时遥操作（报告值） | 否 | 机载全上半身人形控制 | 无学术基准数值 |
+
+---
+
+## 关键论文
+
+| 论文 | 作者 | 年份 | 发表载体 | 主要贡献 |
+|-------|---------|------|-------|-----------------|
+| RT-1: Robotics Transformer for Real-World Control at Scale | Brohan, Brown et al. | 2022 | CoRL / RSS 2023 | 首个大规模 Transformer 机器人策略；13 万示范训练；700+ 任务上 97% |
+| RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control | Brohan/Zitkovich et al. | 2023 | CoRL | 用于机器人控制的 VLM 协同微调；"动作即文本 token"范式；涌现思维链 |
+| Open X-Embodiment: Robotic Learning Datasets and RT-X Models | Open X-Embodiment Collaboration | 2023 | ICRA 2024 (Best Paper) | 22 种具身、527 项技能的跨具身数据集；机器人间正迁移 |
+| OpenVLA: An Open-Source Vision-Language-Action Model | Kim et al. | 2024 | CoRL | 首个在标准基准上达到 RT-2 水平的开放权重、开放数据 7B VLA |
+| π₀: A Vision-Language-Action Flow Model for General Robot Control | Black et al. | 2024 | arXiv (Physical Intelligence) | 流匹配动作头；PaliGemma 主干；50 Hz 灵巧操作 |
+| GR00T N1: An Open Foundation Model for Generalist Humanoid Robots | NVIDIA (Bjorck et al.) | 2025 | arXiv 2503.14734 | 双系统（VLM + DiT）人形基础模型；2.2B 版本开放权重 |
+| π₀.5: a Vision-Language-Action Model with Open-World Generalization | Physical Intelligence | 2025 | arXiv 2504.16054 | 在异构 + 网络数据上协同训练，实现对新家庭的泛化 |
+| Gemini Robotics: Bringing AI into the Physical World | Google DeepMind | 2025 | arXiv | 基于 Gemini 2.0 的灵巧操作 VLA；用于空间推理的 Gemini-ER |
+| FAST: Efficient Action Tokenization for Vision-Language-Action Models | Physical Intelligence | 2025 | arXiv | 基于 DCT 的频域动作分词器；相比 π₀ 流匹配训练提速 5 倍 |
+| Fine-Tuning Vision-Language-Action Models: Optimizing Speed and Success (OpenVLA-OFT) | Kim, Finn, Liang | 2025 | arXiv 2502.19645 | 并行解码 + 分块 + L1 回归；LIBERO 97.1% |
+| Knowledge Insulating Vision-Language-Action Models: Train Fast, Run Fast, Generalize Better | Driess et al. (Physical Intelligence) | 2025 | arXiv 2505.23705 | 在 VLM（在 FAST token 上训练）与流匹配专家之间施加停止梯度 |
+| SmolVLA: A Vision-Language-Action Model for Affordable and Efficient Robotics | Shukor et al. | 2025 | arXiv 2506.01844 | 4.5 亿参数 VLA；社区数据；异步推理 |
+| Real-Time Execution of Action Chunking Flow Policies (RTC) | Black, Galliker, Levine | 2025 | NeurIPS 2025 (arXiv 2506.07339) | 面向流策略的基于补全的实时分块 |
+| A Careful Examination of Large Behavior Models for Multitask Dexterous Manipulation | Toyota Research Institute | 2025 | arXiv 2507.05331 | 对扩散 LBM 预训练进行统计上严谨的评估 |
+| SimpleVLA-RL: Scaling VLA Training via Reinforcement Learning | Li et al. | 2025 | arXiv 2509.09674 | 在 veRL 上对 VLA 进行结果奖励强化学习 |
+| Gemini Robotics 1.5: Pushing the Frontier of Generalist Robots with Advanced Embodied Reasoning, Thinking, and Motion Transfer | Google DeepMind | 2025 | arXiv 2510.03342 | 会思考的 VLA、ER 1.5 编排器、运动迁移 |
+| X-VLA: Soft-Prompted Transformer as Scalable Cross-Embodiment Vision-Language-Action Model | Zheng et al. | 2025 | arXiv 2510.10274 | 具身软提示；0.9B；LIBERO 98.1% |
+| πRL: Online RL Fine-tuning for Flow-based Vision-Language-Action Models | RLinf team | 2025 | arXiv 2510.25889 | 用 Flow-Noise / Flow-SDE 对 π0/π0.5 进行 PPO/GRPO |
+| π\*0.6: a VLA That Learns From Experience | Physical Intelligence | 2025 | arXiv 2511.14759 | Recap 优势条件化真实世界强化学习 |
+
+---
+
+## 基准性能
+
+| 模型 | 数据集 / 基准 | 指标 | 得分 | 备注 |
+|-------|---------------------|--------|-------|-------|
+| RT-1 | 700+ 已见任务（真实机器人） | 成功率 | 97% | 13 台 EDR 机器人，厨房领域 |
+| RT-1 | 未见指令 | 成功率 | 76% | 比最佳基线高 24% |
+| RT-1 | 干扰物体 | 成功率 | 83% | 相同设置，增加视觉干扰物 |
+| RT-2-PaLI-X-55B | 未见物体（困难，真实机器人） | 成功率 | 62% | RT-1 基线约 32% |
+| RT-2-PaLM-E-12B | 未见物体（困难，真实机器人） | 成功率 | 62% | 平均与 PaLI-X-55B 持平 |
+| RT-2-PaLI-X-55B | Language Table（仿真） | 成功率 | 90% | 此前 SOTA 为 77% |
+| RT-2-PaLI-X-55B | 符号理解（涌现） | 成功率 | 82% | 未显式训练；由网络预训练迁移而来 |
+| OpenVLA | Google Robot 任务 | 平均成功率 | 85.0 ± 4.6% | RT-2-X：78.3 ± 5.4% |
+| OpenVLA | BridgeV2（零样本） | 成功率 | 56–65% | Widow-X 机器人，未见任务划分 |
+| π₀ | 分布内 4 任务宏平均 | 成功率 | ~72% | 清洗盘子、海绵、拉开袋子、叠短裤 |
+| π₀ | 空间分布外 | 成功率 | ~67% | 比分布内低 5 个百分点 |
+| π₀ | 未见物体（实例 + 空间分布外） | 成功率 | ~59% | 比分布内低 13 个百分点；ACT 下降 42 个百分点 |
+| GR00T N1 | 仿真 + 真实综合（内部） | 任务成功 | 比基线高 40% | 合成 + 真实数据组合 |
+| Helix (Figure AI) | 商业基准（BMW） | 运行小时数 | 1,250+ 小时 | 90,000+ 个零件；未公开报告相对学术任务的基准数据 |
+| GR00T N1.5 | GR-1 语言跟随 | 成功率 | 93.3% | N1 为 46.6%（NVIDIA 报告） |
+| OpenVLA-OFT | LIBERO（4 套件平均） | 成功率 | 97.1% | 微调后的 OpenVLA 为 76.5% |
+| π0.5 (openpi) | LIBERO（4 套件平均） | 成功率 | 96.85% | 98.8 / 98.2 / 98.0 / 92.4 |
+| GR00T N1.6 | LIBERO（4 套件平均） | 成功率 | ≈97.0% | 97.65 / 98.45 / 97.5 / 94.35 |
+| X-VLA-0.9B | LIBERO / Simpler-WidowX | 成功率 | 98.1% / 95.8% | 代码仓库报告 |
+| π0 + πRL | MetaWorld MT50 | 成功率 | 50.8% → 85.8% | 少样本 SFT → 强化学习（Flow-Noise） |
+| π0.5 + πRL | ManiSkill3 多任务 | 成功率 | 40.1% → 90.9% | 少样本 SFT → 强化学习（Flow-SDE） |
+| π\*0.6 (Recap) | 真实咖啡 / 衣物 / 纸箱任务 | 吞吐量、失败率 | 吞吐量 >2 倍；失败约减半 | 公司报告 |
+| DreamZero-DROID | RoboArena（真实、众包） | 排行榜名次 | 第 1（2026 年 2 月） | 仅在 DROID 上训练的世界动作模型 |
+
+---
+
+## 优缺点
+
+| 方面 | 优点 | 缺点 |
+|--------|------|------|
+| 离散动作 token 化（RT-2、OpenVLA） | 架构简单；充分利用 LLM 生成栈；易于实现；预测时受益于 LLM 世界知识 | 量化有损；逐维独立采样忽略动作相关性；挪用的词表 token 可能干扰语义表示 |
+| 流匹配 / 扩散动作头（π₀、GR00T N1） | 连续输出；处理多模态分布；时间连贯的动作块；灵巧操作性能最先进 | 额外的架构组件（约 3 亿参数）；10 步 ODE 积分增加约 60–70 ms 延迟；训练比交叉熵更复杂 |
+| 大型 VLM 主干（RT-2 55B） | 涌现泛化更强；语言理解更丰富；新物体识别更好 | 55B 推理成本使机载部署不可行；需要模型并行；微调代价高 |
+| 开放权重 VLA（OpenVLA、GR00T N1 2.2B） | 可复现；社区可微调；便于学术基准评测；降低部署门槛 | 规模较小限制泛化；发布版本可能落后专有版本数月至数年 |
+| 跨具身训练（Open X-Embodiment） | 机器人间正迁移；降低每台机器人的数据需求；表示更鲁棒 | 动作空间异构（关节角 vs. 末端位姿 vs. 增量动作）使联合训练复杂；数据集质量和标注一致性参差不齐 |
+| 强化学习后训练（Recap、πRL、SimpleVLA-RL） | 超越示范者表现；学会恢复；提升速度/吞吐量 | 需要奖励或价值模型；真实世界强化学习代价高且安全攸关；仿真强化学习可能无法迁移 |
+| 小型 VLA（SmolVLA、X-VLA-0.9B） | 可在普通硬件上训练与运行；迭代快；学术界易于使用 | 语义泛化和长时程任务的容量较低 |
+| ER 规划器 + VLA 执行器（Gemini Robotics 1.5） | 语言接口可解释；可使用工具；复用前沿模型的推理能力 | 双模型延迟；语言接口处的错误；模型封闭 |
+
+---
+
+## 开放问题与研究空白
+
+- **大规模下弥合离散与连续动作表示：** 离散 token 化保留了 VLM 结构但损失动作保真度；流匹配获得了保真度但失去了下一个 token 预测的简洁性。同时兼顾二者的有原则方法——可能通过向量量化潜动作空间或自适应 token 化——仍是开放问题。
+- **大型主干的端侧推理：** 在嵌入式硬件（如 NVIDIA Jetson Orin、40 TOPS NPU）上以 50 Hz 部署 7B+ 参数的 VLA，需要激进的量化、投机解码或专用推理引擎。2025 年发布的 Gemini Robotics On-Device 是重要一步，但将该方法推广到各种架构仍未解决。
+- **接触丰富与可变形物体操作：** 主要在抓取-放置任务上训练的 VLA，在插入、轴孔装配、布料操作或倒液体等任务上泛化很差。这些任务需要将力反馈整合进 VLA 回路，目前尚无架构能稳健地处理。
+- **人类示范与机器人执行之间的动作分布偏移：** 通过遥操作收集的示范带有人类运动伪影（犹豫、超调、重试），对机器人模仿而言并非最优。从不完美示范中提取意图而非轨迹级行为，是一个活跃的研究方向（参见 DAgger 变体、隐式行为克隆）。
+- **有原则的不确定性量化：** VLA 没有良好校准的不确定性估计。策略应能识别自己何时处于分布外，并请求人工干预或尝试保守的回退——这是当前自回归和流匹配动作头都无法提供的能力。
+- **共享主干权重中的多任务干扰：** 在文本任务和机器人控制上协同微调 VLM，存在语言能力灾难性遗忘以及机器人任务之间相互干扰的风险。最优的数据混合比例和训练课程在理论上尚未被充分理解。
+- **评测标准化：** 该领域缺乏一个类似 ImageNet 或 BOP 的、被普遍采用的操作基准。每篇论文使用不同的机器人平台、任务和成功标准，使跨论文比较不可靠。社区驱动的工作（LIBERO、SimplerEnv、RoboSuite）在 2025 年被广泛使用，但 LIBERO 现已饱和（许多模型约 97–98%），扰动变体显示这些分数背后的泛化很脆弱。分布式真实机器人评测（RoboArena，arXiv 2506.18123）、大型家居仿真器（BEHAVIOR-1K、RoboCasa）以及基于世界模型的评估（Veo 世界模拟器、Ctrl-World）是 2026 年的候选方案。
+- **用于强化学习的奖励、价值与成功检测：** Recap 及相关方法依赖价值函数和成功标签。要让强化学习扩展到少数精选任务之外，需要通用的跨任务进度估计器——可能由 ER-VLM 提供。
+- **记忆与长上下文：** VLA 通常只以一帧或少数几帧为条件。多尺度记忆（PI 的 MEM，2026；MemER，ICLR 2026）是针对需要记住数分钟前所做之事的任务的早期解决方案。
+
+---
+
+## 延伸阅读
+
+- [RT-1 论文（arXiv 2212.06817）](https://arxiv.org/abs/2212.06817) —— Robotics Transformer 原始论文，含完整架构与训练细节
+- [RT-2 论文（arXiv 2307.15818）](https://arxiv.org/abs/2307.15818) —— 用于机器人控制的 VLM 协同微调；策略中涌现思维链
+- [π₀ 论文（arXiv 2410.24164）](https://arxiv.org/abs/2410.24164) —— 流匹配动作头；PaliGemma 主干；灵巧操作结果
+- [OpenVLA 论文（arXiv 2406.09246）](https://arxiv.org/abs/2406.09246) —— 开放权重 7B VLA；完整训练流水线与基准结果
+- [GR00T N1 论文（arXiv 2503.14734）](https://arxiv.org/abs/2503.14734) —— 双系统人形基础模型；Isaac Sim 合成数据流水线
+- [π₀.5 论文（arXiv 2504.16054）](https://arxiv.org/abs/2504.16054) —— 通过异构协同训练实现开放世界泛化
+- [openpi 代码仓库](https://github.com/Physical-Intelligence/openpi) —— 开源的 π0 / π0-FAST / π0.5 检查点及 LIBERO/DROID 结果
+- [知识隔离（arXiv 2505.23705）](https://arxiv.org/abs/2505.23705) —— 训练快、运行快、泛化更好
+- [实时分块（arXiv 2506.07339）](https://arxiv.org/abs/2506.07339) —— 动作分块流策略的实时执行
+- [π\*0.6 / Recap（arXiv 2511.14759）](https://arxiv.org/abs/2511.14759) —— 一个从经验中学习的 VLA
+- [Gemini Robotics 1.5（arXiv 2510.03342）](https://arxiv.org/abs/2510.03342) —— 会思考的 VLA、ER 1.5 与运动迁移
+- [Gemini Robotics-ER cookbook](https://github.com/google-gemini/cookbook/blob/main/quickstarts/gemini-robotics-er.ipynb) —— 通过 Gemini API 使用 ER 1.5
+- [Isaac GR00T](https://github.com/NVIDIA/Isaac-GR00T) —— GR00T N1.5/N1.6/N1.7 发布说明、检查点与基准
+- [SmolVLA（arXiv 2506.01844）](https://arxiv.org/abs/2506.01844) —— 经济高效的开源 VLA
+- [OpenVLA-OFT（arXiv 2502.19645）](https://arxiv.org/abs/2502.19645) —— 面向 VLA 的优化微调方案
+- [πRL（arXiv 2510.25889）](https://arxiv.org/abs/2510.25889) 与 [RLinf](https://github.com/RLinf/RLinf) —— 基于流的 VLA 的强化学习微调
+- [SimpleVLA-RL（arXiv 2509.09674）](https://arxiv.org/abs/2509.09674) —— 面向 VLA 的开源强化学习框架
+- [TRI LBM 研究（arXiv 2507.05331）](https://arxiv.org/abs/2507.05331) —— 对大型行为模型的细致考察

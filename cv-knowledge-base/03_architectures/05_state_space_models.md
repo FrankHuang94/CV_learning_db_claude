@@ -106,7 +106,7 @@ The decisive 2024–2026 development happened in large language and multimodal b
 
 | Model (date) | Sequence mixers | Notes |
 |---|---|---|
-| Jamba (AI21, Mar 2024) | Mamba + attention (1 attention : 7 Mamba layers) + MoE | First production-grade hybrid; long context |
+| Jamba (AI21, Mar 2024) | Mamba + attention (1 attention : 7 Mamba layers) + MoE | Early production-scale hybrid; long context |
 | Nemotron-H (NVIDIA, Apr 2025) | Mostly Mamba-2, few self-attention layers | Hybrid Mamba-Transformer family replacing the majority of attention layers |
 | Nemotron Nano 2 VL (NVIDIA, 2025) | Hybrid Mamba-Transformer LLM + vision encoder | 12B VLM for documents and video, Efficient Video Sampling |
 | Qwen3-Next-80B-A3B (Alibaba, Sep 2025) | Gated DeltaNet + full attention + ultra-sparse MoE | Hybrid attention for long-context efficiency |
