@@ -1,8 +1,14 @@
 # Image Generation: GANs, VAEs, Diffusion Models, and Controllable Synthesis
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
-> **Related Sections:** [Diffusion Models](../10_generative_vision/01_diffusion_models.md) | [GANs and VAEs](../10_generative_vision/00_gans_and_vaes.md) | [Video Understanding](./08_video_understanding.md) | [Research Frontier 2024–2026](../12_research_frontier_2024_2026/02_any_model_paradigm.md)
+> **Related Sections:** [Diffusion Models](../10_generative_vision/01_diffusion_models.md) | [GANs and VAEs](../10_generative_vision/00_gans_and_vaes.md) | [Video Generation](../10_generative_vision/02_video_generation.md) | [Video Understanding](./08_video_understanding.md) | [Research Frontier 2024–2026](../12_research_frontier_2024_2026/02_any_model_paradigm.md)
+
+> **🆕 October 2026 update:**
+> - New section on the 2025–2026 frontier systems. Open weights: **FLUX.1 Kontext** and **FLUX.2** (32B [dev], Nov 2025; [klein] 4B/9B, Jan 2026), **Qwen-Image** (20B MMDiT, Aug 2025, then Edit, Layered and 2512 versions; Qwen-Image-2.0 announced Feb 2026), **HunyuanImage 3.0** (80B-total MoE, native multimodal autoregressive) and **Z-Image** (6B single-stream DiT, 8-step Turbo). Proprietary: GPT-4o native image generation, Google's Nano Banana family and Seedream 4.0.
+> - Unified generation and editing (instruction/multi-reference editing in one model) has replaced the separate "generator + adapter" pipeline as the default product pattern.
+> - New research section: next-scale autoregression (VAR), representation alignment and representation autoencoders (REPA, RAE), pixel-space "x-prediction" diffusion (JiT) and one-step MeanFlow.
+> - Updated Key Papers, Benchmarks, Pros & Cons and Open Problems (video generation: Sora 2, Veo 3.x, Wan 2.2; provenance/watermarking).
 
 ---
 
@@ -13,6 +19,8 @@ Image generation — producing photorealistic or stylistically controlled images
 The second paradigm shift came with **Denoising Diffusion Probabilistic Models (DDPM)** [Ho2020] and subsequent work, which reframed generation as iterative denoising of Gaussian noise. Diffusion models surpassed GANs on FID within two years. The key efficiency breakthrough was **Latent Diffusion Models (LDM)** [Rombach2022], which moved the diffusion process into the compressed latent space of a pretrained VAE encoder, reducing the computational cost by 2–4 orders of magnitude and enabling text-conditioned synthesis at scale. Stable Diffusion (based on LDM) democratized image generation. SDXL [Podell2023] further improved quality with a 3× larger UNet and multi-encoder text conditioning.
 
 The third paradigm is **flow-matching foundation models** (FLUX.1 [Black Forest Labs 2024]) and integrated text-image architectures. FLUX uses rectified flow matching — a simpler, straighter ODE trajectory from noise to data — with a hybrid multimodal transformer (MM-DiT) processing text and image tokens jointly at 12B parameters. These models set a new quality bar for photorealism and prompt adherence. Controllable generation through adapters (ControlNet [Zhang2023], IP-Adapter [Ye2023]) has transformed generation from an open-ended creative tool to a precise design instrument.
+
+A fourth phase, **unified multimodal generation and editing** (2025–2026), now defines the frontier. OpenAI's GPT-4o native image generation (Mar 2025) and Google's Gemini-based "Nano Banana" models (Aug 2025 onward) showed that an LLM-centred multimodal model can generate and edit images conversationally, with strong world knowledge, text rendering and multi-image consistency. Open-weight systems followed. FLUX.1 Kontext and FLUX.2 add in-context and multi-reference editing to rectified-flow transformers. Qwen-Image (20B MMDiT) leads on text rendering, especially Chinese. HunyuanImage 3.0 is an 80B-parameter MoE that generates natively inside an autoregressive multimodal LLM. Research also revisited the foundations: representation-aligned latent spaces (REPA, RAE), pixel-space diffusion (JiT), next-scale autoregression (VAR) and one-step flow models (MeanFlow).
 
 ---
 
@@ -131,6 +139,76 @@ The architecture is a **hybrid multimodal transformer (MM-DiT)** that processes 
 
 ---
 
+## Frontier Text-to-Image and Editing Systems (2025–2026)
+
+### FLUX.1 Kontext and FLUX.2 (Black Forest Labs)
+
+**FLUX.1 Kontext** [BlackForestLabs2025] (May 2025) performs **in-context generation and editing** in latent space. Context-image tokens are concatenated with target tokens in the same flow-matching transformer sequence, so one model handles text-to-image, local and global instruction edits, and character/style consistency across multiple editing turns. **FLUX.2** (Nov 25, 2025) scales the recipe. FLUX.2 [dev] is a **32B-parameter flow-matching transformer** with a new FLUX.2 autoencoder and a Mistral Small 3.2 (24B) vision-language model used for text encoding and prompt upsampling. It supports text-to-image plus single- and **multi-reference editing** in one checkpoint. The distilled **FLUX.2 [klein]** family (4B and 9B, Jan 15, 2026) targets real-time generation. The 4B models are Apache 2.0; the 9B and [dev] models use non-commercial licenses.
+
+### Qwen-Image Family (Alibaba Qwen)
+
+**Qwen-Image** [QwenTeam2025] (Aug 2025, tech report arXiv 2508.02324) is a **20B MMDiT** conditioned on a Qwen2.5-VL multimodal encoder. Its main strength is complex text rendering, especially multi-line Chinese and mixed-script layouts, achieved with a progressive curriculum from non-text to paragraph-level text. Monthly iterations added **Qwen-Image-Edit** (Aug 2025; Edit-2509 with multi-image input; Edit-2511 with better identity consistency), **Qwen-Image-Layered** (Dec 2025, decomposition into editable RGBA layers) and **Qwen-Image-2512** (Dec 2025, more realistic humans and textures). All are Apache 2.0. **Qwen-Image-2.0** was announced in Feb 2026 with native 2K output, long (~1K-token) typography instructions and unified generation and editing.
+
+### HunyuanImage 3.0: Native Multimodal Autoregression (Tencent)
+
+HunyuanImage 3.0 [Tencent2025] (Sep 28, 2025, arXiv 2509.23951) departs from DiT pipelines. Understanding and generation are unified in **one autoregressive multimodal MoE LLM** with 64 experts, **80B total and about 13B active parameters**. Image generation happens natively inside the language model, which lets it use world knowledge and expand sparse prompts by reasoning. At release it was the largest open-weight image-generation MoE. Instruct and distilled (8-step) variants with reasoning-based prompt rewriting and image-to-image editing followed in Jan 2026. Serving needs at least 3×80 GB GPUs for the base model, which illustrates the cost of the "generate inside the LLM" approach.
+
+### Z-Image and Few-Step Distillation (Alibaba Tongyi)
+
+**Z-Image** (arXiv 2511.22699, Nov 2025) shows that a compact model can compete with much larger ones. It is a **6B Scalable Single-Stream DiT (S3-DiT)** that concatenates text, visual-semantic and VAE tokens into one sequence. **Z-Image-Turbo** is distilled with Decoupled-DMD plus RL (DMDR) to **8 NFEs**, runs in under a second on an H800, and fits in 16 GB consumer GPUs. It was the top-ranked open-weight model on the Artificial Analysis text-to-image leaderboard in Dec 2025.
+
+### Proprietary Frontier
+
+- **GPT-4o image generation** (OpenAI, Mar 2025; API as `gpt-image-1`, Apr 2025): native generation inside a multimodal LLM, with very strong instruction following, text rendering and conversational editing.
+- **Nano Banana** (Google; Gemini 2.5 Flash Image, Aug 2025) and **Nano Banana Pro** (built on Gemini 3 Pro, Nov 2025): multi-image composition, identity-consistent editing, search-grounded generation and up to 4K output. Outputs carry SynthID watermarks. Google's Gemini API cookbook later lists Nano Banana 2 and 2.1 as successors, with "thinking" and search grounding.
+- **Seedream 4.0** (ByteDance Seed, Sep 2025): unified generation and editing with fast high-resolution (up to 4K) output.
+
+| System | Developer | Released | Architecture | Open weights |
+|---|---|---|---|---|
+| FLUX.1 Kontext | Black Forest Labs | May 2025 | Rectified-flow MM-DiT, in-context editing | [dev] non-commercial |
+| Qwen-Image | Alibaba Qwen | Aug 2025 | 20B MMDiT + Qwen2.5-VL encoder | Yes (Apache 2.0) |
+| HunyuanImage 3.0 | Tencent | Sep 2025 | 80B-total / 13B-active AR MoE multimodal LLM | Yes (community license) |
+| FLUX.2 [dev] | Black Forest Labs | Nov 2025 | 32B flow transformer + Mistral Small 3.2 VLM | Non-commercial |
+| Z-Image(-Turbo) | Alibaba Tongyi | Nov 2025 | 6B single-stream DiT; 8-step distilled | Yes |
+| FLUX.2 [klein] | Black Forest Labs | Jan 2026 | 4B / 9B distilled | 4B Apache 2.0 |
+| GPT-4o image gen / gpt-image-1 | OpenAI | Mar–Apr 2025 | Native multimodal LLM generation | No |
+| Nano Banana / Pro | Google DeepMind | Aug / Nov 2025 | Gemini 2.5 Flash / Gemini 3 Pro image generation | No |
+
+---
+
+## Research Directions: Tokenizers, Latent Spaces and Few-Step Generation
+
+### Next-Scale Autoregression (VAR)
+
+VAR [Tian2024] (NeurIPS 2024 Best Paper) replaces raster-order next-token prediction with **next-scale prediction**. A multi-scale VQ tokenizer represents an image as token maps of increasing resolution, and a GPT-style transformer predicts each whole scale in parallel, conditioned on all coarser scales. This gave the first GPT-style autoregressive model to beat strong diffusion transformers on ImageNet FID with much faster sampling, and the paper showed clean power-law scaling.
+
+### Representation Alignment and Representation Autoencoders
+
+**REPA** [Yu2025] (ICLR 2025) adds a regularizer that aligns intermediate DiT hidden states with features from a frozen self-supervised encoder (e.g. DINOv2). This speeds up DiT/SiT training substantially. **RAE** [Zheng2025] (NYU, arXiv 2510.11690) goes further and replaces the VAE altogether. A **frozen pretrained representation encoder** (DINOv2, SigLIP2) is paired with a trained ViT decoder, and diffusion runs in this semantic latent space using a wide, shallow "DDT head" (DiT^DH). With a DINOv2-B encoder, the authors report reconstruction rFID of 0.57 and generation gFID of 2.16 after only 80 epochs (DiT^DH-XL). Their argument is that semantically structured latents are easier to model than reconstruction-only VAE latents.
+
+```latex
+% REPA: align projected DiT hidden state h_t (noisy input) with frozen encoder features y* of the clean image
+\mathcal{L} = \mathcal{L}_{\text{flow}} + \lambda\, \mathbb{E}\Big[-\tfrac{1}{N}\textstyle\sum_{n} \mathrm{sim}\big(y^*_{n},\, g_\phi(h_{t,n})\big)\Big]
+```
+
+### Pixel-Space Diffusion: "Let Denoising Models Denoise" (JiT)
+
+JiT [Li2025] (Tianhong Li and Kaiming He, arXiv 2511.13720) revisits **pixel-space** diffusion with plain large-patch ViTs ("Just image Transformers", e.g. 16×16 or 32×32 patches at 256–512 px) and no tokenizer, pre-training or auxiliary losses. Its key argument is that the network should **predict the clean image (x-prediction)** rather than noise or velocity. Natural images lie on a low-dimensional manifold, while noise does not, so high-dimensional patch tokens are only tractable with x-prediction. This challenges the assumption that latent autoencoders are necessary for high-resolution diffusion.
+
+### One-Step Generation: MeanFlow
+
+MeanFlow [Geng2025] (Geng, Deng, Bai, Kolter, He; arXiv 2505.13447) trains a network to predict the **average velocity** over an interval instead of the instantaneous velocity of flow matching. This allows one-step (1-NFE) sampling without distillation:
+
+```latex
+% Average velocity over [r, t] and the MeanFlow identity used as training target
+u(z_t, r, t) = \frac{1}{t-r}\int_r^t v(z_\tau, \tau)\, d\tau, \qquad
+u(z_t, r, t) = v(z_t, t) - (t-r)\, \frac{d}{dt} u(z_t, r, t)
+```
+
+Trained from scratch, MeanFlow reports an FID of 3.43 with a single function evaluation on ImageNet 256×256. Together with consistency models and DMD-style distillation (as used in Z-Image-Turbo), it narrows the gap between one-step and many-step generation.
+
+---
+
 ## Controllable Generation
 
 ### ControlNet (Zhang 2023)
@@ -200,6 +278,15 @@ Higher CLIPScore → better text-image alignment. Limitations: CLIP has known bi
 | SDXL: Improving Latent Diffusion Models for High-Resolution Image Synthesis | Podell, English, Lacey et al. | 2023 | arXiv | 3× larger U-Net; dual text encoders; refiner stage |
 | Adding Conditional Control to Text-to-Image Diffusion Models (ControlNet) | Zhang, Rao, Agrawala | 2023 | ICCV | Zero-convolution spatial conditioning adapters for frozen diffusion models |
 | IP-Adapter: Text Compatible Image Prompt Adapter | Ye, Zhang, Liu, Han, Yang | 2023 | arXiv | Decoupled cross-attention for image prompt conditioning; 22M parameters |
+| Visual Autoregressive Modeling: Scalable Image Generation via Next-Scale Prediction (VAR) | Tian, Jiang, Yuan, Peng, Wang | 2024 | NeurIPS (Best Paper) | Coarse-to-fine next-scale prediction; GPT-style AR surpasses DiT on ImageNet |
+| Representation Alignment for Generation: Training Diffusion Transformers Is Easier Than You Think (REPA) | Yu et al. | 2025 | ICLR | Align DiT hidden states with frozen SSL features; much faster convergence |
+| FLUX.1 Kontext: Flow Matching for In-Context Image Generation and Editing in Latent Space | Black Forest Labs | 2025 | arXiv | Sequence-concatenated context tokens; unified generation and multi-turn editing |
+| Mean Flows for One-step Generative Modeling (MeanFlow) | Geng, Deng, Bai, Kolter, He | 2025 | arXiv 2505.13447 | Average-velocity training; 1-NFE FID 3.43 on ImageNet 256 from scratch |
+| Qwen-Image Technical Report | Qwen Team (Alibaba) | 2025 | arXiv 2508.02324 | 20B MMDiT; state-of-the-art complex and Chinese text rendering; editing variants |
+| HunyuanImage 3.0 Technical Report | Tencent Hunyuan | 2025 | arXiv 2509.23951 | 80B-total MoE native multimodal autoregressive generation |
+| Diffusion Transformers with Representation Autoencoders (RAE) | Zheng, Ma, Tong, Xie | 2025 | arXiv 2510.11690 | Frozen DINOv2/SigLIP2 encoder + ViT decoder as diffusion latent space |
+| Back to Basics: Let Denoising Generative Models Denoise (JiT) | Li, He | 2025 | arXiv 2511.13720 | Pixel-space large-patch ViT diffusion with x-prediction; no tokenizer |
+| Z-Image (technical report) | Tongyi-MAI (Alibaba) | 2025 | arXiv 2511.22699 | 6B single-stream DiT; 8-step Turbo via Decoupled-DMD + RL |
 
 ---
 
@@ -216,7 +303,11 @@ Higher CLIPScore → better text-image alignment. Limitations: CLIP has known bi
 | FLUX.1-dev | GenEval Overall | Accuracy ↑ | 0.66 | Prompt-following benchmark; 12B params |
 | ControlNet (SD1.5) | COCO val2017 | FID ↓ | ~16.0 | Canny-conditioned; indicative, protocol-sensitive |
 
-*Note: many FLUX and SDXL scores are not reported under standardized FID protocols; human preference evaluations (ELO ratings, user studies) are increasingly preferred.*
+| MeanFlow (XL) | ImageNet 256 class-cond. | FID ↓ (1-NFE) | 3.43 | One step, trained from scratch [Geng2025] |
+| RAE: DiT^DH-XL + DINOv2-B | ImageNet class-cond. | gFID ↓ | 2.16 | Only 80 epochs; rFID 0.57 (official repo) [Zheng2025] |
+| Z-Image-Turbo | Artificial Analysis T2I Arena | Rank | #8 overall, #1 open-weight | Dec 2025; Elo-based human preference |
+
+*Note: many FLUX and SDXL scores are not reported under standardized FID protocols; human preference evaluations (ELO ratings, user studies) are increasingly preferred. By 2026, frontier text-to-image systems are compared mainly on public preference arenas (e.g. Artificial Analysis, LMArena) and on compositional or text-rendering suites (GenEval, DPG-Bench, OneIG-Bench, LongText-Bench), where vendor-reported numbers often use non-identical protocols.*
 
 ---
 
@@ -228,6 +319,9 @@ Higher CLIPScore → better text-image alignment. Limitations: CLIP has known bi
 | VAE/VQGAN | Tractable likelihood; smooth interpolation; discrete tokens enable LLM-style modeling | Lower visual quality than GANs/diffusion without adversarial component; codebook collapse |
 | Diffusion models (LDM/SD/SDXL) | High diversity; excellent text-image alignment; stable training; composable with adapters | Slow iterative inference (10–50 steps); memory intensive; harder to control spatial layout precisely |
 | Flow matching (FLUX) | Straighter ODE paths → fewer inference steps; better scaling; multimodal joint attention | Extremely large models (12B+); high VRAM requirement; proprietary details not fully published |
+| Unified generation + editing (FLUX.2, Qwen-Image-Edit, Nano Banana) | One model for T2I, instruction edits and multi-reference composition; strong identity consistency | 20–32B+ parameters; edit locality and identity drift over many turns; licensing varies |
+| Native multimodal AR generation (HunyuanImage 3.0, GPT-4o) | World knowledge and reasoning inside generation; conversational editing | Very expensive serving (≥3×80 GB GPUs for 80B MoE); slower than distilled DiTs |
+| Few-step / compact models (Z-Image-Turbo, MeanFlow, FLUX.2 [klein]) | Sub-second generation on consumer GPUs; cheap deployment | Diversity loss from distillation; quality ceiling below largest models on hard prompts |
 
 ---
 
@@ -239,7 +333,10 @@ Higher CLIPScore → better text-image alignment. Limitations: CLIP has known bi
 - **Fine-grained controllability beyond adapters:** ControlNet provides structural control but joint optimization of content, style, identity, and spatial layout simultaneously without artifacts remains unsolved.
 - **Evaluation beyond FID:** FID correlates poorly with human preference for text-to-image; better metrics capturing attribute binding, counting accuracy, and compositional understanding are needed.
 - **Memorization and copyright:** Large diffusion models memorize training samples; quantifying and mitigating unintended reproduction is an unresolved technical and legal challenge.
-- **Video generation consistency:** Extending image generation to temporally consistent video (Sora, OpenAI; AnimateDiff; CogVideo) while maintaining per-frame quality and long-range coherence remains the frontier challenge.
+- **Video generation consistency:** Extending image generation to temporally consistent video while keeping per-frame quality and long-range coherence remains the frontier challenge. Since 2025, Sora 2 (OpenAI), Veo 3/3.1 (Google, with native audio) and open-weight Wan 2.2 (27B-total MoE with high-noise and low-noise experts, Apache 2.0) have greatly improved physics and audio-visual sync, but minute-long consistency and controllability remain open (see [Video Generation](../10_generative_vision/02_video_generation.md)).
+- **Which latent space?** RAE, REPA and JiT challenge the standard VAE latent. It is unsettled whether generation should happen in semantic encoder spaces, reconstruction latents or raw pixels, and how this choice interacts with text rendering and fine-detail fidelity.
+- **Long-form typography and layout:** Short text rendering is now largely solved (Qwen-Image, Nano Banana Pro, GPT-4o). Dense multi-paragraph layouts, infographics and exact multilingual typesetting from ~1K-token instructions remain error-prone.
+- **Provenance and misuse:** Photorealistic, identity-preserving editing at consumer scale raises deepfake and attribution concerns. Watermarking (e.g. SynthID) and C2PA metadata are deployed by some vendors but are not robust to all transformations and are absent from most open-weight models.
 
 ---
 
@@ -251,3 +348,11 @@ Higher CLIPScore → better text-image alignment. Limitations: CLIP has known bi
 - [FLUX.1 official GitHub (black-forest-labs)](https://github.com/black-forest-labs/flux) — Official inference code and model cards
 - [Taming Transformers / VQGAN project page](https://compvis.github.io/taming-transformers/) — CVPR 2021 [Esser2021]
 - [IP-Adapter GitHub (tencent-ailab)](https://github.com/tencent-ailab/IP-Adapter) — Official implementation [Ye2023]
+- [FLUX.2 GitHub (black-forest-labs)](https://github.com/black-forest-labs/flux2) — FLUX.2 [dev] and [klein] inference code
+- [Qwen-Image GitHub (QwenLM)](https://github.com/QwenLM/Qwen-Image) — Qwen-Image, Edit, Layered, 2512 [QwenTeam2025]
+- [HunyuanImage-3.0 GitHub (Tencent-Hunyuan)](https://github.com/Tencent-Hunyuan/HunyuanImage-3.0) — Native multimodal AR MoE [Tencent2025]
+- [Z-Image GitHub (Tongyi-MAI)](https://github.com/Tongyi-MAI/Z-Image) — 6B single-stream DiT and Turbo
+- [RAE GitHub](https://github.com/bytetriper/RAE) — Representation autoencoders [Zheng2025]
+- [JiT GitHub](https://github.com/LTH14/JiT) — Pixel-space x-prediction diffusion [Li2025]
+- [MeanFlow GitHub](https://github.com/Gsunshine/meanflow) — One-step generative modeling [Geng2025]
+- [VAR paper (arXiv:2404.02905)](https://arxiv.org/abs/2404.02905) — NeurIPS 2024 Best Paper [Tian2024]

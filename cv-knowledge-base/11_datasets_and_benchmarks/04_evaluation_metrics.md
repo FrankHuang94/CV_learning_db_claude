@@ -1,6 +1,6 @@
 # Evaluation Metrics
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Intermediate
 > **Related Sections:**
 > - [Generative Evaluation & Safety](../10_generative_vision/04_evaluation_and_safety.md)

@@ -1,8 +1,14 @@
 # PhD Study Guide for Computer Vision Research
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Foundational
 > **Related Sections:** [Key Venues](./01_key_venues.md) · [Key Papers](./00_key_papers.md) · [Software Tools](./03_software_tools.md) · [Research Frontier 2024–2026](../12_research_frontier_2024_2026/00_overview_latest.md)
+
+> **🆕 October 2026 update:**
+> - **Venue logistics refreshed:** CVPR 2026 statistics (16,092 submissions, 25.4% acceptance), the ECCV 2026 outcome (Malmö), and the upcoming cycle: CVPR 2027 Seattle (deadline ~mid-Nov 2026), ICLR 2027 San Francisco, ICCV 2027 Hong Kong, NeurIPS 2026 Sydney (+ Atlanta and Paris satellites), CoRL 2026 Austin.
+> - **"Staying current"** now covers the 2025–2026 shifts: SAM 3 and DINOv3, feed-forward 3D/4D reconstruction (VGGT → D4RT), open 3D generation (TRELLIS.2, SAM 3D), Genie 3, and RL-refined VLAs (π\*₀.₆, GR00T N1.7 with human-video pretraining).
+> - **People and affiliations corrected:** Kaiming He has been at MIT since 2024, and Yann LeCun left Meta to found AMI Labs.
+> - Tool notes updated (Trackio, W&B under CoreWeave, the Papers With Code sunset), and a review-integrity note added (Nov 2025 OpenReview reviewer-identity exposure).
 
 ---
 
@@ -12,7 +18,7 @@ A PhD in computer vision is not a straight line from courses to papers to degree
 
 This guide is a practical reference for that transition. It covers the mechanics of reading and critiquing papers, the harder craft of identifying good research directions, and the logistics of publishing in a field where the state of the art can shift within a month. It also addresses the community infrastructure of computer vision: which venues matter and why, who to follow, where to go to learn, and how to build a presence as the field becomes increasingly aware of open-source as a form of scientific communication.
 
-The guide is written for computer vision specifically but draws on broader research methodology literature — Keshav's three-pass reading method, Hamming's "You and Your Research" talk on problem selection, Andrej Karpathy's PhD survival notes, and Chris Olah's writing on research taste. These sources are referenced throughout rather than summarized in isolation, because the goal is to show how they apply to the specific rhythms of CV research in 2024–2026: a moment when the field is advancing faster than annual conference cycles, when the most important papers sometimes appear on arXiv weeks before any review, and when the clearest signal of a research group's impact is often a GitHub repository rather than a citation count.
+The guide is written for computer vision specifically but draws on broader research methodology literature — Keshav's three-pass reading method, Hamming's "You and Your Research" talk on problem selection, Andrej Karpathy's PhD survival notes, and Chris Olah's writing on research taste. These sources are referenced throughout rather than summarized in isolation, because the goal is to show how they apply to the specific rhythms of CV research in 2024–2026 (updated through October 2026): a moment when the field is advancing faster than annual conference cycles, when the most important papers sometimes appear on arXiv weeks before any review, and when the clearest signal of a research group's impact is often a GitHub repository rather than a citation count.
 
 ---
 
@@ -70,6 +76,8 @@ In CV specifically, "incremental" almost always means one of: (1) a new backbone
 
 The conference program committees have become more explicit about this since 2024. CVPR 2025 introduced a "reproducibility" meta-review criterion and ICLR 2026 added a structured rebuttal format that forces authors to distinguish new experimental results from clarifications of existing results. Understanding these norms is part of doing good work, not separate from it.
 
+The 2025–2026 award winners are a useful taste calibration. The CVPR 2025 Best Paper (VGGT) and CVPR 2026 Best Paper (D4RT) both *removed* pipeline stages (iterative SfM, separate depth/tracking/pose models) instead of adding components. The ECCV 2026 Best Paper (Heat Kernel Textures) replaced a decades-old convention (UV unwrapping) with a cleaner geometric primitive. The NeurIPS 2025 Best Paper on diffusion memorization *explained* a phenomenon rather than improving a benchmark. Simplification and explanation are what committees reward (see [Key Papers](./00_key_papers.md#watch-list-20252026-award-winners--likely-canon-additions)).
+
 ---
 
 ## 4. Conference vs. Journal Strategy
@@ -78,11 +86,11 @@ The conference program committees have become more explicit about this since 202
 
 For CV PhD students, the primary publishing venues form a clear hierarchy:
 
-**Top CV conferences (CVPR / ICCV / ECCV):** CVPR is the highest-volume, highest-impact venue; Google Scholar ranks it second overall across all academic fields by h5-index. ICCV (odd years) and ECCV (even years; ECCV 2026 will be in Malmö, Sweden) are comparably prestigious with lower acceptance rates. Oral presentations at CVPR run under 4% of submissions; posters are roughly 20%. These venues have 3–4 month cycles from submission to acceptance notification, with an author rebuttal period (typically one week) in between. During rebuttal, you may clarify reviewer misunderstandings and add new experimental results — but the bar for flipping a rejection is high. Spend rebuttal time addressing the single most substantive objection with a direct experiment, not defending every peripheral comment.
+**Top CV conferences (CVPR / ICCV / ECCV):** CVPR is the highest-volume, highest-impact venue; Google Scholar ranks it second overall across all academic fields by h5-index. CVPR 2026 (Denver) received 16,092 submissions and accepted 4,089 (~25.4%). The next deadline is CVPR 2027 (Seattle, June 2027), with paper submission around mid-November 2026. ICCV (odd years; ICCV 2027 is in Hong Kong, 2–8 Oct 2027) and ECCV (even years; ECCV 2026 was held in Malmö, Sweden, in Sept 2026 with ~10.5k reported submissions) are comparably prestigious with similar or slightly lower acceptance rates. Oral presentations at CVPR run under 4% of submissions; posters are roughly 20%. These venues have 3–4 month cycles from submission to acceptance notification, with an author rebuttal period (typically one week) in between. During rebuttal, you may clarify reviewer misunderstandings and add new experimental results — but the bar for flipping a rejection is high. Spend rebuttal time addressing the single most substantive objection with a direct experiment, not defending every peripheral comment.
 
-**Learning-heavy work (NeurIPS / ICLR / ICML):** If your CV contribution is architecturally or theoretically heavy — new training objectives, new attention mechanisms, scaling analyses, theoretical convergence guarantees — NeurIPS, ICLR, and ICML are appropriate co-targets. The review culture is somewhat more theoretical and the PC is more comfortable with negative results. ICLR in particular has a fully open review system on OpenReview, which means reviews are public after the decision. NeurIPS 2025 modified its rebuttal process to an author survey format, reducing the back-and-forth; check the current author FAQ before each cycle.
+**Learning-heavy work (NeurIPS / ICLR / ICML):** If your CV contribution is architecturally or theoretically heavy — new training objectives, new attention mechanisms, scaling analyses, theoretical convergence guarantees — NeurIPS, ICLR, and ICML are appropriate co-targets. The review culture is somewhat more theoretical and the PC is more comfortable with negative results. ICLR in particular has a fully open review system on OpenReview, which means reviews are public after the decision. NeurIPS 2025 modified its rebuttal process to an author survey format, reducing the back-and-forth; check the current author FAQ before each cycle. Two 2025–2026 developments matter for planning. NeurIPS is now **multi-site** (2025: San Diego + Mexico City; 2026: Sydney main venue + Atlanta and Paris satellites), so check which site your visa situation allows. A November 2025 OpenReview bug briefly exposed reviewer identities for ICLR 2026, a reminder that double-blind review depends on fragile infrastructure. ICLR 2027 is in San Francisco (26–30 April 2027).
 
-**Robotics-first work (CoRL / RSS):** For work in embodied AI, VLA models, or robot manipulation, Conference on Robot Learning (CoRL 2026 is in Austin, Texas) and Robotics: Science and Systems (RSS 2026 is in Sydney) are the right primary targets. These communities evaluate contributions differently from pure CV — they care heavily about real robot experiments, sim-to-real transfer, and deployment practicality. A paper accepted at RSS with compelling robot results will often be more influential in the robotics community than the same paper published at CVPR.
+**Robotics-first work (CoRL / RSS):** For work in embodied AI, VLA models, or robot manipulation, Conference on Robot Learning (CoRL 2026 is in Austin, Texas, 9–12 Nov 2026) and Robotics: Science and Systems (RSS 2026 was held in Sydney in July 2026; RSS 2027 is reported for Athens, with a first-stage deadline around early December 2026) are the right primary targets. These communities evaluate contributions differently from pure CV — they care heavily about real robot experiments, sim-to-real transfer, and deployment practicality. A paper accepted at RSS with compelling robot results will often be more influential in the robotics community than the same paper published at CVPR.
 
 **Journals (TPAMI / IJCV):** IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI, impact factor approximately 20.8) and International Journal of Computer Vision (IJCV, impact factor approximately 11.6) are the prestige journals for CV. In practice, journal submissions are used for: (1) extended versions of conference papers with substantial new content (typically +30% new material), (2) survey papers, and (3) work that requires more pages than a conference format allows. Review cycles are 3–6 months per round. Do not plan your PhD timeline around TPAMI acceptances as primary outputs; use conferences for cadence and journals for consolidation.
 
@@ -94,7 +102,7 @@ Write your rebuttal assuming the reviewer will spend ten minutes on it. Lead wit
 
 ## 5. Open Source as Research Currency
 
-Releasing code, models, and datasets is no longer optional for CV research with empirical claims. Since roughly 2021, the community has converged on an expectation that any paper claiming a new SOTA result will have an associated public repository, and that any new dataset paper will include a download link. Papers Without Code — the inverse of [Papers With Code](https://paperswithcode.com) (operated independently of the Meta-maintained original after Meta discontinued hosting in July 2025) — are increasingly penalized at review.
+Releasing code, models, and datasets is no longer optional for CV research with empirical claims. Since roughly 2021, the community has converged on an expectation that any paper claiming a new SOTA result will have an associated public repository, and that any new dataset paper will include a download link. Papers Without Code — the inverse of [Papers With Code](https://paperswithcode.com) (Meta sunset the original site in July 2025; its data dumps are archived on Hugging Face as `pwc-archive`, and Hugging Face's Trending Papers now fills much of its discovery role) — are increasingly penalized at review.
 
 Practically: open-source your code before submission, not after acceptance. CVPR 2025 and later ICCV/ECCV cycles have encouraged authors to include a (anonymized) code link in supplementary. Releasing a clean, documented repository consistently generates more long-term citation traffic than the paper alone.
 
@@ -112,7 +120,7 @@ For dataset releases, the community standard has converged on Hugging Face Datas
 
 ### Experiment Tracking
 
-[Weights & Biases (W&B)](https://wandb.ai) is the dominant experiment tracking tool for CV research as of 2026. It provides run logging, hyperparameter sweep management (Sweeps), artifact versioning, and collaborative dashboards. The free tier is sufficient for individual PhD students. For teams or large sweeps, the academic plan is available. Hugging Face released [Trackio](https://huggingface.co/docs/trackio) in 2025 as a lightweight, open-source alternative native to the Hub — useful for small experiments where W&B's overhead is not warranted.
+[Weights & Biases (W&B)](https://wandb.ai) is the dominant experiment tracking tool for CV research as of 2026 (the company was acquired by CoreWeave in 2025; the product and academic plans continue). It provides run logging, hyperparameter sweep management (Sweeps), artifact versioning, and collaborative dashboards. The free tier is sufficient for individual PhD students. For teams or large sweeps, the academic plan is available. Hugging Face released [Trackio](https://huggingface.co/docs/trackio) in 2025 as a lightweight, open-source, local-first alternative native to the Hub with a W&B-style API — useful for small experiments where W&B's overhead is not warranted.
 
 ### Paper Discovery
 
@@ -124,7 +132,7 @@ For dataset releases, the community standard has converged on Hugging Face Datas
 
 ### Reference Management
 
-[Zotero](https://www.zotero.org/) (free, open-source) with the Better BibTeX plugin for clean `.bib` export is the standard choice. The browser extension saves PDFs and metadata in one click. Use collections for per-project organization and tags for cross-project themes (e.g., "3DGS", "VLA", "benchmark"). Sync via Zotero's free 300MB cloud or self-host WebDAV for larger libraries. Avoid Mendeley (owned by Elsevier; privacy concerns) and Note that the Better Notes plugin adds structured annotation workflows inside Zotero, useful for building per-paper summaries.
+[Zotero](https://www.zotero.org/) (free, open-source) with the Better BibTeX plugin for clean `.bib` export is the standard choice. The browser extension saves PDFs and metadata in one click. Use collections for per-project organization and tags for cross-project themes (e.g., "3DGS", "VLA", "benchmark"). Sync via Zotero's free 300MB cloud or self-host WebDAV for larger libraries. Avoid Mendeley (owned by Elsevier; privacy concerns). Note that the Better Notes plugin adds structured annotation workflows inside Zotero, useful for building per-paper summaries.
 
 ### Code and Compute
 
@@ -159,16 +167,16 @@ See Section 4 for strategy. On mechanics: stay within the word/character limit, 
 The following researchers are active on X (formerly Twitter) and post regularly about CV research directions and paper commentary. This is a representative list, not exhaustive:
 
 - **Andrej Karpathy** (@karpathy) — architecture thinking, scaling laws, training insights
-- **Kaiming He** (@kaiming0328) — foundational architecture work, current at Meta FAIR
+- **Kaiming He** (@kaiming0328) — foundational architecture work (ResNet, Mask R-CNN, MAE); faculty at MIT since 2024 (previously Meta FAIR). Faster R-CNN, which he co-authored, won the NeurIPS 2025 Test of Time Award
 - **Fei-Fei Li** (@drfeifei) — spatial intelligence, World Labs, embodied AI
-- **Ross Girshick** (@rbg) — object detection, large-scale vision systems
-- **Ilya Sutskever** (@ilyasut) — representation learning, language-vision intersection
+- **Ross Girshick** (@rbg) — object detection, large-scale vision systems (formerly Meta FAIR)
+- **Ilya Sutskever** (@ilyasut) — representation learning, language-vision intersection; co-founder of Safe Superintelligence (SSI)
 - **Aditya Ramesh** (@adityaramesh99) — generative vision
 - **Alexei Efros** (@aefros) — image synthesis, visual correspondence, research taste
 - **Deva Ramanan** (@devaramanan) — video understanding, pose, efficient inference
-- **Justin Johnson** (@justinljohnson) — ViTs, multimodal, computational efficiency
+- **Justin Johnson** (@justinljohnson) — ViTs, multimodal, computational efficiency; University of Michigan and World Labs co-founder
 
-For robotics-CV: **Sergey Levine** (@svlevine), **Chelsea Finn** (@chelseabfinn), **Pieter Abbeel** (@pabbeel), and **Russ Tedrake** (@russelltedrake) post heavily about VLA and embodied AI directions.
+For robotics-CV: **Sergey Levine** (@svlevine), **Chelsea Finn** (@chelseabfinn), **Pieter Abbeel** (@pabbeel), and **Russ Tedrake** (@russelltedrake) post heavily about VLA and embodied AI directions. For world models, **Yann LeCun** (@ylecun) left Meta at the end of 2025 to found AMI Labs around JEPA-style world models; his posts are the clearest statement of the "non-generative world model" position.
 
 ### Discord, Slack, and Reading Groups
 
@@ -180,7 +188,7 @@ Within your institution, starting or joining a weekly paper reading group is pro
 
 - **[MLSS (Machine Learning Summer School)](https://mlss2026.is.tuebingen.mpg.de/):** The flagship series, run by the Max Planck Institute for Intelligent Systems and rotating hosts. MLSS 2026 is at MPI Tübingen (June) and Columbia University (New York, also June 2026). Highly selective; apply in January. The program combines lectures, tutorials, and labs on current ML frontiers including vision and embodied AI.
 - **[Awesome MLSS](https://github.com/awesome-mlss/awesome-mlss):** Community-maintained list of all upcoming MLSS-style summer schools globally.
-- **CVPR and ICCV Tutorials:** Half-day and full-day tutorials at CVPR and ICCV are taught by active researchers on current-frontier topics (in 2025: world models, VLAs, 3D Gaussian Splatting extensions, video generation). These are the fastest way to get up to speed on a new subfield from practitioners who are building it. Tutorial slide decks and recordings are typically posted on the conference website within two weeks.
+- **CVPR and ICCV Tutorials:** Half-day and full-day tutorials at CVPR and ICCV are taught by active researchers on current-frontier topics (in 2025–2026: world models, VLAs, 3D Gaussian Splatting extensions, feed-forward 3D/4D reconstruction, video generation). These are the fastest way to get up to speed on a new subfield from practitioners who are building it. Tutorial slide decks and recordings are typically posted on the conference website within two weeks.
 - **[DeepMind Research Retreat / Google Brain Residency programs](https://research.google/programs-and-events/):** Competitive but worth applying to in years 2–4 of a PhD for exposure to large-scale compute and collaborative research culture.
 
 ---
@@ -189,7 +197,17 @@ Within your institution, starting or joining a weekly paper reading group is pro
 
 ### The Pace Problem
 
-CV is unusual among technical fields in that the state of the art in many subfields turns over faster than the 12-month conference review cycle. From early 2024 through June 2026, the field has seen: the consolidation of VLMs around the SigLIP+LLM architecture, the emergence of diffusion-based robot policies (π₀, GR00T N1) as the dominant VLA paradigm, the mainstreaming of 3D Gaussian Splatting for scene representation, and the emergence of video generation models (Sora, Cosmos, Wan) as proto-world models. None of these were predictable 18 months earlier. Managing the pace requires a structured reading practice, not just willingness to work hard.
+CV is unusual among technical fields in that the state of the art in many subfields turns over faster than the 12-month conference review cycle. From early 2024 through October 2026, the field has seen:
+
+- the consolidation of VLMs around the SigLIP+LLM architecture, with open backbones such as Qwen3-VL now reused inside robot models;
+- the emergence of diffusion- and flow-based robot policies (π₀/π₀.₅, the GR00T N1 series through N1.7) as the dominant VLA paradigm, followed by RL fine-tuning from deployment experience (π\*₀.₆);
+- the mainstreaming of 3D Gaussian Splatting for scene representation;
+- feed-forward 3D/4D reconstruction (VGGT at CVPR 2025, D4RT at CVPR 2026) displacing optimization-based pipelines;
+- concept-level segmentation (SAM 3) and a new generation of self-supervised backbones (DINOv3);
+- open, high-quality 3D generation (TRELLIS.2, SAM 3D);
+- video generation and interactive world models (Sora 2, Veo 3, Cosmos, Wan, Genie 3) as proto-world models.
+
+None of these were predictable 18 months earlier. Managing the pace requires a structured reading practice, not just willingness to work hard.
 
 ### Practical Workflow
 
@@ -204,9 +222,9 @@ Semantic Scholar supports email alerts for new papers citing a given paper or by
 
 ### The 2024–2026 VLA and World Model Frontier
 
-If your research touches embodied AI, robotics, or autonomous systems, the frontier to track as of June 2026 is the intersection of three questions: (1) Can world models generate physically plausible synthetic training data that transfers to real robot policies? (NVIDIA Cosmos, Genie 2, V-JEPA 2); (2) Can VLA models generalize across embodiments without per-robot fine-tuning? (Octo, OpenVLA, GR00T N1, π₀); (3) Can spatial intelligence models (see [Spatial Intelligence](../12_research_frontier_2024_2026/06_spatial_intelligence.md)) provide the 3D scene understanding that both VLAs and autonomous driving systems currently lack in open-world settings?
+If your research touches embodied AI, robotics, or autonomous systems, the frontier to track as of October 2026 is the intersection of three questions: (1) Can world models generate physically plausible synthetic training data that transfers to real robot policies? (NVIDIA Cosmos, Genie 3 and the Genie-3-based Waymo World Model, V-JEPA 2/2.1, AMI Labs' JEPA agenda); (2) Can VLA models generalize across embodiments without per-robot fine-tuning? (Octo, OpenVLA, GR00T N1.x — N1.7 pretrains on 20k hours of human egocentric video with a relative end-effector action space shared by humans and robots — π₀/π₀.₅, Gemini Robotics 1.5); (3) Can spatial intelligence models (see [Spatial Intelligence](../12_research_frontier_2024_2026/06_spatial_intelligence.md)) provide the 3D scene understanding that both VLAs and autonomous driving systems currently lack in open-world settings?
 
-These three questions are converging: the answer to all three likely involves a world model that provides both the training data (synthetic diverse trajectories) and the planning substrate (latent-space rollouts) for a universal embodied policy. The key open problems are data coverage (how to cover the long tail of real-world situations), evaluation (how to benchmark generalization without deploying real robots at scale), and architecture (whether autoregressive discrete-action VLAs or continuous diffusion-policy VLAs will dominate at scale). For a deeper map of this frontier, see [Research Frontier Overview](../12_research_frontier_2024_2026/00_overview_latest.md) and [VLA/Embodied 2025–2026](../12_research_frontier_2024_2026/04_vla_embodied_2025_2026.md).
+These three questions are converging: the answer to all three likely involves a world model that provides both the training data (synthetic diverse trajectories) and the planning substrate (latent-space rollouts) for a universal embodied policy. The key open problems are data coverage (how to cover the long tail of real-world situations; human video is the main 2026 bet), evaluation (how to benchmark generalization without deploying real robots at scale), architecture (whether autoregressive discrete-action VLAs or continuous diffusion/flow-policy VLAs will dominate at scale), and post-training (how much RL from real-world experience adds on top of imitation pretraining). Practically, [LeRobot](https://huggingface.co/docs/lerobot/index) now exposes most open VLAs (π₀/π₀.₅, GR00T N1.7, SmolVLA, X-VLA, MolmoAct2) behind one interface, so a first-year student can compare policies on a low-cost arm without re-implementing each one. For a deeper map of this frontier, see [Research Frontier Overview](../12_research_frontier_2024_2026/00_overview_latest.md) and [VLA/Embodied 2025–2026](../12_research_frontier_2024_2026/04_vla_embodied_2025_2026.md).
 
 ---
 
@@ -223,3 +241,7 @@ These three questions are converging: the answer to all three likely involves a 
 5. **ICLR 2026 Author Guide** — Current rebuttal norms, formatting requirements, and review criteria. Check before each submission cycle. [iclr.cc/Conferences/2026/AuthorGuide](https://iclr.cc/Conferences/2026/AuthorGuide)
 
 6. **NeurIPS 2025 Reproducibility Program** — Community standards for code and data release, including the checklist that has become a de facto standard for CV submissions. [neurips.cc/Conferences/2025](https://neurips.cc/Conferences/2025/CallForReproducibility)
+
+7. **CVPR 2026 closing release** — Submission statistics, acceptance rate and the 2026 award winners (D4RT, TRELLIS.2, SAM 3D, NitroGen); useful for calibrating the current bar. [cvpr.thecvf.com/Conferences/2026/News/Closing](https://cvpr.thecvf.com/Conferences/2026/News/Closing)
+
+8. **CVF upcoming conferences and community deadline trackers** — Official CVPR/ICCV dates plus community-maintained deadline calendars for planning the year. [thecvf.com](https://www.thecvf.com/?cat=2) · [ccf-deadlines](https://github.com/ccfddl/ccf-deadlines) · [Hugging Face AI Deadlines](https://huggingface.co/spaces/huggingface/ai-deadlines)

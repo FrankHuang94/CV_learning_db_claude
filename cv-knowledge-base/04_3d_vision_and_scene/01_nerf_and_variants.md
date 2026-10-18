@@ -1,8 +1,13 @@
 # Neural Radiance Fields: NeRF and Variants
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
 > **Related Sections:** [3D Representations](./00_3d_representations.md) · [Gaussian Splatting](./02_gaussian_splatting.md) · [SfM and SLAM](./03_sfm_and_slam.md)
+
+> **🆕 October 2026 update:**
+> - Pure NeRF research has largely plateaued. This revision adds a section on **where NeRF's ideas went in 2025–2026**: exact volume rendering of explicit primitives via ray tracing (EVER, 3DGRT/3DGUT, Radiant Foam), and "3D-bias-free" view synthesis (LVSM, ICLR 2025 Oral).
+> - Feed-forward geometry models (VGGT, CVPR 2025 Best Paper; Depth Anything 3) now replace COLMAP as the pose front-end for many radiance-field pipelines. See [SfM and SLAM](./03_sfm_and_slam.md).
+> - Key Papers, Benchmark, Open Problems and Further Reading extended accordingly.
 
 ---
 
@@ -160,6 +165,30 @@ NeRF retains advantages in: (1) memory efficiency for large scenes (MLP weights 
 
 ---
 
+## Where the NeRF Ideas Went (2025–2026)
+
+By 2025–2026, few new papers proposed MLP radiance fields as such. NeRF's core ideas (volume rendering as a differentiable image-formation model, positional/hash encodings, and anti-aliasing via integrated footprints) were absorbed into three successor lines.
+
+### 1. Exact Volume Rendering of Explicit Primitives
+
+3DGS approximates volume rendering by sorting projected 2D ellipses and alpha-blending them. That causes popping and view-dependent effective density, and it cannot natively handle distorted or rolling-shutter cameras. Several works recover NeRF's physically correct volume integral while keeping explicit primitives:
+
+- **EVER: Exact Volumetric Ellipsoid Rendering** [Mai2024] (Mai, Hedman, Kopanas, Verbin, Futschik, Xu, Kuester, Barron, Zhang) ray-traces constant-density ellipsoids and computes the emission-only volume rendering integral *exactly*. The authors report ~30 FPS at 720p on an RTX 4090, no popping, and support for defocus blur and fisheye cameras. They also report state-of-the-art results among real-time methods on the Zip-NeRF dataset.
+- **3DGRT** [MoenneLoccoz2024, SIGGRAPH Asia 2024] ray-traces Gaussian particles with hardware RT cores, enabling secondary rays (reflection, refraction, shadows). **3DGUT** [Wu2025, CVPR 2025 Oral] uses an unscented transform to keep rasterization speed while supporting arbitrary distorted and time-dependent (rolling-shutter) cameras. Both are from NVIDIA, and 3DGUT is integrated into `gsplat`.
+- **Radiant Foam** [Govindarajan2025] (Govindarajan, Rebain, Yi, Tagliasacchi) represents the volume as a Delaunay/Voronoi cell mesh with per-cell density and colour, enabling real-time differentiable *ray tracing* of a volumetric field without the approximations of splatting.
+
+In this sense, the "NeRF vs. 3DGS" dichotomy has given way to a design space. The axes are: primitive (MLP field, Gaussian, ellipsoid, cell), renderer (ray marching, ray tracing, rasterization) and exactness of the volume integral.
+
+### 2. Learned Rendering with Minimal 3D Inductive Bias
+
+**LVSM: A Large View Synthesis Model with Minimal 3D Inductive Bias** [Jin2025, ICLR 2025 Oral] (Jin, Jiang, Tan, Zhang, Bi, Zhang, Luan, Snavely, Xu) drops the explicit radiance field entirely. A transformer maps posed input views and the target camera's Plücker rays directly to target-view pixels. A decoder-only variant reaches 29.67 dB PSNR on RealEstate10K (256×256) in the sparse-view, generalizable setting. LVSM and related models show that, given enough data, volume rendering is not required for high-quality NVS. The trade-off is that they give up an explicit, queryable 3D scene.
+
+### 3. Pose-Free Front-Ends
+
+Radiance-field pipelines traditionally began with COLMAP SfM. Since VGGT [Wang2025, CVPR 2025 Best Paper], feed-forward geometry models (VGGT, π³, MapAnything, Depth Anything 3) increasingly supply cameras and initial geometry in seconds. VGGT can export directly to COLMAP format for `gsplat` training. This removes one of NeRF's historical practical bottlenecks, the slow and brittle pose estimation step (see [03_sfm_and_slam.md](./03_sfm_and_slam.md)).
+
+---
+
 ## Key Papers
 
 | Paper | Authors | Year | Venue | Key Contribution |
@@ -172,6 +201,10 @@ NeRF retains advantages in: (1) memory efficiency for large scenes (MLP weights 
 | 3D Gaussian Splatting for Real-Time Radiance Field Rendering | Kerbl, Kopanas, Leimkühler, Drettakis | 2023 | SIGGRAPH | Replaces NeRF with explicit Gaussians; real-time 100+ FPS at 1080p |
 | Block-NeRF: Scalable Large Scene Neural View Synthesis | Tancik et al. (Waymo) | 2022 | CVPR | City-scale NeRF via independent block sub-networks with appearance conditioning |
 | Deformable Neural Radiance Fields (Nerfies) | Park et al. | 2021 | ICCV | Deformable template NeRF for non-rigidly moving subjects (selfie videos) |
+| EVER: Exact Volumetric Ellipsoid Rendering for Real-time View Synthesis | Mai, Hedman, Kopanas, Verbin, Futschik, Xu, Kuester, Barron, Zhang | 2024 | arXiv | Ray-traced ellipsoids with exact volume rendering; no popping; ~30 FPS at 720p |
+| LVSM: A Large View Synthesis Model with Minimal 3D Inductive Bias | Jin, Jiang, Tan, Zhang, Bi, Zhang, Luan, Snavely, Xu | 2025 | ICLR (Oral) | Transformer NVS without an explicit radiance field; decoder-only and encoder-decoder variants |
+| 3DGUT: Enabling Distorted Cameras and Secondary Rays in Gaussian Splatting | Wu et al. (NVIDIA) | 2025 | CVPR (Oral) | Unscented-transform rasterization supporting distorted/rolling-shutter cameras |
+| Radiant Foam: Real-Time Differentiable Ray Tracing | Govindarajan, Rebain, Yi, Tagliasacchi | 2025 | arXiv | Volumetric cell-mesh field rendered by real-time differentiable ray tracing |
 
 ---
 
@@ -186,6 +219,8 @@ NeRF retains advantages in: (1) memory efficiency for large scenes (MLP weights 
 | Zip-NeRF | Mip-NeRF 360 Dataset | PSNR | 28.54 dB | Best NeRF-family result on this benchmark |
 | 3DGS | Mip-NeRF 360 Dataset | PSNR | 27.21 dB | Comparable quality, 100+ FPS vs ~1 FPS |
 | Mip-Splatting | Mip-NeRF 360 Dataset | PSNR | 27.92 dB | Anti-aliased 3DGS variant |
+| LVSM (decoder-only) | RealEstate10K (256×256) | PSNR | 29.67 dB | Generalizable sparse-view NVS; no explicit 3D field (different setting from per-scene rows) |
+| EVER | Zip-NeRF Dataset | — | SOTA among real-time methods (authors' claim) | ~30 FPS at 720p on RTX 4090 |
 
 ---
 
@@ -196,13 +231,16 @@ NeRF retains advantages in: (1) memory efficiency for large scenes (MLP weights 
 | Original NeRF | Photorealistic; no explicit geometry needed; purely image-supervised | 12+ hours training; seconds/frame rendering; per-scene optimization |
 | Hash-Grid NeRFs (Instant-NGP) | Fast training (~5 min); high quality; open-source CUDA implementation | Still ~1–10 FPS rendering; requires GPU; per-scene |
 | Mip-NeRF family | Correct multi-scale anti-aliasing; handles zoom changes cleanly | Complex implementation; proposal network overhead; no real-time rendering |
+| Ray-traced explicit volumes (EVER, 3DGRT, Radiant Foam) | Exact volume integral; real-time; distorted cameras and secondary effects | Slower than splatting; often require RT hardware; smaller tooling ecosystem |
+| Large view synthesis models (LVSM) | Feed-forward, generalizable; strong sparse-view quality | No explicit 3D scene; large training data and compute; limited extrapolation |
 
 ---
 
 ## Open Problems & Research Gaps
 
 - **Real-time NeRF:** The fundamental conflict between implicit MLP queries and real-time rendering has pushed the field to 3DGS. Baking NeRF to meshes (BakingNeRF) or voxels (PlenOctrees) offers partial solutions but loses the representation compactness.
-- **Generalizable NeRF:** Per-scene optimization is impractical for deployment. Feed-forward models (pixelNeRF, MVSNeRF, LRM) require training on large 3D datasets, which remain scarce and expensive to acquire.
+- **Generalizable NeRF:** Per-scene optimization is impractical for deployment. Feed-forward models (pixelNeRF, MVSNeRF, LRM) require training on large 3D datasets, which remain scarce and expensive to acquire. As of 2025–2026, LVSM-style models and feed-forward Gaussian predictors trained on large multi-view video corpora have largely displaced generalizable NeRFs. Whether an explicit volumetric representation is needed at all for generalizable NVS is now a live research question.
+- **Exactness vs. speed:** Ray-traced explicit volumes (EVER, 3DGRT, Radiant Foam) restore exact volume rendering, but still trail rasterized 3DGS in throughput on commodity hardware. Unifying exact rendering with splatting-level speed remains open.
 - **Dynamic NeRF:** Extending to dynamic scenes requires either per-frame optimization (expensive) or learning temporal consistency (hard). Deformable NeRF methods (Nerfies, D-NeRF, HyperNeRF) work on short clips but struggle with large motions.
 - **Scene editing:** NeRF's implicit nature makes semantic editing difficult — changing one object requires modifying MLP weights globally. Compositional NeRF methods (ObjectNeRF, NSG) address this partially.
 - **Outdoor/large-scale:** Mip-NeRF 360 handles single outdoor scenes; truly large (block, city) scale requires hierarchical architectures (Block-NeRF, Mega-NeRF) with engineering challenges around memory and consistency.
@@ -219,3 +257,7 @@ NeRF retains advantages in: (1) memory efficiency for large scenes (MLP weights 
 - [Jon Barron's Homepage](https://jonbarron.info/mipnerf360/) — Mip-NeRF 360 project page with results
 - [Zip-NeRF ICCV 2023 Talk (YouTube)](https://www.youtube.com/watch?v=Sk3wU-VMoCI) — author presentation
 - [Neural Fields Survey (Xie et al. 2022, arXiv)](https://arxiv.org/abs/2111.11426) — comprehensive 100+ page survey
+- [LVSM GitHub](https://github.com/Haian-Jin/LVSM) — ICLR 2025 Oral; large view synthesis without explicit 3D
+- [EVER training code](https://github.com/half-potato/ever_training) — exact volumetric ellipsoid rendering
+- [Radiant Foam GitHub](https://github.com/theialab/radfoam) — real-time differentiable ray tracing of a volumetric cell mesh
+- [3DGRUT GitHub (NVIDIA)](https://github.com/nv-tlabs/3dgrut) — 3DGRT / 3DGUT reference implementation

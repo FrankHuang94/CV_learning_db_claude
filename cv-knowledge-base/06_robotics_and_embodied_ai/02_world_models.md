@@ -1,12 +1,20 @@
 # World Models for Embodied AI
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Research Frontier
 > **Related Sections:**
-> - [Vision-Language-Action Models](./01_vision_language_action_models.md)
+> - [Vision-Language-Action Models](./01_vla_models.md)
 > - [Pros, Cons & Roadmaps](./07_pros_cons_roadmaps.md)
-> - [Generative Vision — Video Diffusion & Generation](../10_generative_vision/03_video_generation.md)
-> - [Self-Supervised Representation Learning](../03_architectures/06_self_supervised_learning.md)
+> - [Generative Vision — Video Diffusion & Generation](../10_generative_vision/02_video_generation.md)
+> - [Self-Supervised Representation Learning](../03_architectures/03_self_supervised_learning.md)
+
+> **🆕 October 2026 update:**
+> - Added **Dreamer 4** (offline-only Minecraft diamonds inside a scalable world model) and noted DreamerV3's 2025 *Nature* publication.
+> - Added **Genie 3** (real-time 720p/24 fps interactive worlds, Aug 2025) with Project Genie, SIMA 2 and the Genie-3-based Waymo World Model; noted World Labs Marble.
+> - Extended the JEPA line: corrected V-JEPA 2 authorship (Assran et al.), added V-JEPA 2.1 (Mar 2026), JEPA-WMs and LeJEPA; noted AMI Labs.
+> - Extended Cosmos: Predict2.5 / Transfer2.5 / Reason 1–2, **Cosmos Policy** and **Cosmos 3** (May–June 2026, unified omnimodal reasoner + generator incl. actions).
+> - New sections on **world models for robot data generation and policy evaluation** (DreamGen, Ctrl-World, Veo-based Gemini Robotics evaluation, Genie Envisioner, 1X World Model, WoVR) and on **World Action Models** (UVA, WorldVLA, Cosmos Policy, DreamZero, Fast-WAM).
+> - Updated tables, open problems and Further Reading; fixed broken cross-links.
 
 ---
 
@@ -17,6 +25,8 @@ A **world model** is a learned internal simulator: given a current state $s_t$ a
 The field has bifurcated around a foundational architectural tension: **pixel-space prediction** (generate photorealistic future frames) versus **latent-space prediction** (predict abstract representations of future states without decoding to pixels). Pixel-space models — typified by video diffusion approaches such as NVIDIA Cosmos [Agarwal et al. 2025] and DIAMOND [Alonso et al. 2024] — produce human-interpretable rollouts useful for sim-to-real pipelines and debugging, but are computationally expensive and can hallucinate visually plausible yet physically implausible scenes. Latent-space models — typified by the JEPA family [LeCun 2022; Assran et al. 2023; Bardes et al. 2024] and DreamerV3 [Hafner et al. 2023] — discard perceptual detail deliberately, focusing prediction on the causal variables that matter for planning. They are dramatically cheaper per rollout but produce non-interpretable states and must solve the harder problem of defining a representation that is both predictable and action-informative.
 
 Yann LeCun's position paper "A Path Towards Autonomous Machine Intelligence" [LeCun 2022] crystallised the research agenda: world models are the missing ingredient for autonomous agents, and they should be trained via a Joint-Embedding Predictive Architecture (JEPA) with energy-based learning rather than by generative pixel synthesis. This thesis directly challenged the prevailing paradigm of end-to-end Vision-Language-Action (VLA) models and sparked a productive disagreement that continues to organise the field in 2026.
+
+By October 2026 the two camps had partially converged in practice. On the generative side, real-time interactive world models (Genie 3) and multi-billion-parameter physical-AI video models (Cosmos-Predict2.5, Cosmos 3) became **training and evaluation environments** for robot policies, and video-diffusion backbones were fine-tuned into **World Action Models** that jointly predict future frames and actions (Cosmos Policy, DreamZero), which in early 2026 topped real-world generalist-policy leaderboards. On the latent side, V-JEPA 2-AC showed zero-shot planning on real robots from a model pretrained mostly on Internet video, V-JEPA 2.1 improved dense features, and Dreamer 4 showed that agents can be trained purely inside a learned world model from offline data. LeCun's departure from Meta to found AMI Labs (2026) signals that latent world models are now also a commercial bet.
 
 ---
 
@@ -107,6 +117,12 @@ DreamerV3 [Hafner et al. 2023, arXiv 2301.04104] is the most comprehensive demon
 
 **Limitations:** long-horizon credit assignment remains problematic (the Minecraft result is impressive but not reliable per-episode); the RSSM's fixed GRU memory bounds effective planning depth; imagination fidelity degrades for stochastic, visually complex environments.
 
+DreamerV3 was published in *Nature* in 2025 ("Mastering diverse control tasks through world models").
+
+### Dreamer 4 (2025): Training Agents Inside Scalable World Models
+
+Dreamer 4 [Hafner, Yan, Lillicrap 2025, arXiv 2509.24527] replaces the RSSM with a **scalable transformer video world model** trained with a *shortcut forcing* objective that enables few-step, real-time interactive generation on a single GPU, and then trains the agent by RL **purely in imagination**. It is reported as the first agent to obtain diamonds in Minecraft **from offline data alone** (a fixed dataset of human gameplay, without online environment interaction), and the world model accurately captures complex object interactions from relatively little action-labelled data, with most of its knowledge learned from unlabelled video. Dreamer 4 is an important bridge between the "Dreamer" RL lineage and the Genie/Cosmos video-generation lineage, and a template for robotics settings in which online interaction is expensive.
+
 ---
 
 ## I-JEPA: Prediction in Representation Space for Images
@@ -151,7 +167,7 @@ The +10 point improvement on Something-Something v2 is especially significant: t
 
 ### V-JEPA 2 (2025)
 
-V-JEPA 2 [arXiv 2506.09985, Meta AI, June 2025] extends the framework to **action-conditioned prediction and robotic planning**. The 1.2B-parameter model undergoes two-stage training: (1) self-supervised video prediction on 1M+ hours of video; (2) action-conditioned fine-tuning (V-JEPA 2-AC) on ~62 hours of unlabeled robot video from the Droid dataset [Khazatsky et al. 2024].
+V-JEPA 2 [Assran, Bardes, Fan, Garrido et al., arXiv 2506.09985, Meta FAIR, June 2025] extends the framework to **action-conditioned prediction and robotic planning**. The 1.2B-parameter model undergoes two-stage training: (1) self-supervised video prediction on 1M+ hours of video; (2) action-conditioned fine-tuning (V-JEPA 2-AC) on ~62 hours of unlabeled robot video from the Droid dataset [Khazatsky et al. 2024].
 
 **Key results:**
 
@@ -159,7 +175,15 @@ V-JEPA 2 [arXiv 2506.09985, Meta AI, June 2025] extends the framework to **actio
 - Epic-Kitchens-100 action anticipation: **39.7%** recall@5 (state-of-the-art, surpassing task-specific models)
 - Zero-shot pick-and-place on Franka arms in two novel lab environments: **65–80% success rate** using goal-image-conditioned planning, with no task-specific data collected from those environments
 
-V-JEPA 2 demonstrates the first plausible evidence that a latent world model trained primarily on passive internet video can transfer to **active robot control** via planning in latent space.
+- Other probes reported in the official repository: Diving48 90.2%; MVP video QA 44.5%; TempCompass 76.9% (when aligned with an LLM)
+
+V-JEPA 2 demonstrates the first plausible evidence that a latent world model trained primarily on passive internet video can transfer to **active robot control** via planning in latent space. Planning uses the cross-entropy method (CEM) over action sequences to minimise the L1 distance between the predicted latent and the latent of a goal image.
+
+### V-JEPA 2.1, JEPA-WMs and LeJEPA (2025–2026)
+
+- **V-JEPA 2.1** (released March 2026 in the official repository) changes the recipe to learn high-quality, temporally consistent **dense** features: a dense predictive loss in which both visible and masked tokens contribute, deep self-supervision at multiple encoder depths, multi-modal (image + video) tokenizers, and further model/data scaling.
+- **JEPA-WMs** ("What Drives Success in Physical Planning with Joint-Embedding Predictive World Models?", Meta, arXiv 2512.24497) systematically ablates JEPA world models for planning (encoder choice, predictor, planner) against DINO-WM and V-JEPA 2-AC baselines.
+- **LeJEPA** (Balestriero & LeCun, arXiv 2511.08544) provides a theoretically grounded JEPA objective—Sketched Isotropic Gaussian Regularisation (SIGReg) of embeddings—that removes heuristics such as stop-gradient and EMA teachers while scaling stably.
 
 ---
 
@@ -186,6 +210,14 @@ Genie 2 [Parker-Holder et al., DeepMind, announced December 4 2024] scales the c
 - Demonstrates emergent capabilities at scale not present in smaller models
 
 Genie 2 has not been released publicly as of June 2026 and peer-reviewed benchmark numbers are not yet available; the above is based on DeepMind's December 2024 blog announcement.
+
+### Genie 3 (August 2025) and Its Descendants
+
+Genie 3 [Google DeepMind, announced August 5 2025] is the first world model in the series to run **in real time**: it generates navigable, interactive environments from a text prompt at **720p and 24 fps**, maintaining visual consistency for **a few minutes** (with visual memory of regions revisited after about a minute). It adds **promptable world events**—text commands that change weather, introduce objects or characters mid-rollout—making it a counterfactual "what-if" engine. Consistency is emergent from the autoregressive frame-by-frame generation rather than from an explicit 3D representation. DeepMind used Genie 3 environments to train and evaluate its SIMA generalist game agent; SIMA 2 (November 2025, built on Gemini) was likewise demonstrated inside Genie 3-generated worlds.
+
+Access widened in January 2026 through **Project Genie**, an experimental prototype for Google AI Ultra subscribers in the US, and in February 2026 Waymo described a **Waymo World Model** built on Genie 3 to simulate rare driving scenarios. Genie 3 has no public technical report with quantitative benchmarks; the above facts come from DeepMind and Waymo announcements.
+
+**Related 3D-world generators.** World Labs' **Marble** (commercially launched November 2025) generates persistent, downloadable 3D worlds (Gaussian splats / meshes) from text, images or video—an *explicit* 3D alternative to Genie's frame-autoregressive approach that is attractive for robotics simulation because the output can be imported into physics engines.
 
 ---
 
@@ -225,6 +257,57 @@ Cosmos [Agarwal et al., NVIDIA, arXiv 2501.03575, announced CES January 2025] is
 
 **Physical AI positioning:** Cosmos is positioned as a *data engine* — its rollouts provide diverse, physics-consistent synthetic training data to close the real-to-sim gap for robot policy training, rather than as a policy itself. This is a qualitatively different use case from RL-oriented world models like DreamerV3 or DIAMOND.
 
+### Cosmos 2025–2026: Predict2.5, Transfer2.5, Reason, Policy and Cosmos 3
+
+| Release | Date | What it is |
+|---|---|---|
+| Cosmos-Reason1 (arXiv 2503.15558) | Mar 2025 | Physical-common-sense / embodied-reasoning VLM trained with SFT + RL; long chain-of-thought |
+| Cosmos-Transfer1 / Cosmos-Predict2 | H1 2025 | Multi-ControlNet sim-to-real transfer; next-generation video WFMs |
+| Cosmos-Predict2.5 (arXiv 2511.00062) | Oct 2025 | **Flow-based** model unifying Text2World, Image2World and Video2World; Cosmos-Reason1 as text encoder; 2B and 14B; robot action-conditioned and multiview (AgiBot) variants; DMD2 distillation |
+| Cosmos-Transfer2.5 | Oct 2025 | Multi-ControlNet (edge, depth, segmentation, blur) for sim-to-real and real-to-real augmentation; distilled edge model (Feb 2026) |
+| Cosmos-Reason2 (2B, 8B; 32B in Apr 2026) | Dec 2025 | Successor reasoning VLM; Cosmos-Reason2-2B is the VLM backbone of GR00T N1.7 |
+| **Cosmos Policy** (arXiv 2601.16163) | Jan 2026 | Fine-tunes Cosmos-Predict2-2B into a visuomotor policy that outputs actions, future states (images + proprioception) and values; supports best-of-N model-based planning; LIBERO, RoboCasa and ALOHA results |
+| **Cosmos 3** | May–June 2026 | Omnimodal Mixture-of-Transformers family (Super 64B, Nano 16B, Edge 4B from July 2026). One model exposes a **Reasoner** surface (text out) and a **Generator** surface (vision, sound and action out): world prediction, transfer, action-conditioned forward dynamics and policies (e.g., Cosmos3-Nano-Policy-DROID) |
+
+The trajectory—from separate predict / transfer / reason models in 2025 to a single model that reasons, simulates and acts in 2026—mirrors the convergence of world models and VLAs discussed below.
+
+---
+
+## World Models as Data Engines and Policy Evaluators for Robotics
+
+Beyond planning, three robotics uses of learned world models matured in 2025–2026:
+
+1. **Synthetic trajectory generation.** NVIDIA's **DreamGen** (arXiv 2505.12705; GR00T-Dreams blueprint) fine-tunes a video world model on a target robot, prompts it with new instructions to generate "neural trajectories", labels them with pseudo-actions from an inverse-dynamics or latent-action model, and trains a policy on them—enabling behaviours and environments never teleoperated. GR00T N1.5 incorporated DreamGen data. **Genie Envisioner** (AgiBot, arXiv 2508.05635) packages a video-diffusion world model, an action decoder and a neural simulator into one manipulation platform.
+2. **Policy evaluation.** Real-robot evaluation is slow and noisy. **Ctrl-World** (arXiv 2510.10125) is a controllable multi-view world model that rolls out generalist policies (e.g., π0.5) in imagination to rank them and to generate data for policy improvement. Google DeepMind evaluated Gemini Robotics policies, including out-of-distribution and safety scenarios, inside a **Veo-based world simulator** (arXiv 2512.10675). 1X uses its **1X World Model** to evaluate NEO policies.
+3. **RL in imagination.** **WoVR** (arXiv 2602.13977) uses a world model as a reliable simulator for RL post-training of VLAs, and Dreamer 4 does so end-to-end in Minecraft.
+
+Large video models also display **emergent zero-shot visual reasoning** ("Video models are zero-shot learners and reasoners", Veo 3, arXiv 2509.20328): segmentation, edge detection, maze solving and simple physical reasoning emerge from generative pretraining, supporting the view that video models can serve as general vision-and-physics foundation models.
+
+---
+
+## World Action Models (2025–2026)
+
+A **World Action Model (WAM)**—also called a video-action model—jointly models future observations and actions, typically by adding action tokens or an action head to a pretrained video-diffusion transformer:
+
+```
+WAM objective (schematic):
+  p_θ(o_{t+1:t+H}, a_{t:t+H-1} | o_{≤t}, ℓ)
+  L = L_video(denoise future latents) + λ · L_action(denoise / regress action chunk)
+  Inference: (optionally) imagine future frames, decode actions; or skip imagination
+             and decode actions directly from the video backbone's features
+```
+
+| Model | Date | Backbone | Notes |
+|---|---|---|---|
+| UVA — Unified Video Action Model (arXiv 2503.00200) | 2025 (RSS) | Joint latent video-action diffusion | Decoupled decoding lets actions be produced without generating video |
+| WorldVLA (arXiv 2506.21539) | 2025 | Autoregressive VLA + world model | Action and image generation in one AR model |
+| Cosmos Policy (arXiv 2601.16163) | Jan 2026 | Cosmos-Predict2-2B | Actions, future states and values in latent frames; planning via best-of-N |
+| DreamZero (arXiv 2602.15922) | Feb 2026 | Wan2.1-I2V-14B (also Wan2.2-5B) | Trained on DROID only; reported #1 on RoboArena and MolmoSpaces (Feb 2026); ~0.6 s inference on GB200 with DiT caching; few-shot adaptation to new embodiments (AgiBot, YAM) |
+| Fast-WAM (arXiv 2603.16666) | Mar 2026 | Video-diffusion WAM | Asks whether test-time future imagination is needed; skipping it greatly reduces latency |
+| Being-H0.7 (arXiv 2605.00078) | Apr 2026 | Latent WAM from egocentric human video | Future-aware latent reasoning (NeurIPS 2026) |
+
+By mid-2026, survey papers ("World Action Models: The Next Frontier in Embodied AI", arXiv 2605.12090) treat WAMs as a third family alongside VLAs and planning-based world models. Their appeal is that they inherit physical and temporal priors from Internet video; their costs are size and latency (5–14B+ parameters) and the possibility that imagined futures are physically wrong.
+
 ---
 
 ## JEPA vs. Generative World Models: The Core Debate
@@ -239,10 +322,11 @@ The debate crystallises around two incompatible prior beliefs about what world m
 | **Interpretability** | Latent space opaque to humans | Generated frames human-readable |
 | **Sample efficiency** | High (compact latents, fast rollout) | Lower (decoder training overhead) |
 | **Sim-to-real** | Requires latent-to-action mapping | Can generate camera images for downstream |
-| **Scaling behaviour** | Unclear; small public benchmarks only | Demonstrated (Cosmos 20M video hours) |
+| **Scaling behaviour** | Improving (V-JEPA 2 at 1.2B params / 1M+ video hours; V-JEPA 2.1 scaling) but few public scaling laws | Demonstrated (Cosmos 20M video hours; Cosmos 3 up to 64B; Genie 3 real-time) |
+| **Use as robot policy (2026)** | Goal-image planning (V-JEPA 2-AC, CEM) | World Action Models (DreamZero, Cosmos Policy) |
 | **Physical plausibility** | No ground-truth guarantee | FID/FVD optimised; physics may be violated |
 
-**Hybrid trend (2025–2026):** Several groups have merged both paradigms. V-JEPA 2-AC [Bardes et al. 2025] predicts in latent space but adds an action-conditioned post-training stage — effectively a JEPA with a thin generative head. DIAMOND [Alonso et al. 2024] generates pixels but uses them as RL observations, not as training targets for the policy backbone. The emerging consensus is that **pure pixel generation is unnecessary** for robot control but that **some form of decoding back to observable space** remains useful for sim data generation and interpretability.
+**Hybrid trend (2025–2026):** Several groups have merged both paradigms. V-JEPA 2-AC [Bardes et al. 2025] predicts in latent space but adds an action-conditioned post-training stage — effectively a JEPA with a thin generative head. DIAMOND [Alonso et al. 2024] generates pixels but uses them as RL observations, not as training targets for the policy backbone. The emerging consensus is that **pure pixel generation is unnecessary** for robot control but that **some form of decoding back to observable space** remains useful for sim data generation and interpretability. The 2026 World Action Model results complicate this picture: generative video pretraining appears to be an excellent *initialisation* for policies even when the generated pixels are discarded at inference (Fast-WAM), suggesting that the debate is less about the training signal's modality than about which representation transfers best to action.
 
 ---
 
@@ -250,13 +334,23 @@ The debate crystallises around two incompatible prior beliefs about what world m
 
 | Paper | Authors | Year | Venue | Key Contribution |
 |---|---|---|---|---|
-| Mastering Diverse Domains through World Models (DreamerV3) | Hafner, Lillicrap, Norouzi, Ba | 2023 | arXiv / ICML workshop | Fixed-hyperparameter RSSM world model; first Minecraft diamonds from scratch; 150+ task evaluation |
+| Mastering Diverse Domains through World Models (DreamerV3) | Hafner, Pasukonis, Ba, Lillicrap | 2023 | arXiv 2301.04104; *Nature* 2025 | Fixed-hyperparameter RSSM world model; first Minecraft diamonds from scratch; 150+ task evaluation |
 | Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture (I-JEPA) | Assran, Duval, Misra et al. | 2023 | CVPR | Predict abstract patch representations, not pixels; beats MAE efficiency; superior object-level features |
 | Revisiting Feature Prediction for Learning Visual Representations from Video (V-JEPA) | Bardes, Garrido, Ponce et al. | 2024 | arXiv (Meta AI) | Video JEPA; masked spatiotemporal prediction in feature space; state-of-the-art on SSv2 (+10 pts) |
 | Genie: Generative Interactive Environments | Bruce, Dennis, Edwards, Parker-Holder et al. | 2024 | ICML (Best Paper) | 11B-param world model from unlabelled 2D video; unsupervised latent action codebook |
 | Diffusion for World Modeling: Visual Details Matter in Atari (DIAMOND) | Alonso, Jelley, Micheli et al. | 2024 | NeurIPS Spotlight | Diffusion world model for Atari; mean HNS 1.46 — new SOTA among world-model-trained agents |
 | Cosmos World Foundation Model Platform for Physical AI | Agarwal et al. (NVIDIA) | 2025 | arXiv 2501.03575 | First commercially-open physical AI WFM; 20M video hours; causal tokenizer; AR+diffusion families |
-| V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning | Bardes et al. (Meta AI) | 2025 | arXiv 2506.09985 | 1.2B action-conditioned WM; zero-shot robot pick-and-place; SOTA Epic-Kitchens-100 anticipation |
+| V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning | Assran, Bardes, Fan, Garrido et al. (Meta FAIR) | 2025 | arXiv 2506.09985 | 1.2B action-conditioned WM; zero-shot robot pick-and-place; SOTA Epic-Kitchens-100 anticipation |
+| DreamGen: Unlocking Generalization in Robot Learning through Video World Models | Jang et al. (NVIDIA) | 2025 | arXiv 2505.12705 | Neural trajectories from fine-tuned video WMs as robot training data |
+| Genie 3: A New Frontier for World Models | Google DeepMind | 2025 | Blog (Aug 2025) | Real-time 720p/24 fps interactive worlds; promptable world events |
+| Training Agents Inside of Scalable World Models (Dreamer 4) | Hafner, Yan, Lillicrap | 2025 | arXiv 2509.24527 | Shortcut-forcing transformer WM; offline-only Minecraft diamonds |
+| Video Models are Zero-Shot Learners and Reasoners | Wiedemer et al. (Google DeepMind) | 2025 | arXiv 2509.20328 | Emergent zero-shot vision/physics reasoning in Veo 3 |
+| Ctrl-World: A Controllable Generative World Model for Robot Manipulation | Guo et al. | 2025 | arXiv 2510.10125 | World model for evaluating and improving generalist policies |
+| World Simulation with Video Foundation Models for Physical AI (Cosmos-Predict2.5) | NVIDIA | 2025 | arXiv 2511.00062 | Flow-based unified Text/Image/Video2World; robot action-conditioned variants |
+| LeJEPA: Provable and Scalable Self-Supervised Learning Without the Heuristics | Balestriero, LeCun | 2025 | arXiv 2511.08544 | SIGReg objective; heuristic-free JEPA |
+| Evaluating Gemini Robotics Policies in a Veo World Simulator | Google DeepMind | 2025 | arXiv 2512.10675 | Video-model-based policy evaluation incl. safety and OOD |
+| Cosmos Policy: Fine-Tuning Video Models for Visuomotor Control and Planning | NVIDIA | 2026 | arXiv 2601.16163 | Video WFM → policy + world model + value function |
+| DreamZero: World Action Models Are Zero-Shot Policies | Ye et al. (NVIDIA) | 2026 | arXiv 2602.15922 | 14B WAM; top of RoboArena (Feb 2026) |
 | A Path Towards Autonomous Machine Intelligence | LeCun | 2022 | OpenReview (white paper) | Foundational JEPA thesis; H-JEPA + EBM framework; world models as the core of autonomous intelligence |
 
 ---
@@ -277,6 +371,10 @@ The debate crystallises around two incompatible prior beliefs about what world m
 | V-JEPA 2 | Something-Something v2 | Top-1 Acc. | 77.3% | 1.2B params |
 | V-JEPA 2 | Epic-Kitchens-100 | Recall@5 (anticipation) | **39.7%** | SOTA, surpasses task-specific models |
 | V-JEPA 2-AC | Pick-and-place (Franka, 2 labs) | Success rate | 65–80% | Zero-shot, no env-specific data |
+| V-JEPA 2 | Diving48 (probe) | Top-1 Acc. | 90.2% | vs. 86.4% InternVideo2-1B (repo-reported) |
+| Dreamer 4 | Minecraft (diamond) | Task completion | Achieved from offline data only | First reported offline-only diamond agent |
+| Genie 3 | Interactive generation | Resolution / frame rate | 720p @ 24 fps, minutes of consistency | No public quantitative benchmark |
+| DreamZero-DROID | RoboArena / MolmoSpaces | Leaderboard rank | #1 / #1 (Feb 2026) | Trained from scratch on DROID only |
 
 ---
 
@@ -288,6 +386,8 @@ The debate crystallises around two incompatible prior beliefs about what world m
 | **Pixel-space WM (DIAMOND/Cosmos)** | Human-interpretable generated frames; enables sim data pipelines; visual consistency evaluated with FID/FVD | Slow inference (diffusion denoising adds latency per step); can generate visually plausible but physically incorrect scenes; decoder training overhead |
 | **Action-conditioned WM (V-JEPA 2-AC, Genie)** | Bridges passive video pretraining to active control; enables goal-conditioned planning; latent action models require no action labels | Action label scarcity limits fine-tuning signal; latent action spaces may not align to robot morphology; transfer from 2D video to 3D robot workspace uncertain |
 | **Generative WM as data engines (Cosmos/Isaac Lab)** | Massively scalable synthetic data; domain randomisation; reduces need for expensive real-world data collection | Sim-to-real gap remains; physical plausibility not guaranteed; training cost enormous (20M video hours for Cosmos) |
+| **World Action Models (DreamZero, Cosmos Policy)** | Physical/temporal priors from Internet video; strong zero-shot generalisation; built-in prediction and value for planning | 5–14B+ parameters; sub-second-to-seconds latency without distillation; imagined futures can be wrong |
+| **Real-time interactive WMs (Genie 3)** | Unlimited diverse environments for agent training and evaluation; promptable counterfactual events | Closed access; minutes-scale consistency; no guarantee of physical correctness; not action-calibrated to real robots |
 | **Evaluation metrics (FVD/FID vs. physical plausibility)** | FVD/FID are standardised and widely used | High FVD does not correlate with planning quality; physics violations invisible to perceptual metrics; new physics-aware benchmarks (WorldModelBench, VideoCon-Physics) not yet standard |
 
 ---
@@ -308,6 +408,12 @@ The debate crystallises around two incompatible prior beliefs about what world m
 
 7. **Scaling laws for world models.** Unlike language models, no empirical scaling law (compute × data → performance) has been established for world models applicable to embodied AI. The relationship between model size, training data, and downstream robot policy quality is largely unknown.
 
+8. **Do policies need imagination?** World Action Models are trained to predict the future, but Fast-WAM-style results suggest the benefit may come mostly from the pretrained representation rather than from test-time rollouts. When explicit imagination helps (long-horizon, contact-rich, safety-critical tasks) is unresolved.
+
+9. **Validity of world-model-based evaluation.** Veo-, Ctrl-World- and 1X-style policy evaluators are increasingly used to rank policies; establishing when their rankings agree with real-world outcomes—especially for failures and safety events—is an open methodological question.
+
+10. **Latency and edge deployment.** Real-time generation (Genie 3, Cosmos3-Edge, distillation such as DMD2) is progressing, but WAM policies still require data-centre GPUs for sub-second inference.
+
 ---
 
 ## Further Reading
@@ -318,3 +424,11 @@ The debate crystallises around two incompatible prior beliefs about what world m
 - [DIAMOND project page](https://diamond-wm.github.io/) — with videos, code, and per-game Atari results
 - [NVIDIA Cosmos arXiv](https://arxiv.org/abs/2501.03575) — full technical report on the WFM platform
 - [LeCun 2022 white paper](https://openreview.net/pdf?id=BZ5a1r-kVsf) — "A Path Towards Autonomous Machine Intelligence" — the foundational JEPA manifesto
+- [V-JEPA 2 / 2.1 code](https://github.com/facebookresearch/vjepa2) — official V-JEPA 2, V-JEPA 2-AC and V-JEPA 2.1 code and checkpoints
+- [Dreamer 4 arXiv](https://arxiv.org/abs/2509.24527) — "Training Agents Inside of Scalable World Models"
+- [Genie 3 announcement](https://deepmind.google/discover/blog/genie-3-a-new-frontier-for-world-models/) — DeepMind, August 2025
+- [Cosmos-Predict2.5](https://github.com/nvidia-cosmos/cosmos-predict2.5) and [Cosmos 3](https://github.com/NVIDIA/Cosmos) — NVIDIA world foundation models
+- [Cosmos Policy](https://github.com/NVlabs/cosmos-policy) — video model fine-tuned into a policy + planner
+- [DreamZero](https://github.com/dreamzero0/dreamzero) — World Action Model code and checkpoints
+- [LeJEPA](https://github.com/rbalestr-lab/lejepa) — heuristic-free JEPA training
+- [JEPA-WMs](https://github.com/facebookresearch/jepa-wms) — study of JEPA world models for physical planning

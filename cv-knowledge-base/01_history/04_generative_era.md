@@ -1,12 +1,16 @@
 # The Generative Era (2014–2022)
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Foundational
 > **Related Sections:**
 > - [Detection & Segmentation Era](./03_detection_segmentation_era.md)
 > - [GANs & VAEs](../10_generative_vision/00_gans_and_vaes.md)
 > - [Diffusion Models](../10_generative_vision/01_diffusion_models.md)
 > - [Transformer Era](./05_transformer_era.md)
+
+> **🆕 October 2026 update:**
+> - New section **"Legacy: From Image Synthesis to World Simulation (2024–2026)"**: test-of-time recognition of the era's founding papers (VAE at ICLR 2024; GAN at NeurIPS 2024) and how its ideas carried into 2025–2026 video generators (Veo 3, Sora 2) and interactive world models (Genie 3, Waymo World Model).
+> - One new open problem (generative models as validated simulators) and new Further Reading links.
 
 ---
 
@@ -53,6 +57,14 @@ graph LR
 
 ---
 
+## Legacy: From Image Synthesis to World Simulation (2024–2026)
+
+The era's founding papers were formally recognised a decade on. The **VAE** paper (Kingma & Welling) received the inaugural **ICLR Test of Time Award** in 2024, and **Generative Adversarial Nets** (Goodfellow et al.) shared the **NeurIPS 2024 Test of Time Award** (with Seq2Seq). The recognition came as the paradigm successions narrated above had fully played out: GANs survive mainly as *adversarial losses* inside latent autoencoders and in few-step diffusion distillation, VAEs as the *latent space* in which nearly all modern diffusion and flow models operate, and diffusion itself has largely migrated from U-Nets to diffusion/flow-matching transformers (see [Diffusion Models](../10_generative_vision/01_diffusion_models.md)).
+
+The ambition the era unlocked — modelling the visual distribution well enough to *simulate* it — became concrete in 2025–2026. Video generators such as Google's **Veo 3** (2025, with natively generated audio) and OpenAI's **Sora 2** (September 2025) reached broad public availability, and generative models crossed into *interactive simulation*: **Genie 3** (August 2025) generates navigable environments in real time, and the **Waymo World Model** (February 2026), built on Genie 3, generates camera and lidar data for rare driving scenarios to test an autonomous vehicle. The open problem listed below as "From images to world models" is therefore no longer speculative; it is now an engineering and validation problem (see [Foundation Model Era](./06_foundation_model_era.md) and [World Models](../06_robotics_and_embodied_ai/02_world_models.md)).
+
+---
+
 ## Key Papers
 
 | Paper | Authors | Year | Venue | Key Contribution |
@@ -87,6 +99,7 @@ graph LR
 - **From images to world models.** Extending generation to physically consistent video/3D fed directly into the robotics frontier (see [World Models](../06_robotics_and_embodied_ai/02_world_models.md)).
 - **Likelihood vs. quality.** GANs gave sharp samples without tractable likelihoods; VAEs gave likelihoods but blurry samples; diffusion reconciled the two only partially, and a single model that is simultaneously high-quality, fast, and likelihood-principled remains elusive.
 - **Conditioning fidelity.** Faithfully respecting complex, multi-object, spatially-specified prompts—rather than producing plausible-but-wrong compositions—was unsolved in this era and motivated the controllable-generation work that followed.
+- **Generative models as validated simulators (2026 view).** Now that generated video and multi-sensor data are used to test autonomous systems, the era's weak evaluation tools (FID/IS) are visibly inadequate: what is needed is evidence that the *rare* modes of a learned distribution are physically faithful — a question GAN-era mode-collapse research raised but never answered.
 
 ---
 
@@ -97,3 +110,5 @@ graph LR
 - [DDPM (arXiv:2006.11239)](https://arxiv.org/abs/2006.11239) — denoising diffusion
 - [Latent Diffusion (arXiv:2112.10752)](https://arxiv.org/abs/2112.10752) — high-resolution synthesis
 - [VAE (arXiv:1312.6114)](https://arxiv.org/abs/1312.6114) — auto-encoding variational Bayes
+- [The Waymo World Model (Feb 2026)](https://waymo.com/blog/2026/02/the-waymo-world-model-a-new-frontier-for-autonomous-driving-simulation) — a generative model used as a driving simulator
+- [Project Genie (Jan 2026)](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/) — Genie 3 interactive world-model prototype

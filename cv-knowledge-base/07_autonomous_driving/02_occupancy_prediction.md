@@ -1,8 +1,14 @@
 # 3D Occupancy Prediction: From Bounding Boxes to Volumetric Scene Understanding
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
 > **Related Sections:** [Perception Stack](./01_perception_stack.md) · [End-to-End Driving](./03_end_to_end_driving.md) · [AV Stack Overview](./00_overview.md) · [Simulation & Data](./04_simulation_and_data.md)
+
+> **🆕 October 2026 update:**
+> - New section **"2024–2026 Advances"**: fully sparse occupancy and the RayIoU metric (SparseOcc), Gaussian-based occupancy (GaussianFormer / GaussianFormer-2), and rendering-based and foundation-model self-supervision (RenderOcc, SelfOcc, GaussTR).
+> - New section on **4D occupancy world models** (OccWorld, OccSora, DOME, UniScene), plus occupancy-guided video world models (GenieDrive).
+> - Tesla section updated: occupancy is now an internal representation of the end-to-end FSD v12–v14 network, and the Dojo program was wound down in 2025.
+> - New Key Papers rows, evaluation caveats, Open Problems and Further Reading.
 
 ---
 
@@ -60,7 +66,9 @@ Tesla's Occupancy Network was publicly described at AI Day 2022 and constitutes 
 - **Temporal fusion**: Recurrent BEV propagation using ego-motion-compensated alignment across frames.
 - **Output volume**: A dense 3D occupancy grid at multiple resolutions; Tesla refers to a "vector space" representation that also encodes object motion.
 - **Training data**: 1.4 billion frames from Tesla's global fleet; auto-labeled using multi-sweep LiDAR reconstruction during internal data collection phases, then trained camera-only at inference.
-- **Training infrastructure**: Trained on Dojo, Tesla's custom AI supercomputer operational since July 2023 at Gigafactory Texas.
+- **Training infrastructure**: Initially trained partly on Dojo, Tesla's custom AI supercomputer (operational from July 2023). In August 2025 Tesla reportedly disbanded the Dojo team, and training now relies on large NVIDIA GPU clusters (Cortex) while in-house effort shifts to the AI5/AI6 inference chips.
+
+**Post-2024 status.** Since FSD v12 the occupancy network is no longer a stand-alone production module feeding a hand-written planner. Occupancy-like volumetric features persist *inside* the end-to-end network (and in the on-screen visualisation), but control is produced directly by the learned policy. Tesla has not published how occupancy supervision is weighted in v13/v14 training.
 
 The critical design choice is **camera-only inference with LiDAR-supervised training**: Tesla collects LiDAR data internally for label generation but does not install LiDAR on production vehicles. This allows dense geometric supervision without production LiDAR cost. The training pipeline uses multi-view stereo reconstruction plus fleet-scale weak supervision from physics-consistent re-observation.
 
@@ -104,6 +112,37 @@ UniAD [Hu2023] uses occupancy flow prediction as an intermediate stage between p
 
 ---
 
+## 2024–2026 Advances
+
+### Fully Sparse Occupancy and RayIoU [Liu2024SparseOcc]
+
+SparseOcc (ECCV 2024) observes that >90% of voxels are free, so dense 3D processing wastes most of its compute. It reconstructs a sparse 3D representation from camera features and predicts semantic/instance occupancy with sparse **mask queries**. It also identifies a flaw in voxel-level mIoU on Occ3D: models are rewarded for "thickening" surfaces near the visibility mask boundary. The proposed **RayIoU** evaluates occupancy along query rays (like a LiDAR return) and computes IoU of the first hit depth/class at several distance thresholds. RayIoU is now commonly reported alongside mIoU, and it was adopted by the CVPR 2024 Autonomous Grand Challenge occupancy track.
+
+### Gaussian-Based Occupancy
+
+**GaussianFormer** [Huang2024GaussianFormer] (ECCV 2024) replaces voxels with a set of 3D semantic Gaussians. Each Gaussian carries mean, covariance and semantic logits, and a Gaussian-to-voxel splatting step produces dense occupancy only at query time. This object-centric sparse representation allocates capacity to occupied regions and cuts memory. **GaussianFormer-2** (CVPR 2025) adds a probabilistic Gaussian superposition model, which reduces redundant Gaussians on empty space. The same representation links occupancy to Gaussian-splatting scene reconstruction used in neural simulators.
+
+### Self-Supervised and Foundation-Model Supervision
+
+Dense 3D labels are the main bottleneck, so a line of work supervises occupancy with **2D rendering losses**. RenderOcc (ICRA 2024) volume-renders predicted occupancy to depth and semantic maps supervised by 2D labels, and SelfOcc (CVPR 2024) uses only video photometric consistency. **GaussTR** (CVPR 2025) aligns Gaussian scene features with frozen 2D foundation models (e.g., CLIP-aligned dense features) to get zero-shot, **open-vocabulary occupancy** without any 3D labels. As of October 2026, newer backbones such as DINOv3 and SAM 3 are natural drop-in teachers for this line of work, though absolute accuracy remains well below LiDAR-supervised training.
+
+### 4D Occupancy World Models
+
+Occupancy is also becoming the *state space of driving world models*. **OccWorld** [Zheng2024OccWorld] (ECCV 2024) tokenises 3D occupancy with a VQ-VAE and autoregressively forecasts future occupancy tokens jointly with ego motion. OccSora and **DOME** use diffusion transformers for longer-horizon 4D occupancy generation, and **UniScene** (CVPR 2025) generates occupancy first and then conditions video and LiDAR generation on it. In the reverse direction, **GenieDrive** (arXiv 2512.12751) uses predicted 4D occupancy to guide a physics-aware video world model. Occupancy acts as a geometric scaffold that keeps generated camera video consistent and controllable. This connects directly to the world-model simulators in [Simulation & Data](./04_simulation_and_data.md) and [World Models](../06_robotics_and_embodied_ai/02_world_models.md).
+
+```mermaid
+flowchart LR
+    CAM["Multi-camera video"] --> ENC["Sparse / Gaussian\noccupancy encoder"]
+    ENC --> OCC["3D semantic occupancy\n(+ flow)"]
+    OCC --> TOK["Occupancy tokenizer\n(VQ-VAE / latent)"]
+    TOK --> WM["4D occupancy world model\n(AR / diffusion)"]
+    WM --> FUT["Future occupancy\n+ ego trajectory"]
+    FUT --> GEN["Video / LiDAR generator\n(UniScene, GenieDrive)"]
+    FUT --> PLAN["Planner / evaluator"]
+```
+
+---
+
 ## Key Papers
 
 | Paper | Authors | Year | Venue | Key Contribution |
@@ -115,6 +154,13 @@ UniAD [Hu2023] uses occupancy flow prediction as an intermediate stage between p
 | OccNet | Tong et al. | 2023 | ICCV | Occupancy as unified scene representation for E2E planning |
 | MonoScene | Cao & de Charette | 2022 | CVPR | First camera-only semantic scene completion; 6.06 mIoU baseline |
 | UniAD | Hu et al. | 2023 | CVPR (Best Paper) | Occupancy flow integrated into E2E planning; reduces collision rate 28% |
+| SparseOcc | Liu et al. | 2024 | ECCV | Fully sparse occupancy with mask queries; introduces RayIoU metric |
+| GaussianFormer | Huang et al. | 2024 | ECCV | 3D semantic Gaussians as sparse occupancy representation |
+| GaussianFormer-2 | Huang et al. | 2025 | CVPR | Probabilistic Gaussian superposition; more efficient Gaussian occupancy |
+| SelfOcc | Huang et al. | 2024 | CVPR | Self-supervised occupancy from video via rendering |
+| GaussTR | Jiang et al. | 2025 | CVPR | Foundation-model-aligned Gaussian transformer; zero-shot open-vocabulary occupancy |
+| OccWorld | Zheng et al. | 2024 | ECCV | VQ-tokenized 3D occupancy world model; joint scene and ego forecasting |
+| UniScene | Li et al. | 2025 | CVPR | Occupancy-centric generation of semantic occupancy, video and LiDAR |
 
 ---
 
@@ -130,6 +176,8 @@ UniAD [Hu2023] uses occupancy flow prediction as an intermediate stage between p
 | OccGen (LiDAR-cam) | LiDAR + Camera | ~37–42 | Fusion methods substantially outperform camera-only |
 
 *Note: Benchmarks evolve rapidly; verify current SOTA at the [Occ3D-nuScenes leaderboard](https://github.com/Tsinghua-MARS-Lab/Occ3D).*
+
+*Evaluation caveat (2024–2026):* numbers in the table come from different protocols (with or without the camera-visibility mask, single vs. multi-frame, different backbones and image resolutions) and are not strictly comparable. Since SparseOcc, many papers also report **RayIoU** on Occ3D-nuScenes, which penalises the surface-thickening behaviour that inflates voxel mIoU. Compare methods only within the same metric and protocol.
 
 ---
 
@@ -155,6 +203,8 @@ UniAD [Hu2023] uses occupancy flow prediction as an intermediate stage between p
 - **Scalable evaluation**: mIoU averages over all voxels, giving excessive weight to free-space (the dominant class); safety-relevant metrics that weight rare obstacle categories appropriately are needed.
 - **Occluded region prediction**: Learning to hallucinate the geometry behind visible surfaces from camera inputs alone requires strong learned priors; this is qualitatively different from observed-region occupancy.
 - **Integration with downstream planning**: The formal interface between occupancy outputs and planning cost maps (potential fields, lattice planners, neural planners) is architecture-specific; a standard API is absent.
+- **Open-vocabulary occupancy**: Zero-shot occupancy from 2D foundation models (GaussTR-style) removes the label bottleneck but lags supervised methods substantially. Distilling DINOv3/SAM 3-class features into metric 3D without LiDAR is open.
+- **Occupancy world-model fidelity**: 4D occupancy world models (OccWorld, DOME, UniScene) are evaluated on short-horizon forecasting IoU. Whether their rollouts are reliable enough for closed-loop planner evaluation is largely untested.
 
 ---
 
@@ -166,3 +216,7 @@ UniAD [Hu2023] uses occupancy flow prediction as an intermediate stage between p
 - [Waymo Occupancy Flow Challenge](https://waymo.com/open/challenges/occupancy-flow/) — benchmark with future prediction evaluation
 - [arXiv:2405.05173 Survey on Occupancy Perception](https://arxiv.org/abs/2405.05173) — comprehensive 2024 survey
 - [arXiv:2304.14365 Occ3D paper](https://arxiv.org/abs/2304.14365) — benchmark construction methodology
+- [SparseOcc GitHub](https://github.com/MCG-NJU/SparseOcc) — fully sparse occupancy and RayIoU evaluation
+- [GaussianFormer GitHub](https://github.com/huang-yh/GaussianFormer) — Gaussian-based occupancy (v1 and v2)
+- [OccWorld GitHub](https://github.com/wzzheng/OccWorld) — 3D occupancy world model
+- [arXiv:2512.12751 GenieDrive](https://arxiv.org/abs/2512.12751) — 4D-occupancy-guided driving video world model

@@ -1,12 +1,14 @@
 # Vision-Language Pretraining (VLP) Models
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Intermediate
 > **Related Sections:**
 > - [Overview: Vision-Language](./00_overview.md)
 > - [Large Vision-Language Models](./02_large_vision_language_models.md)
 > - [Multimodal Architectures](../03_architectures/04_multimodal_architectures.md)
 > - [Open-Vocabulary Detection](./03_open_vocabulary_detection.md)
+
+> **🆕 October 2026 update:** The classic VLP era itself is unchanged; added a short section on how its objectives (ITC, captioning/LM, masked prediction, distillation) were recombined in the 2025 encoders SigLIP 2 and Perception Encoder, with matching Key Papers and Further Reading entries.
 
 ---
 
@@ -60,6 +62,10 @@ graph TD
     style C fill:#2d6a4f,color:#fff
 ```
 
+### Legacy: VLP Objectives in 2025–2026 Vision Encoders
+
+The VLP objective menu did not die with the move to LLM-based VLMs; it was folded into the *vision towers* those VLMs use. **SigLIP 2** [Tschannen2025] (Google DeepMind, Feb 2025) trains on the sigmoid image-text loss of SigLIP, then adds a LocCa-style **decoder loss** (captioning and referring-expression prediction, the CoCa/BLIP lineage), plus **self-distillation and masked prediction** losses for better dense features; it ships ViT-B (86M), L (303M), So400m and g (1B) checkpoints, a multilingual tokenizer, and a **NaFlex** variant that keeps native aspect ratio. Meta's **Perception Encoder (PE)** [Bolya2025] shows that a purely contrastive model already contains strong language-aligned and spatial features in *intermediate* layers, and uses alignment tuning to expose them as PE-Lang (for MLLMs) and PE-Spatial (for dense prediction). Both results echo ALBEF's "align before fuse" and CoCa's "contrastive + generative" insights, now at billion-image scale.
+
 ---
 
 ## Key Papers
@@ -73,6 +79,8 @@ graph TD
 | ALBEF | Li, Selvaraju, Gotmare, et al. | 2021 | NeurIPS | Align-before-fuse + momentum distillation |
 | BLIP | Li, Li, Xiong, Hoi | 2022 | ICML | Unified understanding/generation + CapFilt |
 | CoCa | Yu, Wang, Vasudevan, et al. | 2022 | TMLR | Contrastive + captioning in one encoder-decoder |
+| SigLIP 2 | Tschannen, Gritsenko, Wang, et al. | 2025 | arXiv | Sigmoid ITC + decoder (captioning/referring) + self-distillation; multilingual; NaFlex |
+| Perception Encoder | Bolya, Huang, Sun, et al. | 2025 | arXiv | Contrastive-only pretraining; intermediate-layer features aligned for language and spatial tasks |
 
 ---
 
@@ -109,6 +117,7 @@ graph TD
 - **Unifying discriminative and generative objectives.** CoCa combines them but the optimal balance and architecture is unsettled.
 - **Transfer to embodied tasks.** How VLP representations transfer to control (VLAs) versus LLM-based VLMs is under-studied.
 - **Evaluation contamination.** VQAv2/NLVR2 leaderboards saturate and suffer from annotation artifacts.
+- **Which objective mix is optimal?** SigLIP 2 and PE reach strong results with very different recipes (multi-loss vs. contrastive-only plus alignment tuning); a controlled comparison at equal data and compute is still missing.
 
 ---
 
@@ -119,3 +128,5 @@ graph TD
 - [CoCa (arXiv:2205.01917)](https://arxiv.org/abs/2205.01917) — contrastive captioners
 - [UNITER (arXiv:1909.11740)](https://arxiv.org/abs/1909.11740) — universal image-text representation
 - [VinVL (arXiv:2101.00529)](https://arxiv.org/abs/2101.00529) — revisiting visual representations in VLP
+- [SigLIP 2 (arXiv:2502.14786)](https://arxiv.org/abs/2502.14786) — multi-objective multilingual vision-language encoders
+- [Perception Encoder (arXiv:2504.13181)](https://arxiv.org/abs/2504.13181) — intermediate-layer embeddings from contrastive pretraining

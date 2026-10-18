@@ -1,6 +1,6 @@
 # Generalist vs. Specialist Robot Policies
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Research Frontier
 > **Related Sections:**
 > - [../05_multimodal_vision_language/](../05_multimodal_vision_language/) — VLM foundations underpinning VLA models
@@ -8,11 +8,20 @@
 > - [../04_3d_vision_and_scene/](../04_3d_vision_and_scene/) — 3D scene understanding for robot perception
 > - [../09_efficiency_and_deployment/](../09_efficiency_and_deployment/) — Edge inference relevant to on-robot deployment
 
+> **🆕 October 2026 update:**
+> - New generalist evidence: π0.5 (unseen homes), **π\*0.6 with Recap RL** (generalist + on-task RL from experience and corrections), Gemini Robotics 1.5 Motion Transfer, Generalist AI's **GEN-0** scaling results, and TRI's careful **Large Behavior Model** study.
+> - New specialist evidence: HIL-SERL (near-perfect success after 1–2.5 h of real-world RL) and the persistence of learned RL **whole-body controllers** beneath every humanoid VLA.
+> - Updated the dual-system lineage: GR00T N1.5 → N1.6 → **N1.7** (3B, Cosmos-Reason2 backbone, EgoScale human-video pre-training, GEAR-SONIC whole-body control), Helix on Figure 03, Galaxea G0, AgiBot GO-1.
+> - New framing: the 2025–26 consensus is **"generalist pre-training, specialist post-training"**—a single foundation model specialized per deployment by fine-tuning and RL—rather than either pure camp.
+> - New Key Papers/benchmark rows, open problems and Further Reading links.
+
 ---
 
 ## Overview
 
-One of the deepest open debates in embodied AI is architectural: should a robot be controlled by a single large "robot GPT" trained on all available data, or by a modular pipeline of specialist components each optimized for its particular subtask? The question mirrors debates from NLP (BERT/GPT versus ensemble methods), but with a critical physical twist — robots must act in real time, respect hard physical constraints, and fail safely in ways that text generators do not. Neither camp has won decisively as of mid-2026, and the emergent consensus is a *dual-system* or *hierarchical* hybrid that tries to capture the best of both paradigms.
+One of the deepest open debates in embodied AI is architectural: should a robot be controlled by a single large "robot GPT" trained on all available data, or by a modular pipeline of specialist components each optimized for its particular subtask? The question mirrors debates from NLP (BERT/GPT versus ensemble methods), but with a critical physical twist — robots must act in real time, respect hard physical constraints, and fail safely in ways that text generators do not. Neither camp has won decisively as of October 2026, and the emergent consensus is a *dual-system* or *hierarchical* hybrid that tries to capture the best of both paradigms.
+
+The 2025–26 evidence sharpened this consensus into a recipe that mirrors LLM practice: **pre-train one generalist, then specialize it**. Physical Intelligence's π\*0.6 is a generalist VLA that is further improved on each target task with reinforcement learning from its own deployment experience; Gemini Robotics and GR00T ship as base models to be fine-tuned per embodiment; and even the most generalist humanoid stacks still rely on specialist, RL-trained whole-body controllers for balance and contact. The live question is therefore less "one model or many?" than *where* the boundary between shared pre-training and per-task specialization should sit.
 
 This section structures the debate as an intellectual confrontation, surveys the strongest evidence on each side, and describes the hybrid architectures that are currently attracting the most investment from both academia and industry.
 
@@ -35,6 +44,14 @@ OpenVLA [Kim2024], a 7B-parameter open-source VLA trained on 970,000 trajectorie
 ### Web Pre-Training as a Force Multiplier
 
 The key claim is that internet-scale pre-training gives robots commonsense physics, object semantics, and linguistic grounding that would be impossible to encode from robot data alone. π₀ [Black2024] from Physical Intelligence used a PaliGemma-2B backbone pre-trained on web data, combined with flow matching action generation, and trained on over 10,000 hours of in-house demonstration data across 68 tasks and 7 robot configurations. The resulting model demonstrated significantly better generalization to novel household tasks compared to models trained only on robot data.
+
+### New Generalist Evidence (2025–2026)
+
+- **Open-world generalization.** π0.5 [PI2025] co-trains on web data, high-level sub-task labels and heterogeneous multi-robot data and performs long-horizon cleaning in **homes never seen in training**—the clearest real-world demonstration that breadth of pre-training buys out-of-distribution competence.
+- **Generalist + RL beats generalist alone.** π\*0.6 [PI2025b] (Nov 2025) adds **Recap** (RL with Experience & Corrections via Advantage-conditioned Policies): the deployed generalist learns from its own rollouts, value estimates and human corrections. Physical Intelligence reported that on hard tasks (making espresso drinks, folding diverse laundry, assembling boxes) Recap **more than doubled throughput and roughly halved failure rates**. This blurs the debate—task-specific improvement is obtained *without* a task-specific architecture.
+- **Cross-embodiment skill sharing.** Gemini Robotics 1.5 [GeminiRobotics2025] uses *Motion Transfer* so that skills learned on one robot (ALOHA) transfer to others (bi-arm Franka, Apptronik Apollo) without retraining per embodiment.
+- **Industrial-scale scaling curves.** Generalist AI's GEN-0 [GeneralistAI2025] reports power-law improvement of downstream error with ~270,000 hours of pre-training data, and an apparent **~7B-parameter threshold** below which models stop benefiting from more data—direct, if company-reported, evidence that capacity and data must co-scale.
+- **Careful multitask evidence.** TRI's Large Behavior Model study [TRI2025] used blind, statistically powered evaluation and found that fine-tuned multitask LBMs outperform single-task policies and reach a given performance with substantially less task-specific data, improving smoothly with pre-training scale. With Boston Dynamics, TRI also ran a single language-conditioned LBM controlling the whole body of the electric Atlas on long-horizon tasks (Aug 2025).
 
 ### Simpler End-to-End Design
 
@@ -104,6 +121,12 @@ Modular pipelines support all three. A single neural network policy is opaque by
 
 Training a VLA from scratch on a new task typically requires thousands to tens of thousands of demonstrations. Specialist approaches (imitation learning + model-based refinement) routinely achieve expert performance with 50–200 demonstrations. For deployment in facilities where robot data collection is expensive or dangerous (e.g., surgical suites, nuclear environments), this is not a minor academic distinction.
 
+### New Specialist Evidence (2025–2026)
+
+- **Real-world RL specialists.** HIL-SERL [Luo2025] (Science Robotics 2025) trains task-specific vision-based policies with human-in-the-loop RL directly on real robots and reaches **near-perfect success with fast cycle times after only 1–2.5 hours of training** on precise, dynamic and dual-arm tasks (e.g. assembly, insertion, flipping)—outperforming imitation baselines trained on far more data. For a known, fixed task in a factory cell this remains the most sample-efficient route to reliability.
+- **Whole-body control stays specialist.** Every deployed humanoid VLA in 2025–26 sits on top of a separately trained RL locomotion/whole-body controller (e.g. NVIDIA's GEAR-SONIC controller shipped with GR00T N1.7 [NVIDIA2026]); none of the generalist models closes the balance-and-contact loop at kHz rates itself.
+- **Reliability gap in deployment.** Generalist demos emphasize breadth, while commercial deployments (logistics tote handling, factory part loading) are narrow, repetitive and judged on uptime and throughput—metrics on which tuned specialists and heavily post-trained generalists, not zero-shot generalists, have delivered.
+
 ---
 
 ## Hybrid Middle Ground: Dual-System and Hierarchical Architectures
@@ -150,6 +173,14 @@ graph TD
 
 **π₀** [Black2024]: Physical Intelligence's generalist policy uses flow matching (continuous normalizing flow) as the action head, with PaliGemma as the language backbone. π₀-FAST [PhysicalIntelligence2024] further accelerates action generation using DCT-space (FAST) tokenization, achieving 7× compression of action sequences and 5× faster training convergence.
 
+**Successor systems (2025–2026).** The dual-system pattern has become the default industrial architecture:
+
+- **GR00T N1.5 → N1.6 → N1.7** [NVIDIA2026]: N1.5 (mid-2025) froze the VLM to preserve language grounding; N1.6 used an Eagle-based VLM with a 32-layer DiT action head; **N1.7** (2026, GA release, 3B parameters) swaps in the reasoning VLM **Cosmos-Reason2-2B** (Qwen3-VL architecture) as System 2, halves the DiT head to 16 layers, uses a **relative end-effector action space shared by robot and human data**, pre-trains on ~20K hours of EgoScale human video, extends the action horizon from 16 to 40 steps and the state/action dimension from 29 to 132, and exports to TensorRT for Jetson-class deployment.
+- **Helix on Figure 03** [Figure2025]: Figure's third-generation humanoid (Oct 2025) was designed around Helix, with a redesigned camera system and tactile fingertips feeding System 1.
+- **π0.5 / π0.6** [PI2025]: rather than two separate networks, a single VLA first decodes a high-level sub-task (slow, discrete) and then an action chunk through a flow-matching action expert (fast, continuous), trained with *knowledge insulation* so that action-expert gradients do not degrade the VLM.
+- **Gemini Robotics 1.5 + ER 1.5** [GeminiRobotics2025]: an explicit two-model system in which an embodied-reasoning VLM orchestrates a "thinking" VLA (see [Language-Conditioned Control](./10_language_conditioned_control.md)).
+- **Galaxea G0** and **AgiBot GO-1** (2025): open Chinese dual-system/latent-planner VLAs trained on single-vendor fleet data (see [Robot Data & Teleoperation](./09_robot_data_and_teleoperation.md)).
+
 ### Hierarchical Control
 
 An alternative framing treats the large model as a task planner that decomposes goals into subgoals, each executed by a specialist:
@@ -190,7 +221,9 @@ The NLP community's "Chinchilla" finding [Hoffmann2022] showed that most large l
 **Evidence for scaling laws in robot data:**
 - RT-1-X → RT-2-X: adding cross-embodiment pre-training yielded ~50% improvement in success rates on held-out tasks [Collaboration2023]
 - OpenVLA trained on 10× more data than RT-2 fine-tuning data, achieving better generalization with 7× fewer parameters [Kim2024]
-- Generalist AI's GEN-0 reports first empirical scaling curves for robot manipulation, trained on 270,000 hours of data from 1,000s of real environments [GeneralistAI2025]
+- Generalist AI's GEN-0 reports first empirical scaling curves for robot manipulation, trained on 270,000 hours of data from 1,000s of real environments [GeneralistAI2025]; it also reports "ossification" of models below ~7B parameters under heavy pre-training, i.e. a minimum capacity for scaling to hold
+- NVIDIA's EgoScale finds a log-linear law between egocentric human-video hours (up to ~20.8k h) and validation loss, which predicts real-robot success [EgoScale2026]
+- Physical Intelligence finds that the *ability to learn from human video* emerges only once robot pre-training is large and diverse enough—a qualitative, scale-dependent capability rather than a smooth gain [PI2025H2R]
 
 **Counter-evidence (the "robot data is different" argument):**
 
@@ -210,6 +243,8 @@ Robot data characteristics:
 
 The conclusion is that robot policies *do* show scaling improvements with data, but the data ceiling is orders of magnitude lower than for LLMs. This makes the generalist vs. specialist question fundamentally about how to allocate scarce data — a question that pure scaling cannot resolve.
 
+**2026 update to the counter-argument.** The data ceiling has risen faster than expected: proprietary corpora reached ~10⁵ hours (GEN-0), open fleet corpora passed 10⁶ trajectories (AgiBot World), and action-labeled human video added ~10⁴ hours (EgoScale) at much lower cost per hour. The gap to LLM-scale data remains several orders of magnitude, but the robot-data side is now growing by >10⁴ hours per week at a single company—which shifts the burden of proof toward the generalist camp for *pre-training*, while leaving per-task reliability to specialization.
+
 **Simulation as a partial solution:** Genesis [Genesis2024] (43M FPS on a single RTX 4090, 430,000× faster than real-time) and Isaac Lab [NVIDIA2024] attempt to bridge the data gap by generating synthetic trajectories. NVIDIA generated 780,000 synthetic trajectories (equivalent of 9 months of human demonstrations) in 11 hours for GR00T N1 training, improving performance by 40% over real-data-only training [NVIDIA2025].
 
 ---
@@ -226,6 +261,13 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 | Octo: An Open-Source Generalist Robot Policy | Ghosh et al. (Berkeley, Stanford, CMU, Google DeepMind) | 2024 | RSS 2024 | 93M transformer-diffusion policy; 800k episodes; modular observation heads |
 | Factored Task and Motion Planning with Combined Optimization, Sampling and Learning | Toussaint et al. | 2024 | ICRA 2024 | Factor-graph TAMP; specialist controllers per logic mode; formal guarantees |
 | Helix: A Vision-Language-Action Model for Generalist Humanoid Control | Figure AI | 2025 | Technical Report | 7B S2 + 80M S1; 200 Hz reactive; no cloud; full 8-hour autonomous shifts |
+| π0.5: a Vision-Language-Action Model with Open-World Generalization | Physical Intelligence | 2025 | CoRL 2025 | Hierarchical in-model reasoning + co-training; long-horizon tasks in unseen homes |
+| π\*0.6: a VLA That Learns From Experience (Recap) | Physical Intelligence | 2025 | Technical report | Advantage-conditioned RL on deployment experience + corrections; >2× throughput on hard tasks |
+| Gemini Robotics 1.5 | Gemini Robotics Team (Google DeepMind) | 2025 | Technical report | ER orchestrator + thinking VLA; Motion Transfer across embodiments |
+| A Careful Examination of Large Behavior Models for Multitask Dexterous Manipulation | TRI LBM Team | 2025 | arXiv:2507.05331 | Blind, statistically powered evaluation; pre-training reduces task data needs |
+| HIL-SERL: Precise and Dexterous Robotic Manipulation via Human-in-the-Loop RL | Luo, Xu, Wu, Levine | 2024 | Science Robotics 2025 | Real-world RL specialists: near-perfect success in 1–2.5 h |
+| GEN-0: Embodied Foundation Models That Scale with Physical Interaction | Generalist AI | 2025 | Technical blog | 270k h pre-training; data power law; ~7B capacity threshold |
+| GR00T N1.7 | NVIDIA | 2026 | Open model release | 3B; Cosmos-Reason2 System 2; human-video pre-training; GEAR-SONIC whole-body control |
 
 ---
 
@@ -240,6 +282,10 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 | GR00T N1 (2.2B) | Fourier GR-1 + 1X humanoid tasks | vs. SOTA IL | Outperforms SOTA simulation benchmarks | 40% improvement from +synthetic data |
 | π₀ | 9 benchmark categories, 5 embodiments | Task completion | State-of-the-art on deformable + long-horizon manipulation | Flow matching; 10k+ demo hours |
 | Helix (Figure AI) | Factory manipulation | Deployment | 8-hour autonomous shifts | 200 Hz System 1; 7–9 Hz System 2 |
+| π\*0.6 + Recap | Espresso, laundry, box assembly | Throughput / failure rate | >2× / ~½ | Company-reported; generalist + task RL [PI2025b] |
+| HIL-SERL | Real-world precise/dynamic tasks | Success after 1–2.5 h training | Near-perfect | Task-specific RL specialist [Luo2025] |
+| GEN-0 | Real-world downstream tasks | Post-training error vs data | Power law; ≥7B needed | Company-reported [GeneralistAI2025] |
+| AgiBot GO-1 | AgiBot World tasks | Avg. perf. vs OXE pre-training | ~+30% | Fleet data vs aggregated data [AgiBot2025] |
 
 ---
 
@@ -272,6 +318,12 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 
 7. **Evaluating generalization vs. memorization.** Current benchmarks conflate zero-shot generalization with performance on tasks that appear in pre-training web data. A clean benchmark that tests on tasks verifiably absent from web training distributions is needed to make the VLA generalization argument rigorous.
 
+8. **Where to put the specialization boundary.** "Generalist pre-training, specialist post-training" (π\*0.6 Recap, per-embodiment GR00T fine-tuning) is now standard, but there is no theory of how much task-specific RL or fine-tuning erodes generality (catastrophic forgetting) or how to share post-training gains back into the base model.
+
+9. **Reproducible real-world comparison.** Many 2025–26 generalist claims (GEN-0 scaling, Recap throughput, Helix shift lengths) are company-reported. Blind, statistically powered protocols (TRI LBM, RoboArena) exist but are not yet adopted for headline results.
+
+10. **Generalist–specialist distillation.** Can a generalist be distilled into compact, verifiable specialist controllers for safety-critical cells, or conversely can specialist RL policies (HIL-SERL) be absorbed into a generalist without losing their reliability?
+
 ---
 
 ## Further Reading
@@ -282,3 +334,10 @@ The conclusion is that robot policies *do* show scaling improvements with data, 
 - [GR00T N1 arXiv](https://arxiv.org/abs/2503.14734) — NVIDIA's dual-system humanoid foundation model
 - [π₀ arXiv](https://arxiv.org/html/2410.24164v1) — Physical Intelligence's flow-matching VLA
 - [Russ Tedrake's Underactuated Robotics Course](https://underactuated.csail.mit.edu/) — Canonical reference for model-based robot control theory
+- [π0.5 arXiv](https://arxiv.org/abs/2504.16054) — Open-world generalization via co-training and hierarchical inference
+- [π\*0.6 / Recap (Physical Intelligence blog)](https://www.pi.website/blog/pistar06) — Generalist VLA improved by RL from deployment experience
+- [Gemini Robotics 1.5 arXiv](https://arxiv.org/abs/2510.03342) — Embodied reasoning orchestrator + thinking VLA
+- [TRI Large Behavior Models arXiv](https://arxiv.org/abs/2507.05331) — Careful multitask evaluation of LBMs
+- [HIL-SERL arXiv](https://arxiv.org/abs/2410.21845) — Real-world human-in-the-loop RL specialists
+- [GEN-0 (Generalist AI)](https://generalistai.com/blog/nov-04-2025-GEN-0) — Robot scaling laws from 270k hours of real-world data
+- [Isaac GR00T (GitHub)](https://github.com/NVIDIA/Isaac-GR00T) — GR00T N1.x open humanoid foundation models

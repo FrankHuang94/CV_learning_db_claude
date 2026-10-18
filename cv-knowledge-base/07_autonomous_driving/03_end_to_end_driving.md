@@ -1,8 +1,15 @@
 # End-to-End Autonomous Driving: From UniAD to Neural World Models
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
-> **Related Sections:** [AV Stack Overview](./00_overview.md) · [Perception Stack](./01_perception_stack.md) · [Occupancy Prediction](./02_occupancy_prediction.md) · [World Models](../06_robotics_and_embodied_ai/02_world_models.md)
+> **Related Sections:** [AV Stack Overview](./00_overview.md) · [Perception Stack](./01_perception_stack.md) · [Occupancy Prediction](./02_occupancy_prediction.md) · [World Models](../06_robotics_and_embodied_ai/02_world_models.md) · [VLA Models](../06_robotics_and_embodied_ai/01_vla_models.md) · [Simulation & Data](./04_simulation_and_data.md)
+
+> **🆕 October 2026 update:**
+> - New section **"2025–2026: Driving Foundation Models and Reasoning VLAs"**: Waymo EMMA, NVIDIA Alpamayo-R1 / open Alpamayo 1 (10B), SimLingo, the latent-reasoning trend, and production VLA / world-action stacks (XPeng VLA 2.0, Li Auto, Huawei ADS 4 WEWA).
+> - New section **"Diffusion and Multi-Modal Planners"**: Hydra-MDP and DiffusionDrive (88.1 PDMS on NAVSIM).
+> - New section **"Beyond nuScenes: NAVSIM (v1/v2) and Bench2Drive"**, with the PDM Score, the v2 pseudo-simulation / EPDMS, and Bench2Drive closed-loop results; new benchmark rows.
+> - GAIA section extended with **GAIA-2** (Mar 2025) and **GAIA-3** (Dec 2025). Tesla section updated with **FSD v14** and the unsupervised robotaxi (Austin, Jan 2026).
+> - New Open Problems (reasoning faithfulness, reasoning latency, RL in world models) and Further Reading.
 
 ---
 
@@ -10,7 +17,7 @@
 
 End-to-end (E2E) autonomous driving refers to architectures that learn a direct mapping from raw sensor observations to vehicle control outputs—steering, throttle, and braking—without requiring hand-engineered intermediate representations such as 3D bounding boxes, HD map polygons, or explicit motion forecasting modules. The conceptual lineage traces to ALVINN [Pomerleau1989], which trained a shallow network on camera-to-steering mappings on Carnegie Mellon's campus, and DAVE-2 [Bojarski2016], which applied the same idea with deep CNNs at NVIDIA. Modern E2E driving differs from these precursors in scale (billions of parameters, millions of training hours), representational richness (multi-camera transformer encoders, BEV lifting, language conditioning), and task scope (full urban driving including complex interactions, not just lane-following on highways).
 
-The architectural evolution of E2E driving over 2022–2025 can be characterized along two axes: **structural granularity** and **supervisory richness**. Early E2E systems (CILRS [Codevilla2019], Transfuser [Chitta2022]) used a single-stream backbone that collapsed perception and planning into one forward pass, with minimal intermediate supervision. This made them brittle outside training distribution and difficult to debug. The 2023 generation—epitomized by **UniAD** [Hu2023] (CVPR 2023 Best Paper Award), **VAD** [Jiang2023], and **SparseDrive**—retained task-specific query streams (detection queries, map queries, motion queries, planning queries) connected by cross-attention, enabling E2E gradient flow while preserving interpretable intermediate outputs. The 2024–2025 generation incorporates **language-conditioned reasoning** (DriveVLM [Tian2024], DriveLM [Sima2024]) and **generative world models** (GAIA-1 [Hu2023GAIA], DriveDreamer, MAGICDRIVE) that can simulate future sensor frames conditioned on ego-actions, enabling closed-loop self-play training without real-world data.
+The architectural evolution of E2E driving over 2022–2025 can be characterized along two axes: **structural granularity** and **supervisory richness**. Early E2E systems (CILRS [Codevilla2019], Transfuser [Chitta2022]) used a single-stream backbone that collapsed perception and planning into one forward pass, with minimal intermediate supervision. This made them brittle outside training distribution and difficult to debug. The 2023 generation—epitomized by **UniAD** [Hu2023] (CVPR 2023 Best Paper Award), **VAD** [Jiang2023], and **SparseDrive**—retained task-specific query streams (detection queries, map queries, motion queries, planning queries) connected by cross-attention, enabling E2E gradient flow while preserving interpretable intermediate outputs. The 2024–2025 generation incorporates **language-conditioned reasoning** (DriveVLM [Tian2024], DriveLM [Sima2024]) and **generative world models** (GAIA-1 [Hu2023GAIA], DriveDreamer, MAGICDRIVE) that can simulate future sensor frames conditioned on ego-actions, enabling closed-loop self-play training without real-world data. The **2025–2026 generation** goes further in two directions. First, it builds on *pretrained multimodal foundation models*: MLLM-native planners such as EMMA [Hwang2024EMMA] and reasoning VLAs such as Alpamayo-R1 [Wang2025Alpamayo], trained with supervised fine-tuning on reasoning traces followed by RL post-training. Second, it replaces regression heads with *generative trajectory decoders* (diffusion / flow matching) that represent multi-modal futures. Evaluation has meanwhile shifted from nuScenes open-loop L2 to NAVSIM and Bench2Drive.
 
 The shift from modular to E2E systems in production is most visibly represented by **Tesla FSD v12** (2024), which replaced approximately 300,000 lines of C++ rule-based code with a single large neural network trained by imitation learning on ~10 million labeled driving video clips [Tesla2024]. The engineering significance is that FSD v12 required no module-level specification, no hand-written corner-case handlers, and improved rapidly with additional data—demonstrating the data-scalability advantage of E2E architectures that the academic community had theorized but production teams had not previously validated at this scale.
 
@@ -122,6 +129,55 @@ $$p(v_{t+1}, a_{t+1} \mid v_{1:t}, a_{1:t}, \text{text})$$
 
 GAIA-1 is not itself a driving policy; it is a **simulator** that can be used to augment training data, evaluate policies in closed-loop without real-world deployment, and potentially as a reward model for RL-based policy training. This positions it as a neural alternative to physics-based simulators like CARLA.
 
+### GAIA-2 and GAIA-3 (2025)
+
+**GAIA-2** [Russell2025GAIA2] (arXiv 2503.20523, March 2025) replaces GAIA-1's discrete-token autoregressive world model with a **latent diffusion** world model. It generates up to five spatially and temporally consistent camera streams (448×960). Generation is conditioned on structured inputs: ego dynamics, the position, orientation and size of other agents, road semantics, geography (UK/US/Germany), weather and time of day. It can also condition on external latents such as CLIP embeddings or a proprietary driving embedding. **GAIA-3** (December 2025) was presented by Wayve as a ~15B-parameter model trained on roughly 10× more data than GAIA-2, with a 2× larger video tokenizer. It is explicitly positioned as **evaluation infrastructure**: Wayve reports that policy rankings computed inside GAIA-3 correlate closely with rankings from physical road testing (a company claim, not independently verified). The trajectory GAIA-1 → GAIA-3 mirrors the field's move from "world model as data generator" to "world model as validator".
+
+---
+
+## 2025–2026: Driving Foundation Models and Reasoning VLAs
+
+### EMMA (Waymo)
+
+**EMMA** [Hwang2024EMMA] (arXiv 2410.23262) builds an E2E driving model on a Gemini-based multimodal LLM. Camera images go in; all other inputs (navigation command, ego history) and outputs (planner trajectory waypoints, 3D boxes, road-graph polylines) are serialised as **plain text**. Task selection is done by prompting. EMMA reported state-of-the-art motion planning on nuScenes and competitive results on the Waymo Open Motion Dataset and camera-only 3D detection on WOD. Joint training on planning, detection and road-graph tasks improved all three, echoing UniAD's multi-task finding inside an MLLM. Its stated limitations (few frames, no LiDAR/radar, high inference cost) define the agenda for production-grade VLAs.
+
+### Alpamayo-R1 / Alpamayo 1 (NVIDIA)
+
+**Alpamayo-R1** [Wang2025Alpamayo] (arXiv 2511.00088) targets the long tail with explicit causal reasoning:
+
+- **Chain of Causation (CoC) dataset**: decision-grounded, causally linked reasoning traces produced by a hybrid auto-labeling + human-in-the-loop pipeline.
+- **Architecture**: a **Cosmos-Reason** VLM backbone (NVIDIA's physical-AI reasoning VLM) produces reasoning, and a **diffusion-based trajectory decoder** generates dynamically feasible plans in real time.
+- **Training**: SFT for reasoning, then **RL post-training** that rewards reasoning quality and reasoning-action consistency.
+- **Reported results**: up to 12% better planning accuracy on hard cases vs. a trajectory-only baseline; 35% fewer close encounters in closed-loop simulation; RL improves reasoning quality by 45% and reasoning-action consistency by 37%; on-vehicle road tests at 99 ms latency.
+
+At CES (5 January 2026) NVIDIA released the family openly as **Alpamayo 1**, a 10B-parameter VLA with weights on Hugging Face. It is intended as a *teacher* to be fine-tuned and distilled into on-vehicle stacks, and ships together with the **AlpaSim** closed-loop simulator and >1,700 h of open driving data.
+
+### Language-Grounded Closed-Loop Driving: SimLingo
+
+**SimLingo** [Renz2025SimLingo] (CVPR 2025) is a camera-only VLA for CARLA. It jointly performs driving, VQA and instruction following, and introduces "Action Dreaming" to enforce *alignment between language instructions and actions*. Its predecessor CarLLaVA won the 2024 CARLA Autonomous Driving Challenge, the first time a VLM-based driver topped the official closed-loop leaderboard.
+
+### Latent Reasoning and Production VLAs
+
+Explicit text reasoning is expensive at 10–30 Hz. A 2026 trend is **latent or one-step reasoning**: the model reasons in a compact latent space and decodes language only on demand for explanation. Examples include Xiaomi's OneVL (arXiv 2604.18486) and TacitVLA (arXiv 2610.17540), alongside work on accelerating Alpamayo 1's trajectory generation (arXiv 2605.08975). In production, XPeng's **VLA 2.0** integrates perception, reasoning and action in a single model and removes the intermediate language layer to cut latency. It runs vision-only on in-house Turing chips (robotaxi road tests from March 2026; global deliveries planned for 2027). **Li Auto** ships a VLA driver model (MindVLA lineage). **Huawei** ADS 4 instead adopts a **World Engine + World Action (WEWA)** design that maps sensors directly to actions, with no language bottleneck. A cloud diffusion "world engine" generates hard scenarios for training; Huawei claims about 50% lower end-to-end latency, 20% higher traffic efficiency and 30% fewer hard-braking events (company figures).
+
+---
+
+## Diffusion and Multi-Modal Planners
+
+Imitation with an L2/L1 regression head averages over modes (e.g., "pass left" and "pass right" average into a collision). Two families address this:
+
+- **Scoring a trajectory vocabulary.** **Hydra-MDP** [Li2024HydraMDP] (NVIDIA) scores a large fixed vocabulary of candidate trajectories with multiple heads. Each head is distilled from a rule-based teacher (the PDM sub-scores: collision, drivable area, TTC, progress, comfort) as well as from human demonstrations. It won the CVPR 2024 NAVSIM challenge.
+- **Truncated diffusion.** **DiffusionDrive** [Liao2025DiffusionDrive] (CVPR 2025) denoises from an *anchored* Gaussian mixture centred on clustered trajectory anchors rather than pure noise. Only **2 denoising steps** are needed. It reaches **88.1 PDMS** on NAVSIM navtest at ~45 FPS (RTX 4090), above the TransFuser baseline (84.0).
+
+The same generative decoder now appears inside VLAs (Alpamayo-R1's diffusion decoder; flow-matching action heads borrowed from robotics, see [VLA Models](../06_robotics_and_embodied_ai/01_vla_models.md)).
+
+```
+DiffusionDrive (truncated diffusion):
+  anchors {a_k} ──► add small noise ──► x_T  (T ≪ 1000)
+  x_T ──► denoiser(BEV/scene feats, ego status) ──► x_{T-1} ──► … ──► x_0
+  x_0 + per-anchor confidence ──► select trajectory
+```
+
 ---
 
 ## Tesla FSD v12: Production End-to-End Neural Driving
@@ -133,6 +189,8 @@ Tesla FSD v12 (released early 2024) is the highest-profile production E2E AV sys
 - **Architecture**: A large transformer network; internal architectural details not published. The system involves 48 distinct neural network components [FredPope2024], though whether these are truly independent or constitute heads within a shared architecture is not publicly clarified.
 - **Training**: Imitation learning from ~10 million human driving clips; human interventions serve as negative samples; fleet data provides pseudo-labels via offline labeling. Trained on Dojo supercomputer.
 - **Capability uplift**: FSD v12 demonstrated qualitative improvements in "natural driving behavior"—smoother lane changes, better yielding, reduced abrupt braking—compared to the rule-based FSD v11. These are difficult to quantify from public data; Tesla does not publish per-maneuver evaluation metrics.
+
+**Update: FSD v13–v14 and the robotaxi (2025–2026).** FSD v14 began rolling out in October 2025, adding features such as emergency-vehicle yielding and rerouting around blocked roads. Musk had originally promised a ~10× larger network for v14. Later reporting indicates the shipped v14.x line still runs a refined "small" model (reportedly ~1B parameters), with the large model deferred to v15; these figures come from Musk statements relayed by enthusiast press, not technical documentation. Tesla's robotaxi service launched in Austin on 22 June 2025 with in-car safety monitors. **Unsupervised public rides** (no one in the car, remote monitoring) began on 22 January 2026 using a dedicated "unsupervised" FSD v14 branch, and Tesla reported unsupervised rides in Miami, Orlando and Tampa from July 2026. These are the first driverless deployments of a camera-only E2E policy, at fleet sizes far smaller than Waymo's.
 
 **Critical limitation**: Tesla does not publish formal safety statistics (miles per disengagement, accident rates per distance, comparison to human baseline) that would allow academic or regulatory evaluation. Safety claims are based on quarterly accident reports filed with NHTSA and voluntary corporate reporting.
 
@@ -156,7 +214,23 @@ $$\text{L2}(t) = \frac{1}{N}\sum_{i=1}^N \|\hat{p}_i^t - p_i^{t*}\|_2$$
 | VAD [Jiang2023] | 0.41 | 0.70 | 1.05 | 0.22% |
 | DriveVLM [Tian2024] | 0.18 | 0.34 | 0.68 | 0.27% |
 
-*Note: nuScenes open-loop planning metrics are criticized for not reflecting closed-loop driving quality; low L2 can be achieved by following the expert trajectory without safety reasoning. Treat these numbers as relative comparisons, not absolute safety indicators.*
+*Note: nuScenes open-loop planning metrics are criticized for not reflecting closed-loop driving quality; low L2 can be achieved by following the expert trajectory without safety reasoning. AD-MLP [Zhai2023] and Li et al. [Li2024EgoStatus] (CVPR 2024) showed that a model using only **ego status** (velocity, acceleration, history), with no camera input, matches or beats UniAD/VAD on these metrics. Treat these numbers as relative comparisons, not absolute safety indicators.*
+
+---
+
+## Beyond nuScenes: NAVSIM (v1/v2) and Bench2Drive
+
+### NAVSIM
+
+**NAVSIM** [Dauner2024NAVSIM] (NeurIPS 2024 Datasets & Benchmarks) sits between open-loop and full closed-loop evaluation. Built on OpenScene (a redistribution of nuPlan), it runs a **non-reactive simulation** of the planned 4 s trajectory using an LQR controller and a kinematic bicycle model. It scores the result with the **PDM Score (PDMS)**, which aggregates rule-based sub-metrics:
+
+$$\text{PDMS} = \underbrace{\text{NC} \times \text{DAC}}_{\text{multiplicative penalties}} \times \frac{5\,\text{TTC} + 2\,\text{C} + 5\,\text{EP}}{12}$$
+
+Here NC is no at-fault collision, DAC drivable-area compliance, TTC time-to-collision, C comfort and EP ego progress. The `navtest` split filters out trivial scenes (e.g., constant-velocity-solvable), which removes much of the ego-status shortcut. **NAVSIM v2** ("pseudo-simulation", CoRL 2025) adds synthetic follow-up observations, rendered with 3D Gaussian splatting from perturbed start states, so a planner is scored on how it *recovers* from its own deviations. It also introduces the **Extended PDM Score (EPDMS)**, which adds terms for lane keeping, driving-direction compliance, traffic-light compliance and extended comfort. Since 2024 NAVSIM has served as the benchmark for the end-to-end driving track of the CVPR Autonomous Grand Challenge.
+
+### Bench2Drive
+
+**Bench2Drive** [Jia2024Bench2Drive] (NeurIPS 2024 Datasets & Benchmarks) is a closed-loop benchmark in CARLA v2. It has an official training set of ~2M annotated frames, and evaluation covers **220 short routes** across **44 interactive scenarios** (cut-ins, overtaking, detours, emergency braking, give-way). Metrics are Driving Score, Success Rate, Efficiency, Comfortness and per-ability "Multi-Ability" scores. Its baseline results exposed how weak 2023 nuScenes-trained E2E stacks are in closed loop: UniAD-Base reached a Driving Score of 45.81 and VAD 42.35, below expert-distillation methods such as ThinkTwice and DriveAdapter. Since then VLM-based and diffusion-based planners (SimLingo, and many 2025 methods) have pushed Bench2Drive scores substantially higher. The benchmark is now the default closed-loop check for academic E2E papers.
 
 ---
 
@@ -172,6 +246,14 @@ $$\text{L2}(t) = \frac{1}{N}\sum_{i=1}^N \|\hat{p}_i^t - p_i^{t*}\|_2$$
 | CILRS | Codevilla et al. | 2019 | ICCV | Conditional imitation learning; established E2E benchmark |
 | ST-P3 | Hu et al. | 2022 | ECCV | First camera-only E2E planning on nuScenes; BEV + safety cost |
 | DriveLM | Sima et al. | 2024 | ECCV | Graph VQA for driving; language-grounded E2E planning |
+| EMMA | Hwang et al. (Waymo) | 2024 | arXiv 2410.23262 | Gemini-based MLLM driving; trajectories, boxes and road graph as text |
+| Hydra-MDP | Li et al. (NVIDIA) | 2024 | arXiv / CVPR 2024 challenge | Multi-target distillation from rule-based scorers; NAVSIM challenge winner |
+| NAVSIM | Dauner et al. | 2024 | NeurIPS (D&B) | Non-reactive simulation benchmark; PDM Score |
+| Bench2Drive | Jia et al. | 2024 | NeurIPS (D&B) | Multi-ability closed-loop E2E benchmark in CARLA v2 |
+| GAIA-2 | Russell et al. (Wayve) | 2025 | arXiv 2503.20523 | Multi-camera controllable latent-diffusion world model |
+| DiffusionDrive | Liao et al. | 2025 | CVPR | Truncated diffusion planner; 88.1 PDMS on NAVSIM at real-time speed |
+| SimLingo | Renz et al. | 2025 | CVPR | Camera-only VLA with language-action alignment; CARLA challenge lineage |
+| Alpamayo-R1 | Wang et al. (NVIDIA) | 2025 | arXiv 2511.00088 | Reasoning VLA (Chain of Causation + RL); released openly as Alpamayo 1 (10B) |
 
 ---
 
@@ -183,7 +265,11 @@ $$\text{L2}(t) = \frac{1}{N}\sum_{i=1}^N \|\hat{p}_i^t - p_i^{t*}\|_2$$
 | VAD | nuScenes val | Planning L2 @3s | 1.05 m | Vectorized; faster inference |
 | DriveVLM | nuScenes val | Planning L2 @3s | 0.68 m | VLM reasoning; best on standard metrics |
 | Transfuser | CARLA Town05 | Route completion | 54.5% | Camera + LiDAR fusion |
-| UniAD | nuScenes val | Avg collision rate | 0.12% | Lowest collision rate published |
+| UniAD | nuScenes val | Avg collision rate | 0.12% | Lowest among 2023 E2E methods; ego-status caveat applies |
+| TransFuser | NAVSIM navtest | PDMS | 84.0 | NAVSIM reference baseline |
+| DiffusionDrive | NAVSIM navtest | PDMS | 88.1 | 2-step truncated diffusion; ~45 FPS |
+| UniAD-Base | Bench2Drive | Driving Score | 45.81 | Closed-loop; Bench2Drive paper baseline |
+| VAD | Bench2Drive | Driving Score | 42.35 | Closed-loop; Bench2Drive paper baseline |
 
 ---
 
@@ -208,7 +294,10 @@ $$\text{L2}(t) = \frac{1}{N}\sum_{i=1}^N \|\hat{p}_i^t - p_i^{t*}\|_2$$
 - **VLM latency for real-time control**: Large VLMs (7B+ parameters) cannot run at real-time inference rates on automotive hardware; the DriveVLM dual-system approach is a workaround, not a solution. Hardware-efficient VLM architectures for AV are needed.
 - **Safety certification of neural policies**: No accepted methodology exists for formally bounding the probability of catastrophic failure of a large neural network policy. This is the central obstacle to L4 deployment without human oversight.
 - **Multi-agent interaction modeling**: Current E2E systems model other agents as obstacles to avoid rather than rational agents with goals; explicit theory-of-mind and multi-agent game-theoretic planning is nascent.
-- **Reward signal for RL-based E2E**: Imitation learning converges to average behavior; RL can optimize for safety-critical scenarios but requires a reliable reward signal. World models like GAIA-1 as RL environments are a promising but immature direction.
+- **Reward signal for RL-based E2E**: Imitation learning converges to average behavior; RL can optimize for safety-critical scenarios but requires a reliable reward signal. World models like GAIA-1 as RL environments are a promising but immature direction. By 2026, RL post-training of VLAs (Alpamayo-R1) and world-model-based evaluation (GAIA-3, AlpaSim) have made this mainstream, but reward hacking against imperfect simulators is a live concern.
+- **Faithfulness of reasoning**: Reasoning VLAs output human-readable causal explanations, but 2026 studies probe whether these explanations actually determine the trajectory. Examples are *"Is VLA Reasoning Faithful? Probing Safety of Chain-of-Causation"* (arXiv 2605.17268), and *"Lost in Fog"* (arXiv 2605.21446), which finds that sensor perturbations expose reasoning fragility. Unfaithful explanations are worse than none for safety cases.
+- **Reasoning latency vs. benefit**: Explicit chain-of-thought adds hundreds of tokens per decision. Whether latent or one-step reasoning (OneVL, TacitVLA) keeps the long-tail gains without the latency is unresolved.
+- **Benchmark saturation and validity**: NAVSIM navtest and Bench2Drive scores rose rapidly in 2025. Pseudo-simulation (NAVSIM v2) and generative-world-model evaluation aim to close the remaining gap to reactive closed-loop testing, but none is yet validated against real-world safety outcomes.
 
 ---
 
@@ -220,3 +309,9 @@ $$\text{L2}(t) = \frac{1}{N}\sum_{i=1}^N \|\hat{p}_i^t - p_i^{t*}\|_2$$
 - [OpenDriveLab/UniAD GitHub](https://github.com/OpenDriveLab/UniAD) — official code
 - [arXiv:2401.08658 E2E Planning Survey 2022-2023](https://arxiv.org/abs/2401.08658) — comprehensive survey
 - [Wayve scaling GAIA-1 blog post](https://wayve.ai/thinking/scaling-gaia-1/) — 9B parameter results
+- [arXiv:2410.23262 EMMA](https://arxiv.org/abs/2410.23262) — Waymo MLLM-based E2E driving
+- [arXiv:2511.00088 Alpamayo-R1](https://arxiv.org/abs/2511.00088) — reasoning VLA with Chain of Causation
+- [arXiv:2503.20523 GAIA-2](https://arxiv.org/abs/2503.20523) — multi-camera controllable world model
+- [NAVSIM GitHub](https://github.com/autonomousvision/navsim) — benchmark code, v1/v2 and leaderboards
+- [Bench2Drive GitHub](https://github.com/Thinklab-SJTU/Bench2Drive) — closed-loop multi-ability benchmark
+- [DiffusionDrive GitHub](https://github.com/hustvl/DiffusionDrive) — truncated diffusion planner

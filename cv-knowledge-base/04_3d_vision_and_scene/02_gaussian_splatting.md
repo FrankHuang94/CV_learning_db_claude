@@ -1,8 +1,15 @@
 # 3D Gaussian Splatting: Real-Time Novel View Synthesis
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
 > **Related Sections:** [NeRF and Variants](./01_nerf_and_variants.md) · [3D Representations](./00_3d_representations.md) · [4D and Dynamic Scenes](../12_research_frontier_2024_2026/05_4d_and_dynamic_scenes.md)
+
+> **🆕 October 2026 update:**
+> - **Feed-forward 3DGS** matured: AnySplat (SIGGRAPH Asia 2025) predicts Gaussians and poses from unposed images. Depth Anything 3 and WorldMirror (ICML 2026) add Gaussian heads to universal geometry models. Apple's SHARP (Dec 2025) produces metric 3D Gaussians from a single photo in under a second.
+> - **Beyond splatting**: NVIDIA's 3DGRT (ray tracing) and 3DGUT (CVPR 2025 Oral) support distorted/rolling-shutter cameras and secondary rays. 3DGUT ships in `gsplat`, which by 2026 also offers MCMC densification (3DGS-MCMC, NeurIPS 2024 Spotlight), multi-GPU rendering and LiDAR rasterization.
+> - **Standardization**: the Khronos `KHR_gaussian_splatting` glTF extension was ratified, and web renderers such as World Labs' Spark support it.
+> - **ECCV 2026 Best Paper** (HKTex) carries the Gaussian-primitive idea onto mesh surfaces as non-splatting "geodesic Gaussians". CVPR 2026 Best Paper D4RT advances feed-forward dynamic 4D reconstruction.
+> - New section, Key Papers rows, Benchmark rows, Open Problems and Further Reading added.
 
 ---
 
@@ -146,6 +153,59 @@ Yi-Hua Huang, Yang-Tian Sun et al. (CVMI Lab / Ant Research) propose a more stru
 
 ---
 
+## 2025–2026 Advances
+
+### Optimization: 3DGS as MCMC [Kheradmand2024, NeurIPS 2024 Spotlight]
+
+Kheradmand, Rebain, Sharma, Sun, Tseng, Isack, Kar, Tagliasacchi and Yi reinterpret the heuristic clone/split/prune rules of Adaptive Density Control as **Stochastic Gradient Langevin Dynamics** sampling. The Gaussians are treated as samples from a distribution proportional to scene evidence. Densification becomes "relocation" of low-opacity Gaussians to high-opacity locations, governed by a hard cap on the number of Gaussians, and noise is injected into positions.
+
+```
+# 3DGS-MCMC update (schematic)
+μ_k ← μ_k - λ_lr ∇_{μ_k} L  +  λ_noise · σ(α_k) · ε ,   ε ~ N(0, Σ_k)
+# σ(α_k): noise gated to dead / low-opacity Gaussians
+# Dead Gaussians (α_k < ε) are relocated to sampled live Gaussians; total N ≤ N_max
+```
+
+The result is robustness to initialization (random init works), an explicit memory budget, and fewer floaters. By 2026, MCMC densification is a standard strategy in `gsplat` alongside the original ADC.
+
+### Rendering: Ray Tracing and Unscented Transforms (NVIDIA)
+
+- **3DGRT** [MoenneLoccoz2024, SIGGRAPH Asia 2024]: ray-traces Gaussian particles using bounding meshes and hardware BVH traversal. This enables reflections, refractions, shadows and arbitrary camera models, at a cost in speed relative to rasterization.
+- **3DGUT** [Wu2025, CVPR 2025 Oral]: replaces the EWA-style local-affine projection $\Sigma' = J W \Sigma W^T J^T$ with an **unscented transform**. Sigma points of each 3D Gaussian are projected through the exact (possibly non-linear, time-dependent) camera model, and a 2D Gaussian is re-fitted to them. Rasterization speed is kept, while fisheye, strong lens distortion and **rolling-shutter** sensors (critical for autonomous-driving and robotics data) are supported. A hybrid "3DGRUT" renders primary rays by 3DGUT and secondary rays by 3DGRT.
+
+```
+# Unscented projection of a 3D Gaussian N(μ, Σ) through camera model π(·)
+Sigma points: x_0 = μ ;  x_{±i} = μ ± sqrt((n+λ) Σ)_i ,  i = 1..n (n = 3)
+Project:      y_j = π(x_j)              ← any distortion / rolling-shutter model
+Refit:        μ' = Σ_j w_j y_j ;  Σ' = Σ_j w_j (y_j - μ')(y_j - μ')^T
+```
+
+3DGUT was integrated into `gsplat` in April 2025. Through 2026, `gsplat` (Apache-2.0) added orthographic 3DGUT, multi-GPU dense rendering, sparse active-tile rasterization, LiDAR rasterization and new pinhole/fisheye/FTheta camera models. It has effectively become the reference training library for the field.
+
+### Feed-Forward Gaussian Splatting
+
+Per-scene optimization (30–60 min) is increasingly replaced, or initialized, by networks that output Gaussians directly:
+
+- **AnySplat** [AnySplat2025, SIGGRAPH Asia 2025 / ACM TOG]: takes a set of *uncalibrated, unposed* images. A transformer geometry encoder with three heads predicts Gaussian parameters, depth and camera poses. A differentiable voxelization module merges pixel-aligned Gaussians into voxelized ones, and geometry is supervised with pseudo-labels from a pretrained VGGT. Earlier pose-free work includes NoPoSplat.
+- **Depth Anything 3** [Lin2026, ICLR 2026] (ByteDance Seed) and **WorldMirror** [WorldMirror2025, ICML 2026] (Tencent Hunyuan) add 3D-Gaussian outputs to universal any-view geometry models. Cameras, depth, normals and splats come out of one forward pass, and WorldMirror can additionally accept optional pose, intrinsics or depth priors.
+- **SHARP** [Apple, arXiv 2512.10685, "Sharp Monocular View Synthesis in Less Than a Second"] regresses a *metric* 3D Gaussian scene from a single photograph in one forward pass (<1 s on a standard GPU), renderable in real time for nearby viewpoints. The authors report 25–34% lower LPIPS and 21–43% lower DISTS than the best prior model, with zero-shot generalization across datasets.
+
+This connects 3DGS directly to the feed-forward reconstruction wave described in [03_sfm_and_slam.md](./03_sfm_and_slam.md). VGGT-style backbones provide geometry, and light heads turn it into splats.
+
+### Standardization and Deployment
+
+The Khronos Group ratified the **`KHR_gaussian_splatting`** glTF 2.0 extension, with contributors from Cesium, Niantic Spatial, Esri, NVIDIA, Huawei, Autodesk and independent developers. Splats are stored as a `POINTS` primitive with `POSITION`, quaternion `ROTATION`, linear `SCALE`, linear `OPACITY` and SH coefficients of degree 0–3, so 3DGS assets can move between geospatial (Cesium, Esri), AR and DCC tools. On the web, World Labs' open-source **Spark** renderer (THREE.js, MIT) renders PLY/SPZ/SPLAT/KSPLAT/SOG splats alongside meshes, including on mobile GPUs.
+
+### Gaussians That Do Not Splat: HKTex (ECCV 2026 Best Paper)
+
+**Heat Kernel Textures** [Foti2026] (Foti, Korkmaz, Zafeiriou, Birdal; Imperial College London) won the ECCV 2026 Best Paper Award. Its idea mirrors 3DGS: an adaptively densified and pruned set of learnable Gaussian-like primitives fitted from images. The primitives, however, live *intrinsically on a triangle mesh* as anisotropic heat kernels (geodesic Gaussians) and are never splatted to the image plane. This removes UV unwrapping, seams and texel-density distortion for mesh textures. See [00_3d_representations.md](./00_3d_representations.md) for the formulation.
+
+### Dynamic Scenes: Towards Feed-Forward 4D
+
+The CVPR 2026 Best Paper, **"Efficiently Reconstructing Dynamic Scenes One D4RT at a Time"** (Google DeepMind, UCL, Oxford), trains a single transformer to jointly infer depth, spatio-temporal correspondence and camera parameters from a video of a dynamic scene. This points toward replacing per-clip 4D-GS optimization with feed-forward 4D reconstruction. Details are in [4D and Dynamic Scenes](../12_research_frontier_2024_2026/05_4d_and_dynamic_scenes.md).
+
+---
+
 ## Robotics: LangSplat and Spatial Reasoning
 
 The combination of 3DGS's real-time rendering with semantic features has opened new avenues for embodied AI. LangSplat enables robots to perform open-vocabulary 3D spatial queries without needing to re-render the scene. Follow-on works embed additional features: affordance fields for grasping, instance segmentation (Gaussian Grouping), and occupancy for navigation. The explicit Gaussian primitive structure also enables physical simulation integration — Gaussians can be associated with rigid or deformable body parts for manipulation planning.
@@ -164,6 +224,12 @@ The combination of 3DGS's real-time rendering with semantic features has opened 
 | 4D Gaussian Splatting for Real-Time Dynamic Scene Rendering | Wu, Yi, Fang, Xie, Zhang et al. | 2023 | arXiv (CVPR 2024) | Temporal deformation field over canonical Gaussians; ~80 FPS dynamic scenes |
 | SC-GS: Sparse-Controlled Gaussian Splatting for Editable Dynamic Scenes | Huang, Sun, Yang, Lyu, Cao, Qi | 2024 | CVPR | Sparse control points + dense Gaussian interpolation; editable dynamic scenes |
 | DreamGaussian: Generative Gaussian Splatting for Efficient 3D Content Creation | Tang, Ren et al. | 2023 | ICLR 2024 Oral | 3DGS as optimization target for text/image-to-3D; 2-min generation |
+| 3D Gaussian Splatting as Markov Chain Monte Carlo | Kheradmand, Rebain, Sharma, Sun, Tseng, Isack, Kar, Tagliasacchi, Yi | 2024 | NeurIPS (Spotlight) | SGLD view of densification; relocation + Gaussian budget; robust to init |
+| 3D Gaussian Ray Tracing (3DGRT) | Moenne-Loccoz et al. (NVIDIA) | 2024 | SIGGRAPH Asia | Hardware ray tracing of Gaussian particles; secondary rays |
+| 3DGUT: Enabling Distorted Cameras and Secondary Rays in Gaussian Splatting | Wu et al. (NVIDIA) | 2025 | CVPR (Oral) | Unscented-transform projection; fisheye and rolling-shutter in rasterization |
+| AnySplat: Feed-forward 3D Gaussian Splatting from Unconstrained Views | InternRobotics group (authors per repo) | 2025 | SIGGRAPH Asia (TOG) | Pose-free feed-forward Gaussians + cameras from uncalibrated image sets |
+| Sharp Monocular View Synthesis in Less Than a Second (SHARP) | Apple | 2025 | arXiv | Single image → metric 3D Gaussians in <1 s; 25–34% lower LPIPS vs prior best |
+| Heat Kernel Textures: the Geodesic Gaussians That Do Not Splat | Foti, Korkmaz, Zafeiriou, Birdal | 2026 | ECCV (Best Paper) | Intrinsic heat-kernel "Gaussians" on meshes; UV-free textures |
 
 ---
 
@@ -178,6 +244,8 @@ The combination of 3DGS's real-time rendering with semantic features has opened 
 | 2DGS | DTU | Chamfer Distance | 0.48 mm | Surface reconstruction; better than NeRF-based methods |
 | LangSplat | LERF Benchmark | Relevancy@1 | not publicly reported | Qualitative improvements over LERF |
 | 4D-GS (Wu et al.) | Neural 3D Video | PSNR | 31.97 dB | Dynamic; ~80 FPS |
+| SHARP | Multiple datasets (zero-shot) | LPIPS / DISTS | −25–34% / −21–43% vs best prior | Single image; <1 s; authors' claim |
+| EVER (ray-traced ellipsoids) | Zip-NeRF dataset | — | SOTA among real-time methods (authors' claim) | ~30 FPS at 720p, RTX 4090 |
 
 ---
 
@@ -188,6 +256,8 @@ The combination of 3DGS's real-time rendering with semantic features has opened 
 | Speed and Quality | Real-time 100+ FPS at 1080p; PSNR comparable to Mip-NeRF 360; fast 30–60 min training | Per-scene optimization; large memory (hundreds of MB to GB per scene) |
 | Geometry | Explicit primitives; editable; easy to integrate with physics; anchoring to surfaces possible | No explicit surface normals by default; floaters and needle Gaussians in textureless areas |
 | Extensibility | Rich ecosystem; easy to attach semantic/language features; dynamic extensions well-developed | Aliasing at different zoom levels (addressed by Mip-Splatting); limited topology handling |
+| Feed-forward 3DGS (AnySplat, DA3, SHARP) | Seconds or less; pose-free; scalable to casual capture | Lower fidelity than per-scene optimization; view extrapolation limited; pixel-aligned redundancy |
+| Interoperability (2026) | Ratified glTF extension; mature libraries (gsplat) and web renderers (Spark) | Compression/LOD/streaming not yet standardized; SH-heavy files remain large |
 
 ---
 
@@ -195,7 +265,8 @@ The combination of 3DGS's real-time rendering with semantic features has opened 
 
 - **Memory compression:** A typical 3DGS scene with 3M Gaussians stores ~60 bytes per Gaussian = ~180 MB uncompressed. For AR/VR streaming, this is prohibitive. Compact representations (vector quantization, pruning, neural compression) are active research.
 - **Surface quality:** While 2DGS improves surface reconstruction, the Gaussian primitive is fundamentally a density not a surface. Tight coupling of 3DGS to mesh topology (e.g., Gaussian Mesh Splatting) remains an open problem.
-- **Generalizable 3DGS:** Like NeRF, 3DGS requires per-scene optimization. Feed-forward 3DGS prediction (Splatter Image, pixelSplat, MVSplat) is an emerging direction that predicts Gaussian parameters from images without optimization.
+- **Generalizable 3DGS:** Like NeRF, 3DGS requires per-scene optimization. Feed-forward 3DGS prediction (Splatter Image, pixelSplat, MVSplat) began as an emerging direction. By 2025–2026, pose-free and single-image variants (AnySplat, DA3, WorldMirror, SHARP) produce usable splats in seconds or less. Remaining gaps: matching per-scene optimized fidelity, handling large view extrapolation, and avoiding redundant pixel-aligned Gaussians.
+- **Camera-model generality:** 3DGUT/3DGRT handle distorted and rolling-shutter cameras. Jointly calibrating such models while training, and doing so in feed-forward predictors, is still open.
 - **Long-duration dynamic scenes:** Current dynamic 3DGS methods (4D-GS, SC-GS) work on short clips (seconds). Hours-long or streaming scene recording requires online/incremental Gaussian management.
 - **Semantic field integration:** LangSplat and related methods are beginning to answer open-vocabulary spatial queries, but combining semantics, physics, and real-time rendering in a single Gaussian field remains challenging.
 - **Multi-scale rendering:** Rendering a 3DGS scene at very different zoom levels (from satellite to centimeter) without quality degradation requires hierarchical Gaussian representations analogous to mipmaps.
@@ -211,3 +282,11 @@ The combination of 3DGS's real-time rendering with semantic features has opened 
 - [Mip-Splatting GitHub (Autonomous Vision)](https://github.com/autonomousvision/mip-splatting) — code and CVPR 2024 Best Student Paper materials
 - [LangSplat Project Page](https://langsplat.github.io/) — language-embedded Gaussian splatting
 - [4DGS Project Page (Wu et al.)](https://guanjunwu.github.io/4dgs/) — dynamic Gaussian splatting with videos
+- [gsplat (nerfstudio)](https://github.com/nerfstudio-project/gsplat) — reference CUDA library; 3DGUT, MCMC, multi-GPU
+- [3DGRUT GitHub (NVIDIA)](https://github.com/nv-tlabs/3dgrut) — 3DGRT and 3DGUT implementations
+- [3DGS-MCMC GitHub (UBC)](https://github.com/ubc-vision/3dgs-mcmc) — NeurIPS 2024 Spotlight code
+- [AnySplat GitHub](https://github.com/InternRobotics/AnySplat) — pose-free feed-forward Gaussians
+- [SHARP GitHub (Apple)](https://github.com/apple/ml-sharp) — single-image metric Gaussians in <1 s
+- [KHR_gaussian_splatting (Khronos glTF)](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_gaussian_splatting) — ratified interchange format
+- [Spark (World Labs)](https://github.com/sparkjsdev/spark) — THREE.js Gaussian splat renderer
+- [HKTex GitHub](https://github.com/circle-group/hktex) — ECCV 2026 Best Paper code

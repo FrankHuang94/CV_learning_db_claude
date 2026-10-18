@@ -1,12 +1,18 @@
 # 4D and Dynamic Scene Reconstruction
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Research Frontier
 > **Related Sections:**
 > - [3D Gaussian Splatting](../04_3d_vision_and_scene/02_gaussian_splatting.md)
 > - [World Models for Robotics](../06_robotics_and_embodied_ai/02_world_models.md)
 > - [Perception for Robotics](../06_robotics_and_embodied_ai/08_perception_for_robotics.md)
 > - [Future Trends](./07_future_trends.md)
+
+> **🆕 October 2026 update:**
+> - Added **D4RT** (Google DeepMind / UCL / Oxford), the **CVPR 2026 Best Paper**: a feed-forward, query-based model that jointly recovers depth, 3D correspondence and full camera parameters from a single video.
+> - New section on **feed-forward 4D reconstruction** (MonST3R, CUT3R, MegaSaM, Stereo4D, St4RTrack, SpatialTrackerV2) and the multi-view geometry foundation models it builds on (VGGT, π³, MapAnything, Depth Anything 3, **VGGT-Ω**, a CVPR 2026 Best Paper finalist).
+> - Updated 4D generation with CAT4D and NVIDIA Lyra / Lyra 2.0, and linked it to interactive world models (Genie 3, World Labs Marble, Cosmos 3).
+> - Extended Key Papers, Benchmark, Pros & Cons, Open Problems and Further Reading accordingly.
 
 ---
 
@@ -17,6 +23,8 @@ Dynamic scene reconstruction — recovering both geometry and motion from video 
 The "4D" framing unifies the three spatial dimensions with time as a fourth axis, demanding that representations be both spatially continuous and temporally coherent. Two broad families have emerged: (1) **deformation-field methods**, which learn a canonical 3D representation plus a time-conditioned warp field mapping observations into a shared canonical space, and (2) **native 4D representations**, which model all four dimensions jointly, typically via 4D neural voxel grids or 4D Gaussian primitives. The former achieves high fidelity but can struggle with topological changes (e.g., hands separating); the latter handles topology changes more gracefully but requires careful regularization to avoid degenerate solutions.
 
 The connection to robotics and world models is direct and high-stakes: a robot manipulating objects, navigating a crowd, or planning over a dynamic environment must model how the world changes — both from external dynamics and from the robot's own actions [SzegedyWorldModel23]. Differentiable 4D representations that can be queried for future states, edited, or composed with physics simulators represent the natural bridge between passive scene reconstruction and active world modeling. As of 2025–2026, this intersection — neural 4D representations that are physically grounded, real-time capable, and robotics-deployable — is the dominant open frontier.
+
+The biggest methodological change since 2024 is a shift from **per-scene optimization** (fit a deformation field or 4D Gaussians to each video, minutes to hours per clip) to **feed-forward 4D reconstruction**: large transformers trained across many datasets that regress depth, camera poses and dense 3D motion for a new video in a single forward pass. This trend, seeded by DUSt3R-style pointmaps and accelerated by VGGT (CVPR 2025 Best Paper), culminated in **D4RT** receiving the **CVPR 2026 Best Paper Award** — the second consecutive year that CVPR's top award went to feed-forward geometric reconstruction. Optimization-based dynamic Gaussians remain the tool of choice for high-fidelity novel-view rendering, while feed-forward models increasingly provide their initialization (cameras, depth, tracks).
 
 ---
 
@@ -111,6 +119,10 @@ Beyond reconstruction from real captured video, a parallel line of work addresse
 
 **Vidu4D / Sync4D** (2024) explore single-video-to-4D pipelines where a generated monocular video from a video diffusion model is "lifted" into dynamic 3D using Gaussian surfels, closing the loop between 2D video generation and 3D reconstruction.
 
+**CAT4D** (Wu et al., CVPR 2025) converts a monocular video into multi-view videos with a multi-view video diffusion model and then reconstructs a dynamic 3D Gaussian scene from them. **NVIDIA Lyra** (ICLR 2026) performs feed-forward 3D *and* 4D scene generation from a single image or video by **self-distilling a video diffusion model** into an explicit 3D Gaussian decoder; **Lyra 2.0** (April 2026) targets explorable, long-horizon, 3D-consistent generated worlds.
+
+At the scale of whole environments, generative 4D now overlaps with **interactive world models**: Google DeepMind's **Genie 3** (August 2025) generates navigable worlds in real time at 720p / 24 fps with consistency over several minutes; World Labs' **Marble** (launched November 2025) produces persistent, exportable 3D worlds (Gaussian splats, meshes) from text, images, video or coarse 3D layouts; and NVIDIA's **Cosmos 3** (May 2026) unifies world prediction, transfer and action generation for physical AI (see [World Models for Robotics](../06_robotics_and_embodied_ai/02_world_models.md)).
+
 The emerging consensus (2025–2026) is that **video diffusion models are the preferred 4D prior**: they are trained on far more diverse real-world dynamics than any 3D-specific model and naturally encode physics and temporal coherence.
 
 ---
@@ -128,6 +140,69 @@ Recent advances (2025) include **Prior-Enhanced Gaussian Splatting** (SIGGRAPH A
 
 ---
 
+## Feed-Forward 4D Reconstruction (2025–2026)
+
+### From Static Pointmaps to Dynamic Video Geometry
+
+The DUSt3R/MASt3R family regresses per-pixel 3D *pointmaps* from image pairs. A series of 2025 papers extended this idea to dynamic video:
+
+- **MonST3R** (Zhang et al., ICLR 2025) fine-tunes DUSt3R on dynamic data to estimate time-varying point clouds plus per-frame camera poses and intrinsics in a predominantly feed-forward manner, enabling video depth and static/dynamic segmentation.
+- **CUT3R** — *Continuous 3D Perception Model with Persistent State* (Wang, Zhang, Holynski, Efros, Kanazawa; CVPR 2025 Oral) — maintains a recurrent state that is updated online with each new frame, giving streaming reconstruction of static and dynamic scenes.
+- **MegaSaM** (Li, Tucker, Cole, Wang, Jin, Ye, Kanazawa, Holynski, Snavely; CVPR 2025) — a hybrid that combines learned monocular depth priors with a differentiable bundle-adjustment camera tracker to obtain accurate, fast and robust structure and motion from casual dynamic videos (including focal-length optimization).
+- **Stereo4D** (CVPR 2025 Oral) — mines internet *stereo* videos to build a large real-world dataset of 3D motion trajectories, addressing the data bottleneck for learned dynamic geometry.
+- **St4RTrack** (ICCV 2025) — simultaneous 4D reconstruction *and* tracking in a world coordinate frame by predicting two pointmaps per frame pair, with a new WorldTrack benchmark.
+- **SpatialTrackerV2** (Xiao et al., ICCV 2025) and **Shape of Motion** (ICCV 2025 Highlight) — 3D point tracking and globally consistent 4D motion from monocular video.
+
+### Multi-View Geometry Foundation Models
+
+Static multi-view "geometry foundation models" became the backbone of dynamic methods:
+
+- **VGGT** (Wang, Chen, Karaev, Vedaldi, Rupprecht, Novotny; Oxford VGG + Meta; **CVPR 2025 Best Paper**) infers camera intrinsics/extrinsics, depth maps, point maps and 3D point tracks from one to hundreds of views within seconds.
+- **π³** (Shanghai AI Lab et al., arXiv:2507.13347) uses a fully **permutation-equivariant** architecture with no fixed reference view; **Pi3X** (Dec 2025) adds conditional injection of poses/intrinsics/depth and approximate metric scale.
+- **MapAnything** (Meta + CMU, arXiv:2509.13414, 3DV 2026) — a single feed-forward transformer for *metric* 3D reconstruction from images plus optional calibration, poses or depth, covering 12+ reconstruction tasks.
+- **Depth Anything 3** (ByteDance Seed, arXiv:2511.10647, Nov 2025) — a plain DINO transformer with a single **depth-ray** representation that recovers consistent geometry from any number of views, with or without known poses; it reports gains over DA2 (monocular) and VGGT (multi-view depth and pose), and DA3-Streaming handles ultra-long videos in < 12 GB of GPU memory.
+- **VGGT-Ω** (Oxford VGG + Meta, arXiv:2605.15195, **CVPR 2026 Best Paper Finalist**) shows that feed-forward reconstruction quality **scales predictably with model and data size**. Register tokens and *register attention* replace much of the global attention, cutting training memory to ~30% of VGGT and allowing 15× more supervised data plus large amounts of unlabeled video; it handles static and dynamic scenes and reports a **77% improvement** over the previous best camera-estimation accuracy on Sintel. Its learned registers also improve VLA policies and align with language, framing reconstruction as a scalable proxy task for spatial understanding (see [Spatial Intelligence](./06_spatial_intelligence.md)).
+
+### D4RT: Dynamic 4D Reconstruction and Tracking [Zhang2026]
+
+**Efficiently Reconstructing Dynamic Scenes One D4RT at a Time** (Zhang, Le Moing, Koppula, Rocco, Momeni, Xie, Sun, Sukthankar, Barral, Hadsell, Ghahramani, Zisserman, Zhang, Sajjadi; Google DeepMind, UCL and Oxford; arXiv:2512.08924, Dec 2025) received the **CVPR 2026 Best Paper Award**, selected from more than 16,000 submissions.
+
+**Core idea.** Earlier feed-forward models decode dense outputs for every frame through several task-specific heads (depth head, pose head, tracking head). D4RT instead **encodes the video once** with a global self-attention transformer into a latent *Global Scene Representation*, and then uses a lightweight, SRT-style decoder that can be **queried independently for the 3D position of any pixel at any time, in any camera frame**:
+
+```
+Encoder:   F = E_θ(V),              V = {I_1, ..., I_T}   (global self-attention over all frames)
+
+Query:     q = (u, v, t_src, t_tgt, t_cam) ⊕ patch_embed(I_{t_src}, u, v)
+
+Decoder:   P = D_φ(q, F) ∈ R^3       # 3D position of pixel (u,v) from frame t_src,
+                                     # at time t_tgt, expressed in camera t_cam
+
+Special cases of the same query interface:
+  depth          : t_src = t_tgt = t_cam            → per-pixel depth for each frame
+  3D tracking    : t_src fixed, t_tgt varies        → sparse/dense 3D trajectories
+  point cloud    : t_tgt = t_src, t_cam = reference → world-frame reconstruction
+  camera pose    : fit rigid transform between point sets decoded in different t_cam
+```
+
+Because queries are independent, they can be batched in parallel and only as many as needed are decoded, which makes training and inference markedly cheaper. DeepMind describes D4RT as up to **300× more efficient** than previous methods, and the paper reports state-of-the-art accuracy across depth, point-cloud, camera-pose and 3D point-tracking benchmarks. The project page demonstrates **all-pixel tracking** (holistic world-frame 4D reconstruction from the 3D tracks of every pixel) and deduplicated dynamic point clouds. As of this update, code and weights have not been publicly confirmed, which limits independent reproduction.
+
+**Why it matters.** D4RT collapses depth estimation, structure-from-motion and 3D tracking into one model with a single query interface — the 4D analogue of VGGT's unification of static 3D tasks — and makes dense 4D reconstruction of ordinary video fast enough to be a practical input to robot perception and world-model training.
+
+```mermaid
+graph LR
+    V[Input video] --> E[Global self-attention encoder]
+    E --> F[Global Scene Representation]
+    Q["Query (u, v, t_src, t_tgt, t_cam) + local patch"] --> D[Lightweight decoder]
+    F --> D
+    D --> P["3D point P"]
+    P --> T1[Depth maps]
+    P --> T2[3D tracks / all-pixel tracking]
+    P --> T3[Point clouds]
+    P --> T4[Camera poses]
+```
+
+---
+
 ## Key Papers
 
 | Paper | Authors | Year | Venue | Key Contribution |
@@ -140,6 +215,15 @@ Recent advances (2025) include **Prior-Enhanced Gaussian Splatting** (SIGGRAPH A
 | SC-GS: Sparse-Controlled Gaussian Splatting [Huang2024] | Huang, Sun, Yang, Jia, Wang, Qi | 2024 | CVPR | Sparse control points + skinning; supports interactive editing |
 | 4Real: Towards Photorealistic 4D Scene Generation [Yang4Real24] | (4Real team) | 2024 | NeurIPS | Video diffusion prior for text-to-4D; no multi-view model needed |
 | Prior-Enhanced Gaussian Splatting for Dynamic Scene Reconstruction | (SIGGRAPH Asia team) | 2025 | SIGGRAPH Asia | Depth and flow priors for monocular dynamic GS; gains on DyCheck |
+| MonST3R: A Simple Approach for Estimating Geometry in the Presence of Motion | Zhang, Herrmann, Hur, Jampani, Darrell, Cole, Sun, Yang | 2025 | ICLR | Dynamic pointmaps + per-frame poses, largely feed-forward |
+| Continuous 3D Perception Model with Persistent State (CUT3R) | Wang, Zhang, Holynski, Efros, Kanazawa | 2025 | CVPR (Oral) | Recurrent persistent state for online static/dynamic reconstruction |
+| MegaSaM | Li, Tucker, Cole, Wang, Jin, Ye, Kanazawa, Holynski, Snavely | 2025 | CVPR | Robust cameras + consistent depth from casual dynamic videos |
+| Stereo4D: Learning How Things Move in 3D from Internet Stereo Videos | (Stereo4D team) | 2025 | CVPR (Oral) | Large real-world 3D motion dataset mined from stereo video |
+| VGGT: Visual Geometry Grounded Transformer | Wang, Chen, Karaev, Vedaldi, Rupprecht, Novotny | 2025 | CVPR (Best Paper) | Feed-forward cameras, depth, points and tracks from 1–100s of views |
+| St4RTrack | (St4RTrack team) | 2025 | ICCV | Simultaneous world-frame 4D reconstruction and tracking |
+| Efficiently Reconstructing Dynamic Scenes One D4RT at a Time [Zhang2026] | Zhang, Le Moing, Koppula, Rocco, …, Zisserman, Zhang, Sajjadi | 2026 | CVPR (Best Paper) | Encode-once, query-anywhere 4D decoder: depth, tracks, poses in one model |
+| VGGT-Ω | Wang, Chen, Zhang, Karaev, Schönberger, Labatut, Bojanowski, Novotny, Vedaldi, Rupprecht | 2026 | CVPR (Best Paper Finalist) | Scaling laws for feed-forward reconstruction; register attention; static + dynamic |
+| Lyra: Generative 3D Scene Reconstruction via Video Diffusion Self-Distillation | NVIDIA Spatial Intelligence Lab | 2026 | ICLR | Feed-forward 3D/4D Gaussian scene generation from one image or video |
 
 ---
 
@@ -154,6 +238,11 @@ Recent advances (2025) include **Prior-Enhanced Gaussian Splatting** (SIGGRAPH A
 | HyperNeRF | HyperNeRF dataset | PSNR (dB) | ~23–26 (scene-dependent) | Slower than GS methods; handles topology |
 | D-NeRF | D-NeRF (synthetic) | PSNR (dB) | ~29–31 | Original baseline; NeRF-based |
 | Prior-Enhanced GS | DyCheck (monocular real) | PSNR (dB) | Not publicly reported as final number | Gains over prior monocular DGS systems |
+| VGGT-Ω | Sintel (dynamic) | Camera-estimation accuracy | +77% vs. previous best | Feed-forward; author-reported |
+| D4RT [Zhang2026] | Depth / pose / 3D tracking suites | Efficiency vs. prior methods | Up to 300× | DeepMind-reported; SOTA accuracy claimed across 4D tasks |
+| Depth Anything 3 | Multi-view depth + pose (5 datasets) | vs. VGGT | Outperforms (author-reported) | Also DA3-Streaming for long videos (< 12 GB) |
+
+*Note: feed-forward 4D reconstruction is evaluated with geometric metrics (camera ATE/RPE, depth AbsRel/δ<1.25, 3D tracking APD/AJ on TAPVid-3D-style suites) rather than rendering PSNR, so the rows above are not directly comparable with the novel-view-synthesis rows.*
 
 ---
 
@@ -166,12 +255,13 @@ Recent advances (2025) include **Prior-Enhanced Gaussian Splatting** (SIGGRAPH A
 | **Native 4D Representations (joint space-time)** | Handles topology changes; single unified model; no explicit canonical assumption | Larger memory footprint; training harder to converge; temporal regularization critical to avoid overfitting |
 | **4D Generation (text/video prior)** | No multi-view capture required; leverages large pre-trained video models; high diversity | Lacks metric accuracy; no ground-truth geometry supervision; prone to temporal inconsistencies |
 | **Monocular Reconstruction** | Practical (single camera); applicable to legacy and consumer footage | Severe depth-motion ambiguity; requires depth/flow auxiliary networks for quality results |
+| **Feed-Forward 4D Reconstruction (D4RT, VGGT-Ω, CUT3R)** | Seconds per video; unified depth, pose and tracking; scales with data; good initialization for Gaussians and world models | Geometry only (no photoreal rendering); large training compute; key models (e.g., D4RT) lack public weights; long-sequence drift persists |
 
 ---
 
 ## Open Problems & Research Gaps
 
-1. **Scalable long-sequence reconstruction.** Current methods assume clips of seconds to tens of seconds. Scene-level reconstruction over minutes or hours of video — where objects appear, disappear, deform, and interact — remains unsolved. Temporal drift in deformation fields is a key bottleneck.
+1. **Scalable long-sequence reconstruction.** Current methods assume clips of seconds to tens of seconds. Scene-level reconstruction over minutes or hours of video — where objects appear, disappear, deform, and interact — remains unsolved. Temporal drift in deformation fields is a key bottleneck. Streaming feed-forward models (CUT3R's persistent state, DA3-Streaming) reduce memory but still accumulate drift and lack loop closure for dynamic content.
 
 2. **Physics-grounded dynamics.** Learned deformation fields are purely data-driven and do not respect physical constraints (Newton's laws, contact, inertia). Integrating differentiable physics simulators (e.g., MPM, position-based dynamics) with Gaussian primitives is an active area but not yet production-quality.
 
@@ -183,7 +273,11 @@ Recent advances (2025) include **Prior-Enhanced Gaussian Splatting** (SIGGRAPH A
 
 6. **Interaction and counterfactual modeling.** Robots need not just to observe dynamics but to predict how a scene would change under a novel action. Learning action-conditioned dynamic scene models (i.e., 4D representations conditioned on robot end-effector pose) is at the intersection of this field and world models for embodied AI.
 
-7. **Evaluation benchmarks for real-world dynamic scenes.** The D-NeRF benchmark is synthetic; HyperNeRF and DyCheck are small-scale. Large-scale, diverse, real-world benchmarks with accurate ground-truth geometry and motion — comparable to ScanNet for static scenes — do not yet exist for dynamic scenes.
+7. **Evaluation benchmarks for real-world dynamic scenes.** The D-NeRF benchmark is synthetic; HyperNeRF and DyCheck are small-scale. Large-scale, diverse, real-world benchmarks with accurate ground-truth geometry and motion — comparable to ScanNet for static scenes — do not yet exist for dynamic scenes. Stereo4D and WorldTrack are steps forward, but evaluation of feed-forward 4D models still leans heavily on synthetic Sintel-style data.
+
+8. **Bridging feed-forward geometry and photoreal 4D rendering.** Feed-forward models (D4RT, VGGT-Ω) output points, depth and tracks; dynamic Gaussian methods output renderable scenes but need per-scene optimization. A single feed-forward model that produces renderable, physically plausible 4D Gaussians from casual video remains open.
+
+9. **Openness and reproducibility.** Several 2025–2026 landmark models are released without training code or weights (or under gated access), and VGGT-Ω had to publish a reproduction checkpoint to address concerns about its original benchmark checkpoint. Reproducible baselines are essential as the field moves to large-scale training.
 
 ---
 
@@ -195,3 +289,10 @@ Recent advances (2025) include **Prior-Enhanced Gaussian Splatting** (SIGGRAPH A
 - [Text-To-4D Dynamic Scene Generation (Make-A-Video3D)](https://make-a-video3d.github.io/)
 - [HyperNeRF: project page and dataset](https://hypernerf.github.io/)
 - [4DGaussians GitHub repository (Wu et al.)](https://github.com/hustvl/4DGaussians)
+- [D4RT project page (CVPR 2026 Best Paper)](https://d4rt-paper.github.io/) and [arXiv:2512.08924](https://arxiv.org/abs/2512.08924)
+- [D4RT: Teaching AI to see the world in four dimensions (Google DeepMind blog)](https://deepmind.google/blog/d4rt-teaching-ai-to-see-the-world-in-four-dimensions/)
+- [VGGT (CVPR 2025 Best Paper)](https://github.com/facebookresearch/vggt) and [VGGT-Ω (arXiv:2605.15195)](https://github.com/facebookresearch/vggt-omega)
+- [MonST3R](https://github.com/Junyi42/monst3r), [CUT3R](https://github.com/CUT3R/CUT3R), [MegaSaM](https://github.com/mega-sam/mega-sam) — feed-forward / hybrid dynamic reconstruction
+- [Depth Anything 3 (arXiv:2511.10647)](https://github.com/ByteDance-Seed/Depth-Anything-3), [π³ (arXiv:2507.13347)](https://github.com/yyfz/Pi3), [MapAnything (arXiv:2509.13414)](https://github.com/facebookresearch/map-anything)
+- [Stereo4D (arXiv:2412.09621)](https://stereo4d.github.io/) and [St4RTrack (arXiv:2504.13152)](https://st4rtrack.github.io/)
+- [NVIDIA Lyra / Lyra 2.0](https://github.com/nv-tlabs/lyra) — generative 3D/4D worlds via video diffusion self-distillation

@@ -1,8 +1,13 @@
 # Autonomous Driving Perception Stack: BEV Perception, Multi-Camera Fusion, and 3D Detection
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
 > **Related Sections:** [AV Stack Overview](./00_overview.md) · [Occupancy Prediction](./02_occupancy_prediction.md) · [End-to-End Driving](./03_end_to_end_driving.md) · [Simulation & Data](./04_simulation_and_data.md)
+
+> **🆕 October 2026 update:**
+> - New section **"2025–2026: Foundation Backbones, Sparse Queries and Perception inside Driving Foundation Models"**: DINOv3/SAM 3 as backbones and auto-labelers, Point Transformer V3 / Sonata for LiDAR, sparse long-range detectors, and EMMA-style detection as text generation.
+> - Sensor debate updated: Waymo's 6th-gen driver (13 cameras, 4 LiDARs, 6 radars), Tesla and XPeng vision-only robotaxis in testing or service, and Waymo's generative LiDAR simulation.
+> - Corrected Waymo sensor-suite and mileage figures; new Key Papers, Open Problems and Further Reading.
 
 ---
 
@@ -74,7 +79,9 @@ The production autonomy industry is divided along the sensor axis:
 
 **Camera-only (Tesla)**: Tesla argues that human drivers navigate solely with cameras, and therefore cameras with sufficient scale of training data are sufficient. FSD v12 processes eight cameras through a large transformer backbone, with no LiDAR at any stage. The system has been trained on **10 million video clips** [Tesla2024] and demonstrates emergent generalization. The critical engineering advantage is cost: a production LiDAR adds $200–$2,000+ to BOM. The key scientific weakness is **metric depth ambiguity**: any monocular depth estimate has an inherent scale ambiguity that can only be resolved by multi-frame temporal fusion or geometry priors, introducing failure modes in rapid depth-change scenarios (e.g., cut-ins, sudden stops).
 
-**LiDAR-primary (Waymo)**: Waymo's sensor suite includes five LiDARs and five cameras per vehicle. LiDAR provides unambiguous metric 3D coordinates, velocity estimates via Doppler, and 360° coverage at 10 Hz. Waymo's public safety data reports 7.1 million fully autonomous miles with significant injury-free operation [Waymo2023Safety]. The principal disadvantage is that LiDAR hardware costs and mechanical reliability constrain fleet scalability.
+**LiDAR-primary (Waymo)**: Waymo's 5th-generation driver (Jaguar I-PACE) carries 5 LiDARs, 29 cameras and 6 radars. The 6th-generation driver (announced 2024, on Zeekr and Hyundai Ioniq 5 platforms) reduces this to 13 cameras, 4 LiDARs and 6 radars to cut cost while keeping overlapping redundancy. LiDAR provides unambiguous metric 3D coordinates and 360° coverage at 10 Hz; FMCW LiDARs can add per-point radial velocity. Waymo's public safety data grew from 7.1 million rider-only miles [Waymo2023Safety] to ~96 million by June 2025. In 2026 Waymo operated about 500k paid rides per week. The historic disadvantage, LiDAR cost and mechanical reliability, has eroded as automotive LiDAR prices fall, especially with Chinese suppliers such as Hesai and RoboSense.
+
+**2026 status of the debate.** The question has shifted from *"can cameras perceive well enough?"* to *"can a camera-only stack reach driverless reliability at fleet scale?"*. Tesla began unsupervised robotaxi rides in Austin in January 2026, and XPeng's VLA 2.0 robotaxi (no LiDAR, no HD map) entered public-road testing in March 2026. Waymo, Zoox, Baidu, Pony.ai and WeRide all keep LiDAR. No camera-only operator has yet published driverless safety data comparable to Waymo's.
 
 The benchmark evidence on nuScenes clearly shows LiDAR-camera fusion outperforming camera-only by **15–20 NDS points** at comparable architectural complexity, suggesting that metric depth is genuinely useful signal for perception. However, this gap may narrow as camera depth estimation improves with larger training datasets.
 
@@ -115,6 +122,18 @@ Long-range perception (>100 m camera detection) requires careful handling of per
 
 ---
 
+## 2025–2026: Foundation Backbones, Sparse Queries and Perception inside Driving Foundation Models
+
+**Vision foundation backbones.** Self-supervised backbones now dominate initialisation. DINOv2 and **DINOv3** (Meta, August 2025; a 7B-parameter teacher with Gram anchoring for dense features, distilled into ViT/ConvNeXt variants) give strong frozen dense features for depth, segmentation and BEV lifting. Driving-specific variants are typically obtained by continued pre-training on fleet video. Promptable open-vocabulary segmenters (**SAM 3**, Meta, November 2025, segmenting all instances of a noun-phrase concept) are mainly used **offline**, as auto-labelers for long-tail categories (debris, construction equipment, animals), not on the vehicle.
+
+**LiDAR backbones.** Point Transformer V3 [Wu2024PTv3] (CVPR 2024) trades exact neighbourhood search for serialised (space-filling-curve) point ordering. It reaches strong results on nuScenes and Waymo segmentation and detection at much higher throughput. **Sonata** [Wu2025Sonata] (CVPR 2025) provides self-supervised point-cloud pre-training on top of PTv3, offering a "DINO for point clouds" for label-efficient LiDAR perception.
+
+**Sparse and long-range camera detection.** The dense-BEV paradigm is giving way to **fully sparse query** detectors (SparseBEV, Sparse4D v3, StreamPETR), which avoid the $O(HW)$ BEV grid. Far3D [Jiang2024Far3D] (AAAI 2024) extends camera detection to ~150 m on Argoverse 2 by generating 3D queries from 2D detections and depth priors. Sparse queries also integrate naturally with E2E planners (SparseDrive, DiffusionDrive).
+
+**Perception as a by-product of driving foundation models.** Waymo's EMMA [Hwang2024EMMA] performs camera-only 3D detection by *generating box coordinates as text* from a Gemini-based MLLM, and is competitive on the Waymo Open Dataset. Co-training on planning, detection and road-graph estimation improves all three. Production VLA and world-action stacks (XPeng VLA 2.0, Huawei ADS 4, Tesla FSD v14) no longer expose a classical box list as the primary interface; explicit perception outputs survive mainly as auxiliary heads and visualisation. On the simulation side, the **Waymo World Model** (built on Genie 3, February 2026) generates *both* camera video and Waymo-specific LiDAR returns. This lets perception be stress-tested on synthetic long-tail scenes (see [Simulation & Data](./04_simulation_and_data.md)).
+
+---
+
 ## Key Papers
 
 | Paper | Authors | Year | Venue | Key Contribution |
@@ -127,6 +146,11 @@ Long-range perception (>100 m camera detection) requires careful handling of per
 | CenterPoint | Yin et al. | 2021 | CVPR | Center heatmap 3D detection; 71.9 mAPH on Waymo |
 | PETR | Liu et al. | 2022 | ECCV | 3D position encoding for camera-only detection without BEV grid |
 | StreamPETR | Wang et al. | 2023 | ICCV | Long-range temporal fusion via sparse propagation queries |
+| Far3D | Jiang et al. | 2024 | AAAI | Long-range (~150 m) camera 3D detection via 2D-guided 3D queries |
+| Point Transformer V3 | Wu et al. | 2024 | CVPR | Serialized point transformer; fast, scalable LiDAR backbone |
+| Sonata | Wu et al. | 2025 | CVPR | Self-supervised point-cloud pre-training on PTv3 |
+| EMMA | Hwang et al. (Waymo) | 2024 | arXiv 2410.23262 | MLLM-based driving model; camera-only 3D detection as text generation |
+| DINOv3 | Siméoni et al. (Meta) | 2025 | arXiv | 7B SSL vision backbone with strong dense features; widely used for frozen-feature perception |
 
 ---
 
@@ -162,6 +186,8 @@ Long-range perception (>100 m camera detection) requires careful handling of per
 - **Rare object categories**: Standard benchmarks focus on vehicles, pedestrians, cyclists; detection of construction equipment, emergency vehicles, and novel obstacle types is poorly benchmarked.
 - **4D radar integration**: Emerging 4D imaging radars offer dense, all-weather point clouds; how to best fuse them with cameras and LiDAR in BEV remains an open research question.
 - **Long-range detection**: Detecting and classifying objects at 150–300 m with cameras remains challenging; this range is critical for highway merging and high-speed scenarios.
+- **Perception observability in VLA stacks**: When perception is implicit in a VLA or world-action model, standard perception metrics (mAP, NDS) no longer measure what the planner "sees". Probing and auxiliary-head methods for auditing implicit perception are immature.
+- **Foundation-model auto-labeling quality**: Open-vocabulary auto-labelers (SAM 3, VLMs) scale long-tail annotation, but their systematic errors can propagate into training data. Label-noise auditing at fleet scale is unsolved.
 
 ---
 
@@ -173,3 +199,7 @@ Long-range perception (>100 m camera detection) requires careful handling of per
 - [nuScenes 3D Detection Leaderboard](https://nuscenes.org/object-detection) — live benchmark
 - [Waymo Open Dataset challenges](https://waymo.com/open/challenges/) — perception challenge results
 - [arXiv:2401.06542 Robustness-Aware 3D Detection Review](https://arxiv.org/abs/2401.06542) — survey of robustness in AV detection
+- [Pointcept / Point Transformer V3 GitHub](https://github.com/Pointcept/PointTransformerV3) — PTv3 and Sonata code
+- [arXiv:2410.23262 EMMA](https://arxiv.org/abs/2410.23262) — detection and planning in a single MLLM
+- [Meta DINOv3](https://ai.meta.com/dinov3/) — self-supervised vision backbone (Aug 2025)
+- [Waymo 6th-generation Driver blog](https://waymo.com/blog/2024/08/meet-the-6th-generation-waymo-driver/) — sensor-suite redesign

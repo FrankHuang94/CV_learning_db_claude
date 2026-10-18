@@ -1,8 +1,14 @@
 # Multimodal Vision-Language Learning: Overview and Foundations
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Intermediate
 > **Related Sections:** [VLP Models](./01_vlp_models.md) | [Large Vision-Language Models](./02_large_vision_language_models.md) | [Open-Vocabulary Detection](./03_open_vocabulary_detection.md) | [Document and OCR](./04_document_and_ocr.md)
+
+> **🆕 October 2026 update:**
+> - Added the 2025–2026 generation of vision encoders that now feed most VLMs: SigLIP 2 (multilingual, NaFlex, dense-feature losses), Meta's Perception Encoder (PE-Core/Lang/Spatial) and DINOv3 (7B SSL teacher with `dino.txt` text alignment).
+> - Extended the era timeline with **natively multimodal, RL-tuned "thinking" VLMs** (Qwen3-VL, InternVL3.5, Qwen3.5, Gemini 3, GPT-5.x, Claude Opus 4.5/4.7) and **concept-prompted perception** (SAM 3).
+> - New section on **vision as a compression channel** (DeepSeek-OCR "optical context compression") and on adaptive visual-token budgets.
+> - Updated Key Papers, Benchmark Performance (vendor-reported 2025–2026 MMMU / MMMU-Pro numbers) and Open Problems.
 
 ---
 
@@ -13,6 +19,8 @@ Multimodal vision-language learning addresses the problem of jointly modeling vi
 The core challenge that distinguishes vision-language learning from unimodal learning is the **modality gap**: visual and linguistic representations live in semantically dissimilar embedding spaces, require different tokenization strategies (patch features vs. wordpiece tokens), and carry information at very different granularities (pixels encode continuous appearance; words encode discrete symbolic concepts). Bridging this gap requires architectural choices about how to combine the two streams, and training objectives that force the representations to align. The major alignment paradigms are **contrastive** (CLIP, ALIGN — push matching pairs together and non-matching pairs apart), **generative** (caption the image or predict masked text tokens), and **matching** (binary classification: does this image-text pair match?).
 
 The evolution of VLP models from 2019 to 2026 can be characterized by three successive architectures: (1) **dual-encoder** models (CLIP, ALIGN) that encode image and text independently — fast for retrieval but cannot model fine-grained cross-modal interactions; (2) **fusion-encoder** models (ViLBERT, UNITER, OSCAR, ALBEF) that apply cross-attention to combined image-text representations — powerful for understanding tasks but slow for large-scale retrieval; and (3) **generative VLMs** (BLIP, CoCa, Flamingo, LLaVA, GPT-4V) that add an autoregressive language decoder to the cross-modal encoder, enabling open-ended generation and multi-turn dialogue. The third paradigm — now dominant — is discussed in depth in [Large Vision-Language Models](./02_large_vision_language_models.md).
+
+By late 2026 the boundaries between these paradigms have blurred further. Contrastive dual encoders did not disappear; they became the *vision towers* of generative VLMs, and were re-trained with extra objectives that borrow from the other paradigms: SigLIP 2 [Tschannen2025] adds a captioning-style decoder loss and self-distillation/masked-prediction losses to the sigmoid contrastive loss, and Meta's Perception Encoder [Bolya2025] shows that the best features of a contrastively trained encoder sit in *intermediate* layers and can be "aligned out" for language (PE-Lang) or dense spatial tasks (PE-Spatial). In parallel, frontier systems moved to **native multimodality** (early fusion of text, image and video tokens from pretraining, e.g. Qwen3.5) and to **reinforcement-learning-tuned "thinking" modes** that reason over images, sometimes calling tools such as zoom-in or search mid-reasoning (see [Large Vision-Language Models](./02_large_vision_language_models.md)).
 
 ---
 
@@ -127,7 +135,19 @@ A major axis of architectural diversity in VLP is how visual information is toke
 Trend: Region features largely replaced by patch features (2022+); end-to-end ViT
   encoders dominate modern VLMs. Grounding tasks still benefit from region-aligned
   features via resampler/Q-Former compression.
+
+4. Native/dynamic-resolution patch features (2024–2026):
+   - NaViT-style packing: variable number of patches per image at native aspect ratio
+   - Used by: Qwen2-VL/2.5-VL/3-VL, SigLIP 2 NaFlex, PaddleOCR-VL encoder
+   - Multi-level fusion: Qwen3-VL "DeepStack" injects features from several ViT
+     layers into the LLM instead of only the last layer
+   - Adaptive budgets: InternVL3.5's Visual Resolution Router picks a per-patch
+     compression rate; DeepSeek-OCR compresses a page into a few hundred tokens
 ```
+
+### Vision as a Compression Channel (2025–2026)
+
+A surprising 2025 finding inverts the usual "images cost too many tokens" complaint. **DeepSeek-OCR** [Wei2025] renders long text as an image and asks how few *vision* tokens a decoder needs to reconstruct it: with a compression ratio below 10× (text tokens / vision tokens) the authors report ~97% OCR precision, falling to ~60% at 20×. The proposed use is "optical context compression" — storing older dialogue or long documents as rendered images to emulate a forgetting curve for LLM memory. The paper itself notes OCR alone does not fully validate the idea, but it reframes the modality gap: for text-dense content, a vision encoder can be a *more* token-efficient channel than the tokenizer.
 
 ---
 
@@ -168,6 +188,15 @@ Era 4 (2024–2026): VLAs for embodied AI
   Action tokens added to VLM output space; robot manipulation and navigation
   Representative: RT-2, OpenVLA, pi0, GR-2
   -> See ../06_robotics_and_embodied_ai/
+
+Era 5 (2025–2026): Native multimodal reasoning models + concept-level perception
+  Early-fusion pretraining on text/image/video; RL "thinking" modes; 256K–1M context;
+  GUI/computer-use agents; thinking-with-images tool calls
+  Representative: Qwen3-VL, InternVL3.5, Qwen3.5, Gemma 4, GPT-5/5.5,
+    Gemini 3/3.1, Claude Opus 4.5/4.7
+  Perception side: SAM 3 (segment every instance of a text-specified concept),
+    DINOv3 / PE / SigLIP 2 as vision towers
+  VLM backbones reused directly inside VLAs (e.g. Eagle VLM in GR00T N1.5/N1.6)
 ```
 
 ---
@@ -187,6 +216,12 @@ Era 4 (2024–2026): VLAs for embodied AI
 | BLIP | Li et al. | 2022 | ICML | Bootstrapped caption filtering; unified understanding+generation |
 | CoCa | Yu et al. | 2022 | arXiv/TMLR | Contrastive + captioning losses; single model for all VL tasks |
 | BLIP-2 | Li et al. | 2023 | ICML | Q-Former bridges frozen ViT and frozen LLM; instruction following |
+| SigLIP 2 | Tschannen et al. | 2025 | arXiv (Google DeepMind) | Sigmoid contrastive + decoder + self-distillation losses; multilingual; NaFlex native-aspect variant |
+| Perception Encoder | Bolya et al. | 2025 | arXiv (Meta FAIR) | Best embeddings are in intermediate layers; PE-Core/Lang/Spatial family |
+| DINOv3 | Siméoni et al. | 2025 | arXiv (Meta FAIR) | 7B SSL teacher on LVD-1689M; Gram anchoring; `dino.txt` zero-shot text alignment |
+| Qwen3-VL | Bai et al. (Qwen Team) | 2025 | arXiv | Interleaved-MRoPE, DeepStack, text–timestamp alignment; 256K native context |
+| DeepSeek-OCR | Wei, Sun, Li | 2025 | arXiv | Vision tokens as an optical compression channel for long text |
+| SAM 3 | Carion et al. | 2026 | ICLR | Promptable Concept Segmentation from noun phrases or exemplars |
 
 ---
 
@@ -202,6 +237,13 @@ Era 4 (2024–2026): VLAs for embodied AI
 | CoCa | Zero-shot classification | ImageNet | Top-1 Acc | 86.3% |
 | BLIP-2 (FlanT5-XXL) | VQA | VQAv2 test-dev | VQA Acc | 82.19% |
 | BLIP-2 (Vicuna-13B) | Zero-shot VQA | OK-VQA | VQA Acc | 45.9% |
+| InternVL3.5-241B-A28B | Multimodal reasoning | MMMU (val) | Acc | 77.7 (developer-reported) |
+| Qwen3-VL-235B-A22B (Thinking) | Multimodal reasoning | MMMU | Acc | 80.6 (tech report) |
+| GPT-5 (high reasoning) | Multimodal reasoning | MMMU | Acc | 84.2 (vendor-reported) |
+| Gemini 3 Pro | Multimodal reasoning | MMMU-Pro | Acc | 81% (vendor-reported) |
+| SAM 3 | Concept segmentation | SA-Co/Gold | cgF1 | 54.1 (human: 72.8) |
+
+*2025–2026 rows are vendor/developer-reported and use different prompting, reasoning budgets and evaluation harnesses; they are not strictly comparable with each other or with the older rows.*
 
 ---
 
@@ -214,6 +256,7 @@ Era 4 (2024–2026): VLAs for embodied AI
 | **Generative VLP (BLIP, CoCa)** | Unified model for understanding + generation; instruction tunable | Caption quality depends on noisy web alt-text; large decoder memory footprint |
 | **Region-based tokenization** | Semantically structured; directly grounded to objects | Requires off-the-shelf detector; detector errors propagate; fixed 36 regions |
 | **Patch-based tokenization (ViT)** | Scales to arbitrary resolution; end-to-end; consistent with LLMs | High token count for high-resolution images; locally unstructured |
+| **Native multimodal + RL reasoning (2025–2026)** | Strongest reasoning, long video, GUI agents; one model for many tasks | Huge training cost; "thinking" adds latency; evaluation hard to compare across vendors |
 
 ---
 
@@ -224,7 +267,10 @@ Era 4 (2024–2026): VLAs for embodied AI
 - **Data efficiency for VLM alignment**: State-of-the-art VLMs require millions of instruction-tuning examples (LLaVA-665K). The minimum data required for high-quality visual instruction following is not well characterized.
 - **Cross-lingual and cross-cultural VLP**: Most large VLP models are English-centric; multilingual extension requires either parallel image-text corpora or language-agnostic visual representations, neither of which is yet fully satisfactory.
 - **Efficient grounding**: Linking VLP model outputs to specific image regions (grounded generation, pointing to objects mentioned in text) requires either heavyweight detection heads or specialized architectures; no lightweight grounding mechanism is yet standard.
-- **Temporal modeling**: The next frontier is extending VLP from static image-text to video-text and long-document understanding, requiring efficient temporal attention and longer context windows.
+- **Temporal modeling**: The next frontier is extending VLP from static image-text to video-text and long-document understanding, requiring efficient temporal attention and longer context windows. 2025–2026 models (Qwen3-VL, Gemini 3) report hour-scale video with 256K–1M-token contexts, but true temporal reasoning (causality, counting events) remains much weaker than frame-level recognition.
+- **Faithfulness of "thinking" VLMs**: RL-tuned reasoning modes raise MMMU-style scores, but whether the textual chain of thought is actually grounded in the pixels (rather than in language priors) is largely unmeasured.
+- **Concept-level grounding gap**: SAM 3 reaches roughly 75–80% of human cgF1 on SA-Co, and its authors note weaker generalisation to out-of-domain concept terms; fine-grained, compositional noun phrases remain hard.
+- **Optical compression limits**: DeepSeek-OCR shows ~10× lossless-ish text compression via images, but how far this extends beyond OCR to reasoning and retrieval over compressed context is untested.
 
 ---
 
@@ -236,3 +282,9 @@ Era 4 (2024–2026): VLAs for embodied AI
 - [Radford et al. (2021), "Learning Transferable Visual Models From Natural Language Supervision (CLIP)," ICML 2021](https://arxiv.org/abs/2103.00020)
 - [Yu et al. (2022), "CoCa: Contrastive Captioners are Image-Text Foundation Models," TMLR 2022](https://arxiv.org/abs/2205.01068)
 - [Zhang et al. (2024), "MM-LLMs: Recent Advances in MultiModal Large Language Models," survey](https://arxiv.org/abs/2401.13601)
+- [Tschannen et al. (2025), "SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features"](https://arxiv.org/abs/2502.14786)
+- [Bolya et al. (2025), "Perception Encoder: The best visual embeddings are not at the output of the network"](https://arxiv.org/abs/2504.13181)
+- [Siméoni et al. (2025), "DINOv3"](https://arxiv.org/abs/2508.10104)
+- [Qwen Team (2025), "Qwen3-VL Technical Report"](https://arxiv.org/abs/2511.21631)
+- [Wei, Sun, Li (2025), "DeepSeek-OCR: Contexts Optical Compression"](https://arxiv.org/abs/2510.18234)
+- [Carion et al. (2026), "SAM 3: Segment Anything with Concepts," ICLR 2026](https://arxiv.org/abs/2511.16719)

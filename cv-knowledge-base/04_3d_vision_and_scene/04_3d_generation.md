@@ -1,8 +1,14 @@
 # 3D Content Generation: Text-to-3D and Image-to-3D
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
-> **Related Sections:** [3D Generation (Generative Vision)](../10_generative_vision/03_3d_generation.md) · [Gaussian Splatting](./02_gaussian_splatting.md) · [3D Representations](./00_3d_representations.md)
+> **Related Sections:** [3D Generation (Generative Vision)](../10_generative_vision/03_3d_generation.md) · [Gaussian Splatting](./02_gaussian_splatting.md) · [3D Representations](./00_3d_representations.md) · [Spatial Intelligence](../12_research_frontier_2024_2026/06_spatial_intelligence.md)
+
+> **🆕 October 2026 update:**
+> - New section on **native 3D latent generative models**, now the dominant paradigm. It covers TRELLIS (CVPR 2025 Spotlight, SLAT latents) and **TRELLIS.2** ("Native and Compact Structured Latents for 3D Generation", **CVPR 2026 Best Student Paper**; O-Voxel, 4B flow transformers, up to 1536³ with PBR materials).
+> - **Hunyuan3D** lineage: 2.0 (Jan 2025), 2.1 (Jun 2025, first fully open-source PBR pipeline), 2.5, Omni (Sep 2025, controllable), and 3.0 (Sep 2025, 1536³, served via Tencent Cloud). Also covers TripoSG and Direct3D-S2 (NeurIPS 2025).
+> - **SAM 3D** (Meta, Nov 2025): SAM 3D Objects (shape, texture and layout from a single image, robust to occlusion) and SAM 3D Body (promptable human mesh recovery with the Momentum Human Rig).
+> - From objects to worlds: HunyuanWorld 1.0 and World Labs' Marble/Spark. Updated pipeline diagram, Key Papers, Benchmark, Pros & Cons and Open Problems.
 
 ---
 
@@ -13,6 +19,8 @@
 DreamFusion [Poole2022] established the SDS (Score Distillation Sampling) loss as the mechanism for distilling 2D diffusion knowledge into 3D representations — a NeRF is optimized so that renders from all viewpoints look like plausible outputs of a pre-trained text-to-image diffusion model. This was a conceptual breakthrough enabling text-to-3D without any 3D supervision, but it suffers from the notorious **Janus problem** (multi-face artifacts), over-saturation, and slow optimization (1.5–3 hours per object). Magic3D [Lin2023] addressed quality through a two-stage coarse-to-fine approach; DreamGaussian [Tang2023] replaced NeRF with 3D Gaussians to achieve ~2 minute generation.
 
 Feed-forward approaches emerged in 2023 with Zero-1-to-3 [Liu2023] (viewpoint-conditioned novel view synthesis from a single image via fine-tuned diffusion), LRM [Hong2023] (large transformer predicting NeRF directly from a single image in 5 seconds), and TripoSR [Tochilkin2024] (open-source LRM with improved data and training). Shap-E and Point-E (OpenAI) explored direct generation of implicit functions and point clouds respectively. MeshGPT [Siddiqui2024] closed the loop with autoregressive native mesh generation.
+
+From 2025, a third paradigm became dominant: **native 3D latent generation**. A 3D VAE compresses assets into a structured (usually sparse-voxel or vector-set) latent, and a large diffusion/flow transformer is trained directly in that latent space, conditioned on an image or text. TRELLIS [Xiang2025], Hunyuan3D 2.x [Tencent2025], TripoSG [Li2025] and Direct3D-S2 [Wu2025b] established the recipe. TRELLIS.2 [Xiang2026] won the **CVPR 2026 Best Student Paper Award** by extending it to arbitrary topology and PBR materials at up to 1536³. Meta's SAM 3D [SAM3DTeam2025] moved the problem from clean object images to *in-the-wild* scenes with occlusion and layout.
 
 ---
 
@@ -195,6 +203,59 @@ MeshGPT achieves 9% better shape coverage and 30-point FID improvement over prio
 
 ---
 
+## Native 3D Latent Generative Models (2025–2026)
+
+### TRELLIS: Structured 3D Latents [Xiang2025, CVPR 2025 Spotlight]
+
+Jianfeng Xiang, Zelong Lv, Sicheng Xu, Yu Deng, Ruicheng Wang, Bowen Zhang, Dong Chen, Xin Tong and Jiaolong Yang (Tsinghua, USTC, Microsoft Research) introduced **SLAT (Structured LATent)**. Each asset becomes a set of active voxels in a sparse $64^3$ grid, and each voxel carries a latent vector aggregated from dense multi-view DINOv2 features. Separate decoders map the *same* SLAT to 3D Gaussians, radiance fields or meshes.
+
+```
+# TRELLIS two-stage rectified-flow generation (schematic)
+Stage 1 (structure):  sparse-structure flow transformer  → occupied voxel set {p_i} ⊂ {0..63}^3
+Stage 2 (latents):    sparse flow transformer (SLAT)      → z_i ∈ R^C at each p_i
+Decode:               D_GS(z) | D_RF(z) | D_Mesh(z)       ← Gaussians / radiance field / mesh
+Rectified flow:       x_t = (1 - t) x_0 + t ε ;  minimize E || v_θ(x_t, t, cond) - (ε - x_0) ||^2
+```
+
+Models with up to 2B parameters (TRELLIS-text-xlarge) were trained on the 500K-object TRELLIS-500K dataset. TRELLIS-image-large has 1.2B parameters. Generation takes seconds, local 3D editing is supported, and the release is MIT-licensed.
+
+### TRELLIS.2: Native and Compact Structured Latents [Xiang2026, CVPR 2026 Best Student Paper]
+
+TRELLIS.2 (Tsinghua, Microsoft Research, USTC, Microsoft AI) addresses two limits of SLAT: dependence on 2D-feature aggregation, and the closed-surface assumptions of SDF/occupancy-based decoders. Its main contributions are:
+
+- **O-Voxel**: a *field-free* sparse voxel structure that natively encodes both geometry and **PBR material** attributes. It handles open surfaces, non-manifold geometry and enclosed internal structures.
+- **Sparse Compression VAE**: compresses O-Voxels into a compact latent space, so far fewer tokens are needed at high resolution.
+- **~4B-parameter flow-matching transformers** trained on this latent, generating assets at $512^3$, $1024^3$ or $1536^3$. The official repo reports roughly 3 s, 17 s and 60 s respectively on an H100 for shape plus material. Code and weights are MIT-licensed.
+
+### Hunyuan3D (Tencent)
+
+Tencent's Hunyuan3D series is the most widely deployed *open* native-3D pipeline. It decouples geometry and texture:
+
+- **Hunyuan3D 2.0** (Jan 2025, arXiv 2501.12202): **Hunyuan3D-DiT**, a flow-based diffusion transformer over a ShapeVAE vector-set latent, plus **Hunyuan3D-Paint**, a multi-view texture diffusion. Variants include 2mini (0.6B), 2mv (multi-view input) and Turbo/FlashVDM-accelerated versions (Mar 2025).
+- **Hunyuan3D 2.1** (Jun 2025, arXiv 2506.15442) is described by its authors as the first fully open-source **PBR** asset pipeline. It includes the shape model (3.3B) and a PBR paint model (2B) that generates albedo, metallic and roughness maps, together with released data processing and training code.
+- **Hunyuan3D 2.5** (technical report Jun 2025) and **Hunyuan3D-Omni** (Sep 2025, arXiv 2509.21245) are, respectively, a higher-fidelity scaled version and a controllable framework built on 2.1. Omni accepts point-cloud, voxel, skeleton and bounding-box controls.
+- **Hunyuan3D 3.0** (announced 16 Sep 2025) reports 1536³ geometric resolution and roughly 3× precision over prior versions, according to Tencent's announcement. It is accessed via the Hunyuan3D engine and Tencent Cloud API, not as open weights.
+
+### Other Open Native-3D Generators
+
+- **TripoSG** [Li2025] (VAST): a 1.5B rectified-flow transformer over an SDF VAE latent (2,048 tokens). The VAE is trained with SDF, surface-normal and eikonal losses on ~2M image-SDF pairs; MIT licence.
+- **Direct3D-S2** [Wu2025b, NeurIPS 2025] (DreamTech): introduces **Spatial Sparse Attention** for sparse-volume DiTs, reporting 3.9× forward and 9.6× backward speed-ups. This enables 1024³ SDF generation trained on only 8 GPUs; MIT licence.
+
+### SAM 3D: 3Dfy Anything in Images [SAM3DTeam2025]
+
+Meta's SAM 3D (released 19 Nov 2025, arXiv 2511.16624) brings the SAM philosophy of promptable models trained with a model-in-the-loop data engine to 3D. It has two models:
+
+- **SAM 3D Objects** reconstructs **shape, texture and layout** (object pose and scale in the camera frame) of a masked object from a single natural image. It is robust to occlusion and clutter, and several objects can be composed into a scene. Meta's data engine produced roughly 3.14M meshes for almost 1M real images by having humans rank and select model-generated candidates. Training is progressive: synthetic pre-training followed by real-image post-training to close the sim-to-real gap. Meta introduced the **SA-3DAO** (3D Artist Objects) benchmark and reports strong human-preference wins over prior single-image methods (a ≥5:1 win rate has been reported). Code and weights are released under the SAM License.
+- **SAM 3D Body** is promptable (masks, 2D keypoints) full-body human mesh recovery, including hands and feet. It uses the new **Momentum Human Rig (MHR)**, a parametric model that decouples skeleton from surface shape.
+
+SAM 3D was reported among the CVPR 2026 Best Paper honorable mentions. Meta notes that current limitations include one-object-at-a-time prediction and no reasoning about physical contact or interpenetration.
+
+### From Objects to Worlds
+
+Native-3D generators increasingly feed **world generation**. Tencent's **HunyuanWorld 1.0** (Jul 2025) generates explorable, simulation-ready 3D worlds. World Labs' **Marble** product generates persistent 3D worlds. World Labs also maintains **Spark**, an open-source THREE.js Gaussian-splat renderer, reflecting how much world generation relies on splats as an output format. WorldMirror (ICML 2026) and other feed-forward reconstructors close the loop from generated video to 3D. See [Spatial Intelligence](../12_research_frontier_2024_2026/06_spatial_intelligence.md).
+
+---
+
 ## Pipeline Comparison
 
 ```mermaid
@@ -213,6 +274,12 @@ flowchart TD
     F --> TSR[TripoSR\nOpen-source LRM\n<0.5 sec]
     F --> SE[Shap-E\nLatent diffusion on INR\nSeconds]
     F --> MG[MeshGPT\nAutoregressive triangles\nCompact mesh]
+
+    T --> N[Native 3D Latent]
+    I --> N
+    N --> TR[TRELLIS / TRELLIS.2\nSparse-voxel latent + flow\nPBR, up to 1536³]
+    N --> HY[Hunyuan3D 2.x / 3.0\nShape DiT + PBR Paint]
+    N --> S3D[SAM 3D Objects\nIn-the-wild shape + layout]
 ```
 
 ---
@@ -230,6 +297,13 @@ flowchart TD
 | Shap-E: Generating Conditional 3D Implicit Functions | Jun, Nichol (OpenAI) | 2023 | arXiv | Latent diffusion on INR weights; text/image to 3D in seconds |
 | MeshGPT: Generating Triangle Meshes with Decoder-Only Transformers | Siddiqui, Alliegro, Artemov et al. | 2024 | CVPR | Autoregressive triangle sequence generation; compact artist-quality meshes |
 | ProlificDreamer: High-Fidelity and Diverse Text-to-3D via VSD | Wang et al. | 2023 | NeurIPS | Variational Score Distillation; higher quality than SDS; reduced over-saturation |
+| Structured 3D Latents for Scalable and Versatile 3D Generation (TRELLIS) | Xiang, Lv, Xu, Deng, Wang, Zhang, Chen, Tong, Yang | 2025 | CVPR (Spotlight) | SLAT sparse-voxel latent; rectified-flow transformers up to 2B; multi-format decoding |
+| Hunyuan3D 2.0: Scaling Diffusion Models for High Resolution Textured 3D Assets Generation | Tencent Hunyuan3D Team | 2025 | arXiv | Shape DiT on vector-set latent + multi-view Paint model; open weights |
+| Hunyuan3D 2.1: From Images to High-Fidelity 3D Assets with Production-Ready PBR Material | Tencent Hunyuan3D Team | 2025 | arXiv | Fully open PBR pipeline (albedo/metallic/roughness); training code released |
+| TripoSG: High-Fidelity 3D Shape Synthesis using Large-Scale Rectified Flow Models | Li et al. (VAST) | 2025 | arXiv | 1.5B rectified flow over SDF VAE; ~2M training pairs |
+| Direct3D-S2: Gigascale 3D Generation Made Easy with Spatial Sparse Attention | Wu et al. (DreamTech) | 2025 | NeurIPS | Spatial Sparse Attention; 1024³ SDF generation on 8 GPUs |
+| SAM 3D: 3Dfy Anything in Images | SAM 3D Team (Meta) | 2025 | arXiv | In-the-wild single-image shape, texture and layout; data engine; SA-3DAO benchmark |
+| Native and Compact Structured Latents for 3D Generation (TRELLIS.2) | Xiang et al. (Tsinghua, MSR, USTC, Microsoft AI) | 2026 | CVPR (Best Student Paper) | O-Voxel with PBR; arbitrary topology; 4B flow models up to 1536³ |
 
 ---
 
@@ -244,6 +318,9 @@ flowchart TD
 | MeshGPT | ShapeNet | FID (mesh quality) | 30-pt improvement | vs. prior mesh generation methods |
 | DreamFusion | — | CLIP R-Precision | ~0.75 | Text alignment; Janus problem visible |
 | Shap-E | ShapeNet Eval | FID | not publicly reported | Faster generation but lower quality |
+| TRELLIS.2 (4B) | — | Generation time (H100) | ~3 s @512³ / ~17 s @1024³ / ~60 s @1536³ | Shape + PBR material; per official repo |
+| Direct3D-S2 | — | Attention speed-up (SSA) | 3.9× fwd / 9.6× bwd | vs dense attention on sparse volumes; authors' claim |
+| SAM 3D Objects | SA-3DAO + human preference | Win rate vs prior methods | ≥5:1 (reported) | Single in-the-wild image; Meta's claim |
 
 ---
 
@@ -254,18 +331,21 @@ flowchart TD
 | Optimization-based (SDS) | No 3D training data needed; highly flexible text/image conditioning; latest 2D diffusion quality | Slow (minutes to hours); Janus problem; over-saturation; each object requires new optimization |
 | Feed-forward (LRM/TripoSR) | Fast (<1 sec – 5 sec); deterministic; scalable deployment; generalizes from large data | Requires large 3D training datasets; limited detail for complex scenes; train-test distribution mismatch |
 | Native mesh generation (MeshGPT) | Compact, clean artist-quality topology; directly usable in rendering/simulation | Limited to ShapeNet-like objects; no texture generation yet; limited generalization |
+| Native 3D latent flow (TRELLIS.2, Hunyuan3D, TripoSG) | High-resolution geometry (up to 1536³); PBR materials; seconds to a minute; open weights for several models | Dense remeshing/retopology still needed for production; large 3D datasets required; licences vary (some API-only) |
+| In-the-wild reconstruction-generation (SAM 3D) | Handles occlusion, clutter and scene layout; promptable | One object at a time; no physical contact reasoning; SAM License terms |
 
 ---
 
 ## Open Problems & Research Gaps
 
 - **Janus problem remains unsolved at scale:** Multi-view consistent generation fundamentally requires either multi-view diffusion training (MVDream, Zero123++) or explicit 3D consistency constraints. Current methods still exhibit Janus-like artifacts on complex prompts.
-- **Texture quality and detail:** Feed-forward methods (LRM, TripoSR) produce blurry textures compared to optimization-based approaches. High-frequency texture generation at scale is a key open problem.
-- **Scene generation (not just objects):** Current 3D generation focuses on single objects. Text-to-scene (multiple objects with spatial relationships, backgrounds, lighting) is largely unsolved. SceneWiz3D and Set-the-Scene are early attempts.
+- **Texture quality and detail:** Feed-forward methods (LRM, TripoSR) produce blurry textures compared to optimization-based approaches. High-frequency texture generation at scale is a key open problem. Native-3D models with PBR heads (Hunyuan3D 2.1, TRELLIS.2) have substantially narrowed this gap. Relightable, physically correct materials and UV-free texture representations (cf. HKTex, ECCV 2026 Best Paper, in [00_3d_representations.md](./00_3d_representations.md)) are the next frontier.
+- **Scene generation (not just objects):** 3D generation has mostly focused on single objects. Text-to-scene (multiple objects with spatial relationships, backgrounds, lighting) remains hard; SceneWiz3D and Set-the-Scene are early attempts. In 2025–2026, SAM 3D added per-object layout from real images, and world-generation systems (HunyuanWorld, Marble) produce explorable scenes. Compositional, editable, physically consistent multi-object scenes are still open.
+- **Topology and production readiness:** O-Voxel (TRELLIS.2) handles open and non-manifold surfaces. Artist-grade topology, UVs, rigging and part decomposition straight from the generator remain largely unsolved.
 - **Physical plausibility:** Generated 3D assets often violate physics — floating parts, intersecting geometry, incorrect proportions. Incorporating physical priors or simulation-based feedback during generation is an emerging area.
 - **Video-to-3D:** Given the abundance of video data, learning 3D generation from monocular video (rather than posed multi-view data) is highly valuable but requires solving appearance vs. geometry ambiguity.
 - **Controllable generation:** Fine-grained control over generated 3D assets (shape, material, part articulation) is limited. Text is too coarse for precise geometric specification; CAD-like control interfaces are needed.
-- **Evaluation metrics:** PSNR/FID/CLIP similarity inadequately capture 3D consistency, geometric accuracy, and perceptual quality simultaneously. A unified 3D generation benchmark is lacking.
+- **Evaluation metrics:** PSNR/FID/CLIP similarity inadequately capture 3D consistency, geometric accuracy, and perceptual quality simultaneously. A unified 3D generation benchmark is lacking. SAM 3D's SA-3DAO and its Hugging Face leaderboard (2026) are a step toward real-image evaluation, but most native-3D papers still rely on user studies and in-house comparisons.
 
 ---
 
@@ -277,3 +357,11 @@ flowchart TD
 - [DreamGaussian GitHub](https://github.com/dreamgaussian/dreamgaussian) — ICLR 2024 Oral implementation
 - [MeshGPT Project Page](https://nihalsid.github.io/mesh-gpt/) — paper and generation results
 - [Shap-E GitHub (OpenAI)](https://github.com/openai/shap-e) — code and model weights
+- [TRELLIS GitHub (Microsoft)](https://github.com/microsoft/TRELLIS) — SLAT, TRELLIS-500K, CVPR 2025 Spotlight
+- [TRELLIS.2 GitHub (Microsoft)](https://github.com/microsoft/TRELLIS.2) — O-Voxel, CVPR 2026 Best Student Paper (MIT)
+- [Hunyuan3D-2.1 GitHub (Tencent)](https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1) — open PBR asset pipeline
+- [Hunyuan3D-Omni GitHub (Tencent)](https://github.com/Tencent-Hunyuan/Hunyuan3D-Omni) — controllable generation
+- [SAM 3D Objects GitHub (Meta)](https://github.com/facebookresearch/sam-3d-objects) — single-image in-the-wild 3D; SA-3DAO
+- [SAM 3D Body GitHub (Meta)](https://github.com/facebookresearch/sam-3d-body) — promptable human mesh recovery with MHR
+- [TripoSG GitHub (VAST)](https://github.com/VAST-AI-Research/TripoSG) — 1.5B rectified-flow shape model
+- [Direct3D-S2 GitHub](https://github.com/DreamTechAI/Direct3D-S2) — NeurIPS 2025 sparse-attention gigascale generation

@@ -1,6 +1,6 @@
 # Multimodal Datasets
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Intermediate
 > **Related Sections:**
 > - [Large Vision-Language Models](../05_multimodal_vision_language/02_large_vision_language_models.md)

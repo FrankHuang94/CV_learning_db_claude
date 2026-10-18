@@ -1,8 +1,15 @@
 # 3D Representations: Point Clouds, Voxels, Meshes, Implicit Surfaces, and Neural Fields
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
 > **Related Sections:** [NeRF and Variants](./01_nerf_and_variants.md) · [Gaussian Splatting](./02_gaussian_splatting.md) · [SfM and SLAM](./03_sfm_and_slam.md) · [3D Generation](./04_3d_generation.md)
+
+> **🆕 October 2026 update:**
+> - New section on **pointmaps and ray maps as a learned 3D representation**, the output format of feed-forward reconstructors such as VGGT (CVPR 2025 Best Paper), π³, MapAnything and Depth Anything 3.
+> - New section on **intrinsic surface textures**: Heat Kernel Textures (HKTex), the ECCV 2026 Best Paper, which replaces UV atlases with anisotropic heat kernels ("geodesic Gaussians") defined directly on the mesh.
+> - New section on **structured sparse-voxel latents** (TRELLIS SLAT and TRELLIS.2's O-Voxel, the CVPR 2026 Best Student Paper) as the representation now behind state-of-the-art 3D generation.
+> - 3DGS became a standard interchange format with the ratified Khronos `KHR_gaussian_splatting` glTF extension. Ray-traced primitive variants (3DGRT/3DGUT, EVER, Radiant Foam) blur the line between splats and volumes.
+> - Trade-off table, Key Papers, Benchmark, Open Problems and Further Reading extended accordingly.
 
 ---
 
@@ -97,6 +104,63 @@ The main weaknesses are slow training (hours to days per scene) and slow renderi
 
 Kerbl, Kopanas, Leimkühler, and Drettakis (INRIA) introduced **3D Gaussian Splatting** at SIGGRAPH 2023, representing a scene as a set of anisotropic 3D Gaussians — each defined by a mean $\mu \in \mathbb{R}^3$, a covariance matrix $\Sigma \in \mathbb{R}^{3 \times 3}$ (parameterized via rotation $R$ and scale $S$ for positive semi-definiteness), opacity $\alpha$, and spherical harmonic coefficients for view-dependent color. Rendering proceeds via tile-based differentiable rasterization (splatting) rather than volume marching, achieving 100+ FPS at 1080p. See [02_gaussian_splatting.md](./02_gaussian_splatting.md) for full details.
 
+**3DGS as an interchange format (2026).** By 2026, Gaussian splats had moved from a research artefact to a standard asset type. The Khronos Group ratified the `KHR_gaussian_splatting` glTF 2.0 extension, with contributors from Cesium, Niantic Spatial, Esri, NVIDIA, Huawei and Autodesk. It stores each splat as a `POINTS` primitive with `POSITION`, a unit-quaternion `ROTATION`, a linear `SCALE`, a linear `OPACITY`, and SH coefficients up to degree 3. Separately, ray-traced Gaussian/ellipsoid variants (3DGRT [MoenneLoccoz2024], 3DGUT [Wu2025, CVPR 2025 Oral], EVER [Mai2024]) and Radiant Foam's ray-traced Delaunay/Voronoi mesh [Govindarajan2025] show that the same primitives can be rendered *exactly* (volumetrically) rather than by approximate splatting. That narrows the conceptual gap between 3DGS and NeRF-style volumes.
+
+---
+
+## Pointmaps and Ray Maps: Learned Per-Pixel Geometry
+
+A representation that has become central since 2024 is the **pointmap**: a dense image-aligned tensor $X \in \mathbb{R}^{H \times W \times 3}$ that assigns a 3D point, expressed in a chosen reference frame, to every pixel. DUSt3R [Wang2024] introduced pointmaps as a regression target. Because cameras, depth and correspondences can all be read off a pointmap, the representation unifies tasks that classical pipelines treat separately (see [03_sfm_and_slam.md](./03_sfm_and_slam.md)).
+
+From 2025, a family of large feed-forward models made pointmaps (and their factorized variants) the default output of multi-view 3D perception:
+
+- **VGGT** [Wang2025, CVPR 2025 Best Paper] (Oxford VGG + Meta AI) is a ~1B-parameter transformer. From one to hundreds of views it predicts camera intrinsics/extrinsics, depth maps, pointmaps and 3D point tracks in a single forward pass, typically in under a second.
+- **π³** [Wang2025b, ICLR 2026] removes the fixed reference view. A fully permutation-equivariant architecture predicts affine-invariant camera poses and scale-invariant *local* pointmaps.
+- **MapAnything** [Keetha2026, 3DV 2026] (Meta Reality Labs + CMU) factorizes geometry into per-view **depth maps, local ray maps (per-pixel ray directions), camera poses and a single metric scale factor**. It accepts optional intrinsics, poses or depth as extra inputs and covers 12+ reconstruction tasks with one model.
+- **Depth Anything 3** [Lin2026, ICLR 2026] (ByteDance Seed) argues for a minimal design: a plain DINO-style ViT backbone with a single **depth-ray** prediction target.
+
+```
+# Factorized "depth + ray" representation (MapAnything / DA3 style)
+For pixel (u,v) in view i:
+  r_i(u,v) ∈ S^2       ← unit ray direction in camera frame (encodes intrinsics)
+  d_i(u,v) ∈ R_+       ← depth along the ray
+  X_i^cam(u,v) = d_i(u,v) · r_i(u,v)           ← local pointmap
+  X_i^world(u,v) = s · (R_i X_i^cam(u,v) + t_i) ← global metric pointmap
+  (R_i, t_i) ∈ SE(3) per view, s ∈ R_+ shared metric scale
+```
+
+Compared with classical sparse SfM points, pointmaps are dense, differentiable and directly predictable by a network. However, they are view-dependent: each view carries its own redundant copy of the surface. They also need fusion (TSDF, Gaussians, meshing) before they become a single consistent scene representation.
+
+---
+
+## Intrinsic Surface Textures: Heat Kernel Textures (ECCV 2026 Best Paper)
+
+Classical meshes carry appearance through a **UV atlas**, i.e. a parameterization of the surface into the plane. UV unwrapping introduces seams, distortion, wasted atlas space, duplicated vertices and uneven texel density. **Heat Kernel Textures (HKTex)** [Foti2026] by Simone Foti, Caner Korkmaz, Stefanos Zafeiriou and Tolga Birdal (Imperial College London) won the **ECCV 2026 Best Paper Award** for an intrinsic alternative. Appearance is modelled as a sum of **anisotropic heat kernels on the mesh surface**, which are the geodesic analogues of Gaussians. Kernel placement, optimization, pruning and densification all happen on the surface itself, in the spirit of 3DGS's adaptive density control, but without projecting ("splatting") to the image plane. Hence the subtitle, "the Geodesic Gaussians That Do Not Splat".
+
+```
+# Heat kernel on a Riemannian surface M (isotropic case)
+∂u/∂t = Δ_M u ,   u(x, 0) = δ_y(x)
+k_t(x, y) = Σ_i exp(-λ_i t) φ_i(x) φ_i(y)      ← (Laplace–Beltrami eigenpairs λ_i, φ_i)
+
+# On flat R^2:  k_t(x,y) = (4πt)^{-1} exp(-||x - y||^2 / 4t)   ← a Gaussian
+# Schematic HKTex-style texture (illustrative; see paper for exact parameterization):
+#   c(x) = Σ_j w_j · k^{aniso}_{t_j}(x, y_j) · a_j
+#   y_j ∈ M learnable kernel centres; anisotropy/scale t_j and appearance a_j learnable
+```
+
+According to the authors, the method needs no UV unwrapping, fits textures either from an existing textured mesh or from multi-view images, plugs into differentiable and physically based renderers (e.g., Mitsuba), and runs on a single consumer GPU. Code is released under MIT. A follow-up preprint has already proposed accelerating HKTex without computing mesh eigensystems. HKTex marks a broader trend: ideas proven in 3DGS (explicit, adaptively densified, differentiable primitives) are being moved back onto classical surface representations.
+
+---
+
+## Structured Sparse-Voxel Latents for Generation
+
+3D generative models need a representation that is regular enough for transformers yet sparse enough to scale. Two Microsoft Research / Tsinghua / USTC works defined the current standard:
+
+- **SLAT (Structured LATent)** in TRELLIS [Xiang2025, CVPR 2025 Spotlight] attaches latent features, aggregated from dense multi-view DINOv2 features, to the active voxels of a sparse $64^3$ grid. The same latent decodes to radiance fields, 3D Gaussians or meshes.
+- **O-Voxel** in TRELLIS.2 [Xiang2026, CVPR 2026 Best Student Paper, "Native and Compact Structured Latents for 3D Generation"] is a "field-free" sparse voxel structure that jointly encodes geometry and **PBR material** attributes. It handles open surfaces, non-manifold geometry and enclosed interior structures, which SDF/occupancy fields cannot represent. A sparse compression VAE turns it into a compact latent space for ~4B-parameter flow-matching transformers that generate assets at $512^3$ to $1536^3$.
+
+These latents are a hybrid in the taxonomy above. They are explicit (sparse voxels), but each voxel carries a learned code that a decoder turns into whichever downstream representation is required. See [04_3d_generation.md](./04_3d_generation.md).
+
 ---
 
 ## Representation Trade-off Summary
@@ -111,7 +175,13 @@ Mesh           | O(V+F)     | Very Fast (GPU) | High             | Medium       
 DeepSDF/OccNet | O(θ)       | Slow (query)    | Very High        | High         | Low
 NeRF           | O(θ)       | Very Slow       | High             | High         | Low
 3DGS           | O(N_gauss) | Very Fast       | High             | Medium       | Medium
+Pointmap/Ray   | O(K·H·W)   | Fast (points)   | Medium-High      | Very High    | Low
+HKTex (on mesh)| O(V+F+N_k) | Fast (raster)   | High (mesh)      | Medium       | High
+Sparse-voxel   | O(N_occ·C) | Decoder-dependent| High            | Very High    | Medium
+  latent (SLAT/O-Voxel)
 ```
+
+*K = number of views; N_k = number of heat kernels; C = latent channels per active voxel.*
 
 ---
 
@@ -127,6 +197,12 @@ NeRF           | O(θ)       | Very Slow       | High             | High        
 | NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis | Mildenhall, Srinivasan, Tancik, Barron, Ramamoorthi, Ng | 2020 | ECCV | 5D radiance field + differentiable volume rendering for photorealistic novel view synthesis |
 | 3D Gaussian Splatting for Real-Time Radiance Field Rendering | Kerbl, Kopanas, Leimkühler, Drettakis | 2023 | SIGGRAPH | Anisotropic 3D Gaussians + tile rasterization; real-time novel view synthesis at 100+ FPS |
 | MeshGPT: Generating Triangle Meshes with Decoder-Only Transformers | Siddiqui, Alliegro, Artemov et al. | 2024 | CVPR | Autoregressive triangle mesh generation via GPT-style transformer on learned mesh vocabulary |
+| DUSt3R: Geometric 3D Vision Made Easy | Wang, Leroy, Cabon, Chidlovskii, Revaud | 2024 | CVPR | Pointmap regression as a unified 3D representation for pose, depth and matching |
+| VGGT: Visual Geometry Grounded Transformer | Wang, Chen, Karaev, Vedaldi, Rupprecht, Novotny | 2025 | CVPR (Best Paper) | ~1B feed-forward transformer predicting cameras, depth, pointmaps and tracks from 1 to 100s of views |
+| Structured 3D Latents for Scalable and Versatile 3D Generation (TRELLIS) | Xiang, Lv, Xu, Deng, Wang, Zhang, Chen, Tong, Yang | 2025 | CVPR (Spotlight) | SLAT sparse-voxel latent decodable to Gaussians, radiance fields or meshes |
+| MapAnything: Universal Feed-Forward Metric 3D Reconstruction | Keetha et al. (Meta, CMU) | 2026 | 3DV | Factorized depth + ray map + pose + metric scale; 12+ tasks in one model |
+| Native and Compact Structured Latents for 3D Generation (TRELLIS.2) | Xiang et al. (Tsinghua, MSR, USTC, Microsoft AI) | 2026 | CVPR (Best Student Paper) | O-Voxel: field-free sparse voxels with PBR attributes; arbitrary topology |
+| Heat Kernel Textures: the Geodesic Gaussians That Do Not Splat | Foti, Korkmaz, Zafeiriou, Birdal | 2026 | ECCV (Best Paper) | UV-free intrinsic mesh textures from anisotropic surface heat kernels |
 
 ---
 
@@ -142,6 +218,8 @@ NeRF           | O(θ)       | Very Slow       | High             | High        
 | Instant-NGP | NeRF-Synthetic | PSNR | 33.18 dB | ~5 min training; SIGGRAPH Best Paper 2022 |
 | 3DGS | Tanks & Temples | PSNR | 23.14 dB | Real-time rendering, 1080p |
 | Mip-Splatting | Mip-NeRF 360 | PSNR | 27.92 dB | CVPR 2024 Best Student Paper |
+| VGGT (1B) | Co3D | Camera pose AUC@30 | ≈90 | Feed-forward pointmap/camera prediction; per official repo |
+| TRELLIS.2 (4B) | — | Generation time (H100) | ~3 s @512³, ~17 s @1024³, ~60 s @1536³ | O-Voxel latent; per official repo |
 
 ---
 
@@ -152,6 +230,9 @@ NeRF           | O(θ)       | Very Slow       | High             | High        
 | Point Clouds | Direct LiDAR/stereo output; permutation-invariant learning (PointNet++); easy streaming | No connectivity; rendering requires splatting or reconstruction; density varies |
 | Implicit Neural (SDF/OccNet) | Unlimited resolution; smooth geometry; compact (MLP weights); analytically differentiable | Slow per-point queries; no direct rendering; meshing step loses continuity |
 | 3D Gaussian Splatting | Real-time rendering; fast optimization; high PSNR; easy densification/pruning | No surface normals by default; large memory per scene; floater artifacts; limited topology |
+| Pointmaps / Ray Maps | Directly predictable by feed-forward networks; unify pose, depth and matching; dense | Per-view redundancy; needs fusion into a consistent scene; scale/frame ambiguities unless metric heads are used |
+| Intrinsic textures (HKTex) | No UV seams or distortion; adaptive resolution on the surface; differentiable | Requires a good mesh first; kernel evaluation more costly than texel lookup; young ecosystem |
+| Sparse-voxel latents (SLAT/O-Voxel) | Scalable for transformers; one latent decodes to multiple outputs; handles arbitrary topology (O-Voxel) | Requires large 3D datasets and a learned decoder; resolution capped by voxel grid |
 
 ---
 
@@ -161,7 +242,9 @@ NeRF           | O(θ)       | Very Slow       | High             | High        
 - **Scaling to city-scale:** Current methods (NeRF, 3DGS) scale poorly beyond bounded scenes. City-scale neural representations require hierarchical or streaming designs — an unsolved engineering and algorithmic challenge.
 - **Dynamic scene representation:** Extending static representations to 4D (space-time) without exponential memory growth remains open. Current 4D-GS [Wu2023] and SC-GS [Huang2024] work on short monocular clips but struggle with long-horizon, multi-object dynamics.
 - **Physics-aware representations:** Representations that jointly encode geometry and physical properties (material, deformability) for simulation are nascent. Neural SDFs can be coupled with elasticity solvers but the training pipeline is complex.
-- **Generalization across scenes:** Current per-scene fitting methods (NeRF, 3DGS) do not generalize — a new optimization is needed per scene. Feed-forward generalizable models (LRM [Hong2023], TripoSR [Tochilkin2024]) are emerging but sacrifice per-scene quality.
+- **Generalization across scenes:** Per-scene fitting methods (NeRF, 3DGS) do not generalize, so each scene needs a new optimization. Feed-forward models are closing the gap: LRM [Hong2023] and TripoSR [Tochilkin2024] for objects, and VGGT, π³, MapAnything and Depth Anything 3 (2025–2026) for scene geometry. Per-scene optimization still wins on final photometric fidelity. The open question is which representation a single network should output: pointmaps, Gaussians, or latents.
+- **Bridging surfaces and primitives:** HKTex (ECCV 2026 Best Paper) shows that 3DGS-style adaptive primitives can live *on* a mesh. Whether geometry, not only appearance, can be represented the same way, and how such intrinsic representations interact with deformation and remeshing, is open.
+- **Standardization and streaming:** With `KHR_gaussian_splatting` ratified, compression (beyond SH truncation), level-of-detail and streaming profiles for splats are the next standardization gaps.
 - **Semantic and editable representations:** Adding semantic fields (LangSplat [Qin2023]) or edit-friendly structure (Scaffold-GS [Lu2023]) to neural representations without sacrificing rendering quality is an active area.
 - **Topology changes and non-rigid:** Implicit representations and Gaussians both struggle with large topological changes (e.g., a object being torn). Neural deformable representations that handle topology change are an open problem.
 
@@ -175,3 +258,8 @@ NeRF           | O(θ)       | Very Slow       | High             | High        
 - [PointNet Project Page (Qi et al.)](https://stanford.edu/~rqi/pointnet/) — Stanford project page with code and data
 - [Occupancy Networks Blog (Autonomous Vision Group)](https://autonomousvision.github.io/occupancy-networks/) — accessible overview
 - [Open3D Documentation](http://www.open3d.org/docs/release/) — standard library for point cloud and mesh processing
+- [VGGT GitHub (Meta / Oxford VGG)](https://github.com/facebookresearch/vggt) — CVPR 2025 Best Paper; code, checkpoints, COLMAP export
+- [MapAnything GitHub (Meta)](https://github.com/facebookresearch/map-anything) — factorized metric reconstruction; wraps DUSt3R, MASt3R, VGGT, π³, DA3
+- [HKTex GitHub (Imperial College London)](https://github.com/circle-group/hktex) — Heat Kernel Textures, ECCV 2026 Best Paper (MIT)
+- [TRELLIS.2 GitHub (Microsoft)](https://github.com/microsoft/TRELLIS.2) — O-Voxel structured latents, CVPR 2026 Best Student Paper
+- [KHR_gaussian_splatting specification (Khronos)](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_gaussian_splatting) — ratified glTF extension for Gaussian splats

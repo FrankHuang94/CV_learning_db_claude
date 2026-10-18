@@ -1,8 +1,10 @@
 # Pre-Deep-Learning Computer Vision: Classical Methods and Engineered Features
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Foundational
 > **Related Sections:** [Timeline Overview](./00_timeline_overview.md) | [Feature Engineering](../00_foundations/03_feature_engineering.md) | [Deep Learning Revolution](./02_deep_learning_revolution.md) | [Object Detection](../02_core_tasks/01_object_detection.md)
+
+> **🆕 October 2026 update:** No major changes to the classical history. Added a note that feed-forward learned reconstruction (VGGT, CVPR 2025 Best Paper; D4RT, CVPR 2026 Best Paper) now challenges the SIFT-based structure-from-motion pipeline, plus a VGGT reference in Further Reading.
 
 ---
 
@@ -59,6 +61,8 @@ The SIFT pipeline has four stages:
 4. **Descriptor computation**: A 16×16 pixel region centred on the keypoint is divided into 4×4 subregions, each contributing an 8-bin orientation histogram, yielding a 128-dimensional descriptor.
 
 The 128-dimensional descriptor was engineered to be distinctive (few false matches) and robust (few missed true matches). SIFT became the foundation of structure-from-motion pipelines (COLMAP and its predecessors), image retrieval systems, and panorama stitching — applications where it was not supplanted by learned features until SIFT-matching benchmarks began appearing in the 2018–2020 period (SuperPoint [DeTone2018], LoFTR [Sun2021]).
+
+By 2025–2026 the challenge had moved beyond the descriptor to the whole pipeline: VGGT [Wang2025] (CVPR 2025 Best Paper) regresses cameras, depth and point maps for many views in a single forward pass, and the CVPR 2026 Best Paper (D4RT) extended feed-forward reconstruction to dynamic scenes. These models remove the explicit detect–describe–match–RANSAC–bundle-adjust chain that SIFT anchored, yet SIFT-based COLMAP reconstructions remain a common source of pseudo-ground-truth cameras and a reference baseline — a measure of how durable Lowe's design has been.
 
 ### HOG
 
@@ -166,3 +170,4 @@ VOC grew from 4 object classes in 2005 to 20 in 2007 (the standard benchmark). V
 - [Felzenszwalb et al. 2010 DPM (IEEE TPAMI)](https://ieeexplore.ieee.org/document/5255236) — deformable part models
 - [Everingham et al. 2010 PASCAL VOC (IJCV)](https://link.springer.com/article/10.1007/s11263-009-0275-4) — benchmark methodology and results
 - [Object Detection in 20 Years: A Survey (Zou et al., 2019)](https://arxiv.org/abs/1905.05055) — comprehensive detection lineage
+- [VGGT: Visual Geometry Grounded Transformer (Wang et al., 2025)](https://arxiv.org/abs/2503.11651) — learned, feed-forward successor to the SIFT-based SfM pipeline

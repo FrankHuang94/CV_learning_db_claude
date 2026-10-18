@@ -1,12 +1,17 @@
 # The Deep Learning Revolution (2012–2015)
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Foundational
 > **Related Sections:**
 > - [Timeline Overview](./00_timeline_overview.md)
 > - [Pre-Deep-Learning Era](./01_pre_deep_learning.md)
 > - [CNN Architectures](../03_architectures/00_cnn_architectures.md)
 > - [Detection & Segmentation Era](./03_detection_segmentation_era.md)
+
+> **🆕 October 2026 update:**
+> - New section **"A Decade Later: Recognition and Preservation (2025–2026)"**: the CVPR Longuet-Higgins Prize went to GoogLeNet (2025) and ResNet (2026); the ICCV 2025 Helmholtz Prize went to He et al.'s PReLU paper (*Delving Deep into Rectifiers*).
+> - Noted the March 2025 public release of the original AlexNet source code by the Computer History Museum and Google.
+> - Added *Delving Deep into Rectifiers* (PReLU / He initialization) to Key Papers and new Further Reading links.
 
 ---
 
@@ -37,6 +42,8 @@ y = F(x, {W_i}) + x        # identity shortcut
 
 This enabled stable training of 50/101/152-layer networks; the ResNet ensemble won ILSVRC-2015 with **3.57% top-5 error**. Residual connections became one of the most consequential primitives in all of deep learning, later central to Transformers.
 
+Between GoogLeNet and ResNet sits a less celebrated but equally load-bearing paper from the same group: **Delving Deep into Rectifiers** [He2015] (ICCV 2015) introduced the parametric ReLU (PReLU) and the variance-preserving "He" (Kaiming) initialization for ReLU networks, and reported 4.94% top-5 error on ImageNet — the first result to fall below the ~5.1% human error estimate from the ILSVRC analysis. The He initialization remains a default in deep-learning frameworks.
+
 ```mermaid
 graph LR
     A[2012 AlexNet<br/>15.3% top-5] --> B[2014 VGG / GoogLeNet<br/>~7% top-5]
@@ -44,6 +51,14 @@ graph LR
     C --> D[Universal CNN backbone<br/>for all tasks]
     style C fill:#2d6a4f,color:#fff
 ```
+
+---
+
+## A Decade Later: Recognition and Preservation (2025–2026)
+
+The papers narrated above received their formal "test-of-time" verdicts in 2025–2026, a decade after publication. The IEEE PAMI TC's **Longuet-Higgins Prize** (awarded at CVPR to CVPR papers from ten years earlier) went to GoogLeNet, *Going Deeper with Convolutions*, together with FCN in 2025, and to ResNet, *Deep Residual Learning for Image Recognition*, together with YOLO in 2026. The biennial **Helmholtz Prize** at ICCV 2025 honoured *Delving Deep into Rectifiers* (He, Zhang, Ren, Sun) alongside Fast R-CNN. The era's founding artefact was also preserved: in March 2025 the Computer History Museum, working with Google, publicly released the original 2012 AlexNet source code written by Krizhevsky, making the code that triggered the revolution available as a historical record.
+
+The recognition is a reminder of how much of the 2012–2015 toolkit survives in 2026 systems: residual connections sit inside every ViT and diffusion transformer, He initialization remains a framework default for ReLU-family layers, and ResNet backbones remain common in deployed and edge models.
 
 ---
 
@@ -57,6 +72,7 @@ graph LR
 | GoogLeNet/Inception | Szegedy, Liu, Jia, et al. | 2015 | CVPR | Multi-branch inception modules; efficiency |
 | ResNet | He, Zhang, Ren, Sun | 2016 | CVPR | Residual connections; 152-layer training |
 | Batch Normalization | Ioffe, Szegedy | 2015 | ICML | Normalization enabling faster/deeper training |
+| Delving Deep into Rectifiers (PReLU) | He, Zhang, Ren, Sun | 2015 | ICCV | PReLU + He initialization; 4.94% top-5, below estimated human error; Helmholtz Prize 2025 |
 
 ---
 
@@ -89,3 +105,6 @@ graph LR
 - [VGG (arXiv:1409.1556)](https://arxiv.org/abs/1409.1556) — very deep convolutional networks
 - [Batch Normalization (arXiv:1502.03167)](https://arxiv.org/abs/1502.03167) — stabilizing deep training
 - [ImageNet (CVPR 2009)](https://www.image-net.org/) — the dataset
+- [Delving Deep into Rectifiers (arXiv:1502.01852)](https://arxiv.org/abs/1502.01852) — PReLU and He initialization
+- [AlexNet source code (Computer History Museum, 2025)](https://github.com/computerhistory/AlexNet-Source-Code) — the original 2012 code, released for preservation
+- [Longuet-Higgins Prize past awardees (IEEE PAMI TC)](https://tc.computer.org/tcpami/awards/longuet-higgins-prize/) — test-of-time awards incl. GoogLeNet (2025) and ResNet (2026)

@@ -1,8 +1,14 @@
 # Computer Vision: A Comprehensive Historical Timeline
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Foundational
 > **Related Sections:** [Deep Learning Revolution](./02_deep_learning_revolution.md) | [CV Foundations Overview](../00_foundations/00_overview.md) | [CNN Architectures](../03_architectures/00_cnn_architectures.md) | [Foundation Model Era](./06_foundation_model_era.md)
+
+> **🆕 October 2026 update:**
+> - New section **"Concept-Level Perception, Interactive World Models, and Test-of-Time Recognition (2025–2026)"** covering DINOv3 (Aug 2025), SAM 3 / SAM 3D (Nov 2025), Genie 3 → Project Genie → Waymo World Model (Aug 2025 – Feb 2026), π\*0.6 and Gemini Robotics 1.5, and AMI Labs' $1.03B seed round (Mar 2026).
+> - Corrected the Mermaid timeline: SAM 2, π₀ and Genie 2 moved to 2024 (their actual release year); 2025 and 2026 rows rebuilt with verified milestones, including CVPR 2026 Best Paper (D4RT) and ECCV 2026.
+> - Added the decade-later awards that canonised the deep-learning era: Longuet-Higgins Prize 2025 (GoogLeNet, FCN) and 2026 (ResNet, YOLO), Helmholtz Prize 2025 (Fast R-CNN, PReLU), NeurIPS 2025 Test of Time (Faster R-CNN).
+> - New Key Papers rows (VGGT, DINOv3, SAM 3), an updated era table, new open problems (RL from robot experience, validating generative simulators), and new Further Reading links.
 
 ---
 
@@ -88,9 +94,27 @@ Alexander Kirillov, Eric Mintun, Nikhila Ravi, and colleagues at Meta AI introdu
 
 DINOv2 [Oquab2023] (arXiv:2304.07193) scaled DINO-style self-supervised ViT training on a curated 142M-image dataset, producing features that serve as strong off-the-shelf backbones across depth estimation, segmentation, classification, and retrieval. Depth Anything [Yang2024], presented at CVPR 2024 (with V2 at NeurIPS 2024), combined 1.5M labelled depth images with 62M+ unlabelled images to produce a monocular depth foundation model.
 
-The integration of vision with language at the level of large pretrained models (GPT-4V, Gemini 1.5, Claude 3) and the emergence of Vision-Language-Action (VLA) models such as Google DeepMind's RT-2 [Brohan2023] (July 2023) and Physical Intelligence's π0 represented the incorporation of robotic action as a modality, enabling generalised manipulation from natural language instructions. Google DeepMind's Genie [Bruce2024], introduced in March 2024, demonstrated a generative world model trained without action labels from internet videos at 11B parameters, spawning Genie 2 (December 2024) and Genie 3 (August 2025). NVIDIA's Cosmos (2025) and related projects pushed world-model capabilities toward physically accurate video prediction at scale.
+The integration of vision with language at the level of large pretrained models (GPT-4V, Gemini 1.5, Claude 3) and the emergence of Vision-Language-Action (VLA) models such as Google DeepMind's RT-2 [Brohan2023] (July 2023) and Physical Intelligence's π0 (October 2024) represented the incorporation of robotic action as a modality, enabling generalised manipulation from natural language instructions. Google DeepMind's Genie [Bruce2024], introduced in March 2024, demonstrated a generative world model trained without action labels from internet videos at 11B parameters, spawning Genie 2 (December 2024) and Genie 3 (August 2025). NVIDIA's Cosmos (January 2025) and related projects pushed world-model capabilities toward physically accurate video prediction at scale.
 
 By mid-2026, the dominant paradigm combines a large-scale pretrained vision encoder (typically ViT-based), a language decoder (typically an autoregressive LLM), and task-specific adaptation via instruction tuning or retrieval augmentation. Research frontiers include sample-efficient adaptation, compositionality, 3D scene understanding from monocular video, and physical simulation fidelity in generative world models.
+
+---
+
+## Concept-Level Perception, Interactive World Models, and Test-of-Time Recognition (2025–2026)
+
+The eighteen months from mid-2025 to late 2026 did not introduce a new paradigm so much as push the foundation-model paradigm along three axes simultaneously: *what* a perception model can be prompted with, *how interactive* a learned world simulator can be, and *how* embodied policies improve after deployment.
+
+**Self-supervised features at 7B scale.** Meta's DINOv3 [Simeoni2025] (arXiv:2508.10104, August 2025) scaled DINO-style self-distillation to a 7B-parameter ViT teacher trained on roughly 1.7B curated images. Its central technical contribution, *Gram anchoring*, regularises the patch-feature Gram matrix towards that of an earlier checkpoint, addressing the long-known degradation of dense feature maps during long training schedules; the 7B teacher was then distilled into a family of ViT-S to ViT-H+ and ConvNeXt students. DINOv3 thus closed the loop opened by DINO in 2021: a single frozen, label-free backbone competitive on both global and dense tasks.
+
+**From "segment anything" to "segment every instance of a concept".** SAM 3 [Carion2026] (arXiv:2511.16719, November 2025; ICLR 2026) generalised SAM's geometric prompts to *concept prompts* — short noun phrases, image exemplars, or both — and defined the Promptable Concept Segmentation (PCS) task: return masks and persistent identities for *all* matching instances in images and video. A detector and a memory-based video tracker share one backbone, and a separate *presence head* decouples recognition ("is the concept here at all?") from localisation. A model-in-the-loop data engine yielded roughly 4M unique concept labels including hard negatives, released with the SA-Co benchmark; the authors report roughly doubling the accuracy of prior systems on image and video PCS. Meta released SAM 3D alongside it, extending the promptable paradigm to single-image 3D reconstruction of objects and human bodies. In effect, SAM 3 folds open-vocabulary detection — the descendant of the R-CNN lineage — into the promptable-segmentation framework.
+
+**Feed-forward geometry replaces optimisation pipelines.** VGGT [Wang2025] (CVPR 2025 Best Paper, Oxford VGG and Meta) showed that a single feed-forward Transformer can predict cameras, depth maps, point maps and tracks for many views in one pass, challenging the SIFT-plus-bundle-adjustment structure-from-motion pipeline that had been standard since the 2000s. The CVPR 2026 Best Paper, *Efficiently Reconstructing Dynamic Scenes One D4RT at a Time* (Google DeepMind, UCL and Oxford), extended this programme to dynamic scenes, predicting geometry, cameras, depth and cross-frame correspondences from video — two consecutive CVPR best papers for learned 3D/4D reconstruction.
+
+**World models become interactive and industrial.** Genie 3 (Google DeepMind, August 2025) generated navigable environments in real time (reported at roughly 24 fps and 720p) with minutes-scale consistency. On 29 January 2026 Google opened *Project Genie*, an experimental prototype built on Genie 3, to Google AI Ultra subscribers in the US. On 6 February 2026 Waymo announced the *Waymo World Model*, built on Genie 3 and adapted to driving, which generates controllable camera *and* lidar outputs to simulate rare events never observed by the fleet — the first prominent case of a general-purpose generative world model being used as a production simulator for a safety-critical system. On the research-lab side, AMI Labs, founded by Yann LeCun (chairman) with Alexandre LeBrun as CEO, announced a $1.03B seed round on 10 March 2026 to build JEPA-style world models that predict in representation space rather than pixel space.
+
+**Embodied policies learn from experience.** Physical Intelligence's π\*0.6 (November 2025) added RECAP (*Reinforcement learning with Experience and Corrections via Advantage-conditioned Policies*) on top of the π0.6 VLA, combining demonstrations, expert interventions and autonomous rollouts; the company reports more than doubled throughput on hard tasks such as espresso making and laundry folding. Google DeepMind's Gemini Robotics 1.5 and Gemini Robotics-ER 1.5 (September 2025) split robot control into an embodied-reasoning "planner" model (available through the Gemini API) and a VLA "actor", and NVIDIA's GR00T N1.6 adopted a Cosmos-Reason-2B vision-language backbone with a 32-layer diffusion-transformer action head. In 2026 these lines continued with π0.7 (April), GR00T N1.7 and Google DeepMind's Gemini Robotics 2 (July), which extended a single VLA to whole-body humanoid control. These developments are treated in depth in the [Foundation Model Era](./06_foundation_model_era.md) file.
+
+**The deep-learning era is canonised.** The decade-later awards of 2025–2026 formally recognised the papers narrated in the earlier sections of this timeline: the CVPR Longuet-Higgins Prize went to GoogLeNet and FCN (2025) and to ResNet and YOLO (2026); the ICCV 2025 Helmholtz Prize went to Fast R-CNN and to He et al.'s PReLU paper (*Delving Deep into Rectifiers*); and the NeurIPS 2025 Test of Time Award went to Faster R-CNN, whose authors presented it in San Diego in December 2025, with Kaiming He's accompanying talk titled *A Brief History of Visual Object Detection*. At ECCV 2026 (Malmö, September 2026; more than 10,000 submissions), the Best Paper was reportedly awarded to *Heat Kernel Textures* (Imperial College London).
 
 ---
 
@@ -134,12 +158,21 @@ timeline
         2020 : DDPM — diffusion models (NeurIPS); ViT arXiv Oct
         2021 : ViT (ICLR); CLIP (ICML); DINO (ICCV); Swin (ICCV Marr Prize)
         2021 : MAE (arXiv Nov → CVPR 2022)
-    section 2022–2026
+    section 2022–2025
         2022 : Stable Diffusion / LDM (CVPR oral)
         2023 : SAM (ICCV); DINOv2 (arXiv); RT-2 VLA (Jul)
         2024 : Depth Anything (CVPR); Genie world model (Mar); GPT-4V widely deployed
-        2025 : Genie 2 & 3; Cosmos; π0 robotics; SAM 2
-        2026 : VLA foundation models; multimodal reasoning agents
+        2024 : SAM 2 video segmentation (Jul); π0 VLA (Oct); Genie 2 (Dec)
+        2025 : Cosmos world foundation models (Jan); VGGT CVPR Best Paper
+        2025 : Genie 3 real-time world model (Aug); DINOv3 7B SSL (Aug)
+        2025 : Gemini Robotics 1.5 (Sep); SAM 3 and SAM 3D (Nov); π*0.6 RL from experience (Nov)
+        2025 : Faster R-CNN wins NeurIPS Test of Time
+    section 2026
+        2026 : Project Genie (Jan); Waymo World Model on Genie 3 (Feb)
+        2026 : AMI Labs $1.03B seed for JEPA world models (Mar); π0.7 (Apr)
+        2026 : Gemini Robotics 2 whole-body humanoid VLA (Jul)
+        2026 : CVPR Best Paper D4RT 4D reconstruction; ResNet and YOLO win Longuet-Higgins Prize
+        2026 : ECCV Malmö (Sep); concept-promptable perception and VLA foundation models
 ```
 
 ---
@@ -164,6 +197,10 @@ timeline
 | An Image is Worth 16×16 Words (ViT) | Dosovitskiy et al. | 2021 | ICLR | Pure Transformer on image patches; competes with CNNs at scale |
 | Learning Transferable Visual Models from Natural Language (CLIP) | Radford et al. | 2021 | ICML | Contrastive image–text training on 400M pairs; zero-shot visual classification |
 | Segment Anything (SAM) | Kirillov et al. | 2023 | ICCV | Promptable segmentation foundation model; SA-1B dataset with 1B+ masks |
+| VGGT: Visual Geometry Grounded Transformer | Wang, Chen, Karaev, Vedaldi, Rupprecht, Novotny | 2025 | CVPR (Best Paper) | Feed-forward prediction of cameras, depth, point maps and tracks; learned alternative to SfM |
+| DINOv3 | Siméoni et al. | 2025 | arXiv:2508.10104 | 7B-parameter self-distilled ViT; Gram anchoring preserves dense features; distilled model family |
+| SAM 3: Segment Anything with Concepts | Carion et al. | 2026 | ICLR | Promptable Concept Segmentation from noun phrases/exemplars; presence head; SA-Co benchmark |
+| Efficiently Reconstructing Dynamic Scenes One D4RT at a Time | Google DeepMind, UCL, Oxford | 2026 | CVPR (Best Paper) | Feed-forward 4D reconstruction: geometry, cameras, depth, correspondences from video |
 
 ---
 
@@ -175,7 +212,7 @@ timeline
 | Engineered Features (1970–2011) | Real-time face detection; reliable multi-scale feature matching | Brittle to domain shift; feature design requires expert knowledge; semantic gap |
 | Deep CNN Supervised Era (2012–2017) | Sub-5% ImageNet top-5 error; real-time detection at high accuracy | Requires millions of labelled examples; limited generalisability across tasks |
 | Transformer + SSL Era (2017–2022) | Strong zero-shot transfer; emergent segmentation structure in attention maps | Quadratic attention cost; requires large corpora; positional encoding fragile |
-| Foundation Model Era (2023–2026) | Promptable segmentation; VLA robot control; generative world models | Hallucination and factual errors; high compute cost; 3D consistency not guaranteed |
+| Foundation Model Era (2023–2026) | Promptable and concept-level segmentation (SAM → SAM 3); feed-forward 3D/4D reconstruction; VLA robot control with RL fine-tuning; real-time interactive world models used as production simulators | Hallucination and factual errors; high compute cost; 3D consistency not guaranteed; no accepted protocol for validating generative simulators |
 
 ---
 
@@ -188,6 +225,9 @@ timeline
 - **Causal and physical understanding**: World models (Genie, Cosmos) simulate plausible visual dynamics but cannot reliably model counterfactuals or Newtonian mechanics, limiting their utility for physics-grounded prediction.
 - **Ethical and societal dimensions**: Foundation models trained on web-scraped data inherit and amplify demographic biases; provenance, attribution, and copyright of training data remain legally and technically unresolved.
 - **Grounding language in perception**: VLMs produce fluent descriptions of images but the representations linking language tokens to visual primitives are not well understood, raising questions about what "understanding" means in multimodal models.
+- **Validating generative simulators**: With Genie 3-derived models now used to generate rare driving scenarios (Waymo World Model, 2026), the question of how to certify that a learned simulator's rare-event distribution is faithful enough for safety arguments has moved from academic to operational.
+- **Learning from deployment experience**: π\*0.6-style RL on top of imitation-pretrained VLAs reopens classical questions — credit assignment, reward specification, safe exploration — at foundation-model scale, with little shared methodology for evaluation.
+- **Concept-level long tail**: SAM 3's concept prompts expose a new failure surface — ambiguous, fine-grained or compositional noun phrases — that closed-vocabulary benchmarks never measured.
 
 ---
 
@@ -199,3 +239,9 @@ timeline
 - [On the Opportunities and Risks of Foundation Models (Bommasani et al., 2022)](https://arxiv.org/abs/2108.07258) — Stanford CRFM report on foundation model implications
 - [Thirty Years After Marr's Vision (Carandini, 2012)](https://www.researchgate.net/publication/273330363) — retrospective on Marr's framework from computational neuroscience
 - [Segment Anything (Kirillov et al., 2023)](https://arxiv.org/abs/2304.02643) — SAM paper establishing the promptable foundation model paradigm
+- [SAM 3: Segment Anything with Concepts (Carion et al., 2025)](https://arxiv.org/abs/2511.16719) — promptable concept segmentation in images and video
+- [DINOv3 (Siméoni et al., 2025)](https://arxiv.org/abs/2508.10104) — 7B self-supervised vision backbone with Gram anchoring
+- [VGGT: Visual Geometry Grounded Transformer (Wang et al., 2025)](https://arxiv.org/abs/2503.11651) — CVPR 2025 Best Paper; feed-forward multi-view geometry
+- [The Waymo World Model (Waymo, Feb 2026)](https://waymo.com/blog/2026/02/the-waymo-world-model-a-new-frontier-for-autonomous-driving-simulation) — Genie 3-based generative simulator for autonomous driving
+- [Project Genie (Google, Jan 2026)](https://blog.google/innovation-and-ai/models-and-research/google-deepmind/project-genie/) — public research prototype of the Genie 3 world model
+- [NeurIPS 2025 Test of Time Award: Faster R-CNN](https://blog.neurips.cc/2025/11/26/announcing-the-test-of-time-paper-award-for-neurips-2025/) — retrospective on a decade of learned region proposals

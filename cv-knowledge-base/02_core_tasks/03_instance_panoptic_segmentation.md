@@ -1,6 +1,6 @@
 # Instance & Panoptic Segmentation
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
 > **Related Sections:** [Semantic Segmentation](./02_semantic_segmentation.md) · [Object Detection](./01_object_detection.md) · [Vision Transformers](../03_architectures/01_vision_transformers.md) · [Any-Model Paradigm](../12_research_frontier_2024_2026/02_any_model_paradigm.md)
 

@@ -1,8 +1,14 @@
 # Core Vision Datasets: Classification, Detection, Segmentation, and Scene Understanding
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Intermediate / Advanced
 > **Related Sections:** [Image Classification](../02_core_tasks/00_image_classification.md) · [Object Detection](../02_core_tasks/01_object_detection.md) · [Semantic Segmentation](../02_core_tasks/02_semantic_segmentation.md) · [Evaluation Metrics](./04_evaluation_metrics.md)
+
+> **🆕 October 2026 update:**
+> - Added **SA-1B** and Meta's **SA-Co** (Segment Anything with Concepts, Nov 2025): an open-vocabulary concept-segmentation benchmark with ~270K unique concepts, built by the SAM 3 data engine. SAM 3 reaches 54.1 cgF1 on SA-Co/Gold against a 72.8 human reference.
+> - Added the DINOv3 web-scale curated pretraining corpora **LVD-1689M** and **SAT-493M** (Aug 2025). These continue the shift from labelled ImageNet-21K pretraining to curated, label-free image pools.
+> - Added **RF100-VL** (Roboflow + CMU, 2025), a 100-dataset multi-domain detection benchmark now reported alongside COCO by real-time detectors (e.g. RF-DETR-2XL reports 60.1 COCO AP at 17.2 ms).
+> - Refreshed the SOTA claims for COCO and LVIS: Co-DETR reaches 66.0 COCO test-dev AP, and SAM 3 reaches 48.5 zero-shot LVIS mask AP vs 38.5 for DINO-X. Also noted that Papers With Code leaderboards are now archived.
 
 ---
 
@@ -13,6 +19,8 @@ The modern computer vision research ecosystem is anchored by a small number of c
 The datasets surveyed here span nearly two decades of dataset design evolution: from ImageNet's WordNet-synset taxonomy (Deng et al., 2009) through COCO's instance-level annotations (Lin et al., 2014), the large-vocabulary long-tail distribution of LVIS (Gupta et al., 2019), and the panoptic unification in ADE20K (Zhou et al., 2017). Each design decision—what to label, at what granularity, with what consensus mechanism, and over what image distribution—embeds assumptions that propagate into model biases. A researcher relying on ImageNet top-1 accuracy alone, for instance, will systematically miss failure modes on rare object classes, texture-shifted images, and out-of-distribution scenes.
 
 A second theme is the shift from single-task to multi-task annotation. COCO was groundbreaking in providing bounding boxes, segmentation masks, keypoints, and captions on the same images. Open Images V7 and LVIS push this further with relationship annotations and dense long-tail coverage. Modern pretraining work leverages these multi-annotation datasets to jointly supervise detection, segmentation, and captioning heads—a paradigm central to systems like Florence-2 and InternImage. Understanding which datasets support which annotation types is prerequisite knowledge for designing any multi-task learning pipeline.
+
+A third theme, which dominated 2025–2026, is the rise of **model-in-the-loop data engines** and **label-free curated pools**. SA-1B (2023) and SA-Co (2025) were annotated mostly by successive SAM generations with human verification, and their scale and concept coverage now exceed anything produced by manual crowdsourcing. DINOv3's LVD-1689M likewise shows that a carefully curated, unlabelled image pool can replace ImageNet-21K as the default backbone pretraining set. The classical benchmarks (ImageNet, COCO, ADE20K) have increasingly become *evaluation-only* artefacts, often run with frozen backbones, while the training data behind frontier models is internal or machine-annotated.
 
 ---
 
@@ -29,6 +37,8 @@ The full ImageNet database contains over 14 million images organized under the W
 
 **Benchmark significance:** The AlexNet 2012 result (top-5 error 15.3% vs. 26.2% for the prior best) catalysed the deep learning revolution. As of 2024, ViT-based models exceed 90% top-1 on ImageNet-1K, and the dataset is now considered "solved" for coarse classification, driving the community toward harder variants (ImageNet-A, -R, -Sketch, ObjectNet) that test robustness and out-of-distribution generalization.
 
+**2025–2026 status:** Fine-tuned ImageNet-1K top-1 has barely moved since 2022 (≈91%). Its role has shifted. It is now mainly a *diagnostic* for frozen representations (linear or k-NN probes on backbones such as DINOv3 [Simeoni2025]) and a source of robustness variants. It is no longer used to rank architectures. Label errors in the validation set (documented by [Beyer2020]) cap the meaningful ceiling well below 100%.
+
 ---
 
 ## MS-COCO
@@ -43,6 +53,8 @@ COCO contains 328K images annotated with 80 object categories, 2.5 million label
 **Crowdsourcing design:** Annotations were collected via a staged Amazon Mechanical Turk pipeline with instance segmentation via workers clicking boundary polygons. Inter-annotator agreement and hierarchical quality control are described in [Lin2014].
 
 **Caption annotations:** Each of the 328K images has 5 independently written captions, yielding a total of ~1.5M reference captions used for image captioning evaluation (CIDEr, BLEU-4, METEOR, SPICE).
+
+**Current state of the leaderboard (2026):** Closed-vocabulary COCO detection is close to ceiling. Co-DETR with a 304M-parameter ViT-L reported 66.0 box AP on test-dev in 2023, and later systems have added only marginal gains. Research attention has moved to two regimes. The first is (i) **real-time detection**, where DETR-family detectors now beat YOLO-family detectors. For example, RF-DETR-2XL reports 60.1 AP<sub>50:95</sub> at 17.2 ms, and RF-DETR-M reports 54.7 AP at 4.4 ms, with all numbers re-measured in-house by Roboflow. The second is (ii) **zero-shot / open-vocabulary transfer**. Here SAM 3 reports 53.6 COCO box AP when prompted with category names, without COCO-specific training [Carion2025].
 
 ---
 
@@ -112,6 +124,8 @@ LVIS annotates 164K images (from COCO) with high-quality instance segmentation m
 
 **Evaluation:** AP_r, AP_c, AP_f stratify performance by frequency, exposing model behavior on underrepresented classes.
 
+**Open-vocabulary use (2025–2026):** LVIS has become the standard *zero-shot* testbed for concept-prompted detectors and segmenters. SAM 3 reports 48.5 LVIS mask AP without LVIS training, against 38.5 for DINO-X. OWLv2 reaches 43.4, but it was partially trained on LVIS. Supervised Co-DETR fine-tuned on LVIS reached 68.0 box AP and 56.0 mask AP on LVIS val (2023).
+
 ---
 
 ## Places
@@ -122,6 +136,38 @@ LVIS annotates 164K images (from COCO) with high-quality instance segmentation m
 Places365-Standard: 1.8M training images × 365 scene categories + 50 val / 900 test images per category. The Places365-Challenge extends training to ~8M images. The full Places database exceeds 10M images. The database is organized by semantic scene categories (e.g., "abbey", "kitchen", "highway") rather than object categories, making it complementary to ImageNet for transfer learning studies on scene-level tasks.
 
 **Cross-dataset transfer:** Models pretrained on Places transfer better to satellite image classification and medical scene labeling than ImageNet-pretrained models in some studies, motivating dataset-selection analysis in transfer learning.
+
+---
+
+## SA-1B and SA-Co (Segment Anything Data Engines)
+
+**Citation:** [Kirillov2023] Kirillov, A. et al. (2023). Segment Anything. *ICCV 2023*. [Carion2025] Carion, N., Gustafson, L., Hu, Y.-T., et al. (2025). SAM 3: Segment Anything with Concepts. Meta Superintelligence Labs.
+
+**SA-1B** (2023) contains ~11M licensed, privacy-protected images with ~1.1B class-agnostic masks, produced by a three-stage model-in-the-loop data engine (assisted-manual → semi-automatic → fully automatic). It defined the *promptable segmentation* task. Its masks carry no semantic labels.
+
+**SA-Co** (Segment Anything with Concepts, Nov 2025) is the data and benchmark release behind SAM 3. It adds *semantics*: each image or video is paired with short noun phrases, and every instance matching a phrase is exhaustively masked with a unique object ID. Phrases with no matching objects serve as hard *negative prompts*. Key facts from the official release:
+- The benchmark spans **~270K unique concepts**, which Meta describes as over 50× more than earlier open-vocabulary segmentation benchmarks. It has two image splits (**SA-Co/Gold**, triple-annotated; **SA-Co/Silver**) and a video split (**SA-Co/VEval**).
+- The training data engine automatically annotated **over 4M unique concepts**, combining SAM/MLLM proposals with AI and human verifiers.
+- The primary metric is **cgF1**, a classification-gated F1 that multiplies image-level presence calibration (IL_MCC) by positive micro-F1 on localisation (see [Evaluation Metrics](./04_evaluation_metrics.md)).
+- Reference results on SA-Co/Gold (instance segmentation, cgF1): human 72.8; **SAM 3 54.1**; OWLv2* 24.6; DINO-X 21.3; Gemini 2.5 13.0. SAM 3 is an 848M-parameter detector plus tracker sharing one vision encoder. SAM 3.1 checkpoints with faster multi-object tracking followed in March 2026.
+
+**Why it matters:** SA-Co turns open-vocabulary segmentation from a 1,203-class LVIS problem into a quarter-million-concept problem with explicit negatives. Under that change, VLM-based detectors that look strong on COCO-style benchmarks lose most of their accuracy. The approach of a model-in-the-loop engine with human verification only on hard cases has become the template for new large annotation efforts. SAM 3D (Nov 2025) extended it to 3D (see [3D and Robotics Datasets](./02_3d_and_robotics_datasets.md)).
+
+---
+
+## LVD-1689M and SAT-493M (Curated Pretraining Pools)
+
+**Citation:** [Simeoni2025] Siméoni, O., Vo, H. V., Seitzer, M., et al. (2025). DINOv3. arXiv:2508.10104 (Meta FAIR).
+
+DINOv3 (Aug 2025) was trained without labels on **LVD-1689M**, a curated pool of roughly 1.7B web images, and in a separate variant on **SAT-493M**, ~493M satellite images. Its 7B-parameter ViT teacher was distilled into ViT-S/B/L/H+ and ConvNeXt students. The datasets themselves are not released. They matter as evidence that *curation by retrieval/clustering around a seed distribution* scales label-free pretraining beyond ImageNet-21K. Frozen DINOv3 features are reported to outperform specialised state-of-the-art models across many dense tasks without fine-tuning. That makes ADE20K, COCO and NYUv2 increasingly *probe* benchmarks for frozen backbones. Downstream releases include a COCO2017 detection head, an ADE20K segmentation head, and the Canopy Height Maps v2 model (Mar 2026), all built on the frozen 7B backbone.
+
+---
+
+## RF100-VL (Multi-Domain Detection for VLMs)
+
+**Citation:** [Robicheaux2025] Robicheaux, P., Popov, M., Madan, A., Robinson, I., Nelson, J., Ramanan, D., & Peri, N. (2025). Roboflow100-VL: A Multi-Domain Object Detection Benchmark for Vision-Language Models. Roboflow / CMU.
+
+RF100-VL is a curated set of 100 real-world detection datasets hosted on Roboflow Universe and distributed in COCO-JSON format. Most of its domains are under-represented in web pretraining data. It has a few-shot variant (**RF100-VL-FSOD**) and a 20-dataset subset (**RF20-VL**), so it can evaluate both conventional fine-tuned detectors and VLM-style zero-shot and few-shot detection. It has quickly become the *second axis* reported by real-time detectors next to COCO. RF-DETR, for example, reports both COCO AP and RF100-VL AP, because COCO gains increasingly fail to transfer to out-of-distribution domains.
 
 ---
 
@@ -138,6 +184,10 @@ Places365-Standard: 1.8M training images × 365 scene categories + 50 val / 900 
 | LVIS | Gupta, Dollar, Girshick (FAIR) | 2019 | CVPR | 164K images, 1,203 categories, 2.2M instances; long-tail distribution |
 | Places365 | Zhou, Lapedriza et al. (MIT) | 2018 | TPAMI | 1.8M train images, 365 scene categories; largest scene recognition DB |
 | ImageNet-21K | Deng et al. / Ridnik et al. (2021) | 2009/2021 | CVPR/arXiv | 14.2M images, 21.8K classes; preferred pretraining for ViT-based models |
+| SA-1B | Kirillov et al. (Meta AI) | 2023 | ICCV | ~11M images, ~1.1B class-agnostic masks; model-in-the-loop data engine |
+| SA-Co (SAM 3) | Carion, Gustafson, Hu et al. (Meta) | 2025 | Meta tech report | ~270K-concept open-vocabulary segmentation benchmark (Gold/Silver/VEval); 4M+ auto-annotated concepts; cgF1 metric |
+| LVD-1689M / SAT-493M (DINOv3) | Siméoni et al. (Meta FAIR) | 2025 | arXiv | ~1.7B curated web images / ~493M satellite images for label-free 7B ViT pretraining (not released) |
+| RF100-VL | Robicheaux, Popov et al. (Roboflow/CMU) | 2025 | arXiv | 100 multi-domain detection datasets + few-shot (FSOD) variant; OOD complement to COCO |
 
 ---
 
@@ -153,6 +203,9 @@ Places365-Standard: 1.8M training images × 365 scene categories + 50 val / 900 
 | Cityscapes | 2.975K fine | 19 (eval) | Dense pixel + instance | Sem / Inst seg | mIoU / AP |
 | LVIS v1 | 100K | 1,203 | Instance mask | Instance seg | AP, AP_r/c/f |
 | Places365 | 1.8M | 365 | Image-level class | Scene classif. | Top-1 / Top-5 |
+| SA-1B | ~11M | none (class-agnostic) | Mask | Promptable seg | mIoU (prompted) |
+| SA-Co/Gold | eval only | ~270K concepts (full benchmark) | Phrase → all instance masks + negatives | Concept seg / det | cgF1 (IL_MCC × pmF1) |
+| RF100-VL | 100 datasets (varied) | per-dataset | BBox | Multi-domain det | AP<sub>50:95</sub> (avg) |
 
 ---
 
@@ -167,18 +220,22 @@ Places365-Standard: 1.8M training images × 365 scene categories + 50 val / 900 
 | ADE20K | Deep hierarchical annotation; scene + object + part | Small absolute size (20K train); domain covers interior/exterior scenes non-uniformly |
 | Cityscapes | High-resolution, high-quality fine annotations; real-world urban | Single domain (European cities); 5K fine images limit model capacity |
 | Places365 | Largest scene database; 365 diverse categories | Image-level only; no spatial annotations |
+| SA-Co | Massive concept vocabulary; explicit negative prompts; image + video splits | Machine-in-the-loop labels inherit SAM/MLLM biases; noun-phrase prompts only (no complex referring expressions) |
+| RF100-VL | Domain diversity; exposes COCO-overfitting; few-shot protocol | Heterogeneous label quality across 100 community datasets; averaged AP hides per-domain failure |
 
 ---
 
 ## Open Problems & Research Gaps
 
-- **Long-tail and open-vocabulary evaluation:** LVIS exposes failure at 1,203 categories; real-world systems encounter millions. Open-vocabulary detection benchmarks (OWLv2, GLIP evaluations) are still being standardized.
+- **Long-tail and open-vocabulary evaluation:** LVIS exposes failure at 1,203 categories; real-world systems encounter millions. SA-Co (2025) raises the vocabulary to ~270K concepts with negative prompts. Even so, the best model (SAM 3, 54.1 cgF1 on SA-Co/Gold) remains well below human agreement (72.8), and general-purpose VLMs score far lower (Gemini 2.5: 13.0). Long referring expressions, compositional attributes and relations are still outside the benchmark's noun-phrase scope.
+- **Machine-annotated ground truth:** As data engines (SA-1B, SA-Co) replace manual labelling, benchmarks risk measuring agreement with the *previous model generation*. Protocols for auditing model-in-the-loop labels, such as triple human annotation in SA-Co/Gold and oracle-over-annotators scoring, are still ad hoc.
 - **Dataset bias and spurious correlations:** ImageNet models rely on texture cues [Geirhos2019]. Systematic tools for measuring and correcting distribution shift remain an open area, especially as synthetic data increasingly enters training pipelines.
 - **Annotation noise quantification:** Ground-truth labels in crowdsourced datasets contain systematic errors (e.g., COCO instance boundaries). Benchmarks for measuring annotation noise impact on model performance are underdeveloped.
 - **Multi-label and compositional ground truth:** Most benchmarks assign one dominant category; real scenes have compositional semantics. GQA and Visual Genome point toward richer ground truth, but scalable annotation for compositional scene graphs remains unsolved.
 - **Temporal and video extensions:** Static image benchmarks do not measure temporal consistency. Video Object Segmentation benchmarks (DAVIS, YouTube-VOS) exist but lack the scale of image-domain equivalents.
 - **Geographical and demographic diversity:** ImageNet, COCO, and Places are disproportionately drawn from Western contexts. Recent work (GeoDE, Dollar-Sign datasets) quantifies this; fixing it at scale is unresolved.
-- **Benchmark saturation and Goodhart's Law:** Once a benchmark like ImageNet-1K is effectively saturated (>90% top-1), continued optimization risks overfitting evaluation rather than improving real-world capability. New evaluation paradigms (e.g., model soups, diverse test suites) are active research areas.
+- **Benchmark saturation and Goodhart's Law:** Once a benchmark like ImageNet-1K is effectively saturated (>90% top-1), continued optimization risks overfitting evaluation rather than improving real-world capability. New evaluation paradigms (e.g., model soups, diverse test suites) are active research areas. Multi-domain suites (RF100-VL) and frozen-backbone probing protocols (DINOv3-style) are the current responses.
+- **Leaderboard infrastructure:** Papers With Code, the de facto public SOTA tracker for these datasets, is no longer maintained. Its evaluation tables survive only as a static archive (`pwc-archive` on Hugging Face). Leaderboards are now fragmented across benchmark-owner sites, Hugging Face Spaces and self-reported model cards, so "current SOTA" claims are harder to verify and protocol differences are less visible.
 
 ---
 
@@ -186,7 +243,12 @@ Places365-Standard: 1.8M training images × 365 scene categories + 50 val / 900 
 
 - [ImageNet website and ILSVRC results archive](https://www.image-net.org/)
 - [COCO benchmark leaderboard](https://cocodataset.org/#detection-leaderboard)
-- [Papers With Code — ImageNet benchmark](https://paperswithcode.com/sota/image-classification-on-imagenet)
+- [Papers With Code — ImageNet benchmark](https://paperswithcode.com/sota/image-classification-on-imagenet) (archived; data dumps at [paperswithcode-data](https://github.com/paperswithcode/paperswithcode-data))
 - [Beyer et al. (2020) — Are we done with ImageNet? arXiv:2006.07159](https://arxiv.org/abs/2006.07159)
 - [Gupta et al. (2019) — LVIS paper arXiv:1908.03195](https://arxiv.org/abs/1908.03195)
 - [Open Images V7 facts & figures](https://storage.googleapis.com/openimages/web/factsfigures_v7.html)
+- [SAM 3 and the SA-Co benchmark — official repository](https://github.com/facebookresearch/sam3)
+- [Kirillov et al. (2023) — Segment Anything (SA-1B) arXiv:2304.02643](https://arxiv.org/abs/2304.02643)
+- [DINOv3 (LVD-1689M / SAT-493M) — arXiv:2508.10104 and code](https://github.com/facebookresearch/dinov3)
+- [RF100-VL benchmark repository](https://github.com/roboflow/rf100-vl)
+- [RF-DETR — real-time detection benchmarked on COCO and RF100-VL](https://github.com/roboflow/rf-detr)

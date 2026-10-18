@@ -1,8 +1,13 @@
 # GANs and VAEs: Foundations of Deep Generative Vision
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
 > **Related Sections:** [Diffusion Models](./01_diffusion_models.md) | [3D Generation](./03_3d_generation.md) | [Evaluation and Safety](./04_evaluation_and_safety.md) | [Video Generation](./02_video_generation.md)
+
+> **🆕 October 2026 update:**
+> - New section on the 2024–2026 afterlife of GANs and VAEs: modern GAN baselines (R3GAN), adversarial distillation / post-training (ADD, LADD, Seaweed-APT) now used in production few-step generators such as Seedream 4.0.
+> - New coverage of the "tokenizer renaissance": high-compression autoencoders (DC-AE, Wan 2.2 VAE, the open FLUX.2 VAE), representation-aligned latents (VA-VAE, REPA-E) and Representation Autoencoders (RAE), plus the pixel-space counter-trend (JiT).
+> - Key Papers, Benchmark, Open Problems and Further Reading extended accordingly; the "hybrid GAN-diffusion is unexplored at scale" claim has been corrected.
 
 ---
 
@@ -141,6 +146,48 @@ GANs retain advantages in inference speed (single forward pass vs. 20–1000 NFE
 
 ---
 
+## 2024–2026: The Afterlife of GANs and VAEs in the Diffusion Era
+
+Although neither GANs nor VAEs are the headline generator in 2025–2026 frontier systems, both survive as **essential sub-components**: the adversarial loss as a distillation/post-training signal, and the (KL- or VQ-) autoencoder as the latent tokenizer on which almost every diffusion/flow model operates.
+
+### A modern GAN baseline: R3GAN
+
+Huang et al. [Huang2024R3GAN] ("The GAN is dead; long live the GAN!", NeurIPS 2024) revisited GAN training from first principles. They derive a well-behaved **regularized relativistic GAN loss** (RpGAN + zero-centred gradient penalties R1 and R2) with local convergence guarantees, which removes the need for most of the empirical tricks accumulated since DCGAN/StyleGAN. With this loss a deliberately simple, modernized ResNet-style backbone (grouped convolutions, inverted bottlenecks, no normalization) is competitive with StyleGAN2 and with some diffusion baselines on FFHQ, ImageNet, CIFAR-10 and Stacked-MNIST, while keeping single-step sampling.
+
+```
+Relativistic pairing loss with zero-centred penalties (R3GAN):
+  L_D = E_{x~p_d, z~p_z}[ f( D(G(z)) - D(x) ) ]
+        + (gamma/2) * E_{x~p_d}[ ||grad_x D(x)||^2 ]      (R1)
+        + (gamma/2) * E_{x~p_g}[ ||grad_x D(x)||^2 ]      (R2)
+  L_G = E_{x~p_d, z~p_z}[ f( D(x) - D(G(z)) ) ]
+  f(t) = softplus(t) = log(1 + e^t)
+```
+
+### Adversarial losses as distillation and post-training signals
+
+The most consequential 2024–2026 use of discriminators is to **collapse multi-step diffusion into 1–4 steps**:
+
+- **ADD** (Adversarial Diffusion Distillation, SDXL-Turbo) [Sauer2023ADD] combines a score-distillation loss from a frozen teacher with an adversarial loss using a frozen DINOv2 feature discriminator, yielding 1–4-step SDXL sampling.
+- **LADD** [Sauer2024LADD] moves the discriminator into latent space, using the teacher diffusion model's own features as the discriminator backbone — the basis of SD3-Turbo.
+- **Seaweed-APT** [Lin2025APT] ("Diffusion Adversarial Post-Training") applies adversarial training *against real data* after diffusion pre-training to obtain **one-step** text-to-video and 1024px text-to-image generation.
+- **Production use**: ByteDance's Seedream 4.0 technical report [Seedream2025] lists adversarial distillation together with distribution matching, quantization and speculative decoding to reach ~1.4 s per 2K image. DMD2 [Yin2024DMD2] likewise adds a GAN loss to distribution-matching distillation. See [Diffusion Models](./01_diffusion_models.md) for the full few-step landscape.
+
+### The tokenizer renaissance
+
+Since the generator's quality is upper-bounded by the autoencoder's reconstruction and by how *learnable* its latent space is, autoencoder design became an active research area again:
+
+| Direction | Representative work | Idea |
+|-----------|--------------------|------|
+| High spatial compression | DC-AE [Chen2025DCAE]; Wan 2.2 VAE (16×16×4 spatio-temporal) | 32–64× spatial downsampling with residual "space-to-channel" shortcuts; fewer tokens for high-res image/video DiTs |
+| Representation-aligned latents | VA-VAE / LightningDiT [Yao2025VAVAE]; REPA-E [Leng2025REPAE] | Align VAE latents with a frozen vision foundation model (DINOv2) or train VAE and diffusion end-to-end, resolving the reconstruction-vs-generation trade-off of high-dimensional latents |
+| Representation Autoencoders | RAE [Zheng2025RAE] | Replace the VAE encoder by a *frozen* pretrained representation encoder (e.g. DINOv2, SigLIP) plus a trained decoder; DiTs trained in this semantic latent space converge faster and reach strong ImageNet FID |
+| Open, reusable tokenizers | FLUX.2 VAE (Apache-2.0) [BFL2025FLUX2] | A standalone, permissively licensed autoencoder released separately from the (non-commercial) generator weights |
+| Pixel space without a tokenizer | JiT [LiHe2025JiT] | Large-patch plain Transformers predicting the clean image (x-prediction) directly in pixel space, questioning whether a learned tokenizer is necessary at all |
+
+The common theme is that the old VAE trade-off — reconstruction fidelity vs. a smooth, easily-modelled latent — is now explicitly engineered rather than left to the KL weight $\beta$.
+
+---
+
 ## Mermaid: GAN vs. VAE Topology
 
 ```mermaid
@@ -182,6 +229,13 @@ graph LR
 | Neural Discrete Representation Learning (VQ-VAE) | van den Oord et al. | 2017 | NeurIPS | Discrete codebook bottleneck; straight-through estimator |
 | Generating Diverse High-Fidelity Images (VQ-VAE-2) | Razavi et al. | 2019 | NeurIPS | Hierarchical two-level quantization; PixelSnail prior |
 | Taming Transformers (VQGAN) | Esser et al. | 2021 | CVPR | Patch discriminator + perceptual loss on VQ-VAE; discrete tokens for transformers |
+| Adversarial Diffusion Distillation (SDXL-Turbo) | Sauer et al. | 2023 | ECCV 2024 | Teacher score distillation + DINOv2-feature discriminator; 1–4-step text-to-image |
+| The GAN is dead; long live the GAN! (R3GAN) | Huang et al. | 2024 | NeurIPS | Regularized relativistic loss (RpGAN + R1 + R2) with convergence guarantees; trick-free modern GAN baseline |
+| Fast High-Resolution Image Synthesis with LADD | Sauer et al. | 2024 | SIGGRAPH Asia | Latent adversarial distillation using teacher-diffusion features as discriminator (SD3-Turbo) |
+| Deep Compression Autoencoder (DC-AE) | Chen et al. | 2024 | ICLR 2025 | 32–128× spatial compression autoencoder for efficient high-res latent diffusion |
+| Reconstruction vs. Generation (VA-VAE / LightningDiT) | Yao et al. | 2025 | CVPR | Vision-foundation-model-aligned VAE latents; resolves high-dim latent optimization dilemma |
+| Diffusion Adversarial Post-Training (Seaweed-APT) | Lin et al. | 2025 | arXiv | Adversarial post-training against real data for one-step image and video generation |
+| Diffusion Transformers with Representation Autoencoders (RAE) | Zheng et al. | 2025 | arXiv | Frozen representation encoder + trained decoder as the latent space for DiTs |
 
 ---
 
@@ -197,6 +251,7 @@ graph LR
 | VQGAN | ImageNet 256px | FID | 7.94 | Transformer prior (GPT-style) |
 | CycleGAN | Horse→Zebra | AMT fool rate | 25.5% | Human perceptual evaluation |
 | DCGAN | CelebA 64px | FID | ~37 | Baseline; modern implementations vary |
+| LightningDiT + VA-VAE | ImageNet 256px | FID | 1.35 | Diffusion on foundation-model-aligned VAE latents [Yao2025VAVAE]; shows tokenizer design dominates |
 
 ---
 
@@ -218,7 +273,8 @@ graph LR
 - **GAN scaling**: Despite BigGAN, no GAN architecture has matched the quality-diversity tradeoff of diffusion at equivalent parameter counts on diverse datasets beyond face/bedroom domains. Understanding whether this reflects inductive bias or data curriculum is open.
 - **VAE sharpness**: The blurriness of VAE reconstructions under pixel-space likelihood is theoretically understood (mean-seeking vs. mode-seeking behavior) but practical solutions — perceptual losses, VQ bottlenecks, flow decoders — each introduce their own approximations.
 - **Codebook utilization**: VQ-VAE codebooks frequently exhibit collapse (many codes unused). Entropy-constrained codebook learning, EMA updates, and residual quantization are active research directions.
-- **Hybrid GAN-diffusion**: Using GAN discriminators as learned perceptual losses for diffusion fine-tuning (e.g., Consistency Models with adversarial training) or combining flow-matching with adversarial objectives remains largely unexplored at scale.
+- **Hybrid GAN-diffusion**: Adversarial objectives are now used at production scale for few-step distillation and post-training (ADD, LADD, DMD2, Seaweed-APT, Seedream 4.0). What remains open is *theory*: when adversarial post-training preserves the teacher's diversity versus when it silently re-introduces mode dropping, and how to choose discriminator feature spaces (DINOv2, teacher features, video encoders) in a principled way.
+- **What should a tokenizer optimize?**: VA-VAE, REPA-E and RAE show that latent *learnability* matters as much as reconstruction PSNR/rFID, while JiT suggests the tokenizer can sometimes be dropped entirely. A unified criterion that predicts downstream generative FID from autoencoder properties does not yet exist.
 - **Inversion quality**: GAN inversion (projecting real images into $\mathcal{W}$ or $\mathcal{W+}$ space) still struggles with rare faces, complex backgrounds, and accessories. No inversion method achieves both reconstruction fidelity and editability simultaneously.
 - **Equivariance in generation**: StyleGAN3's equivariance result suggests rethinking convolution as the core operator in generators. Whether equivariant architectures generalize to video, 3D, and multimodal settings is open.
 - **Theoretical analysis of ELBO tightness**: The gap between the ELBO and the true log-likelihood in VAEs is poorly characterized for high-dimensional image distributions; importance-weighted bounds improve estimates but the practical implications for generation quality are not fully understood.
@@ -233,3 +289,10 @@ graph LR
 - [Esser et al. (2021), "Taming Transformers for High-Resolution Image Synthesis," CVPR 2021](https://arxiv.org/abs/2012.09841)
 - [Rombach et al. (2022), "High-Resolution Image Synthesis with Latent Diffusion Models," CVPR 2022](https://arxiv.org/abs/2112.10752)
 - [Bond-Taylor et al. (2021), "Deep Generative Modelling: A Comparative Review of VAEs, GANs, Normalizing Flows, Energy-Based and Autoregressive Models," TPAMI](https://arxiv.org/abs/2103.04922)
+- [Huang et al. (2024), "The GAN is dead; long live the GAN! A Modern GAN Baseline," NeurIPS 2024](https://arxiv.org/abs/2501.05441)
+- [Sauer et al. (2023), "Adversarial Diffusion Distillation"](https://arxiv.org/abs/2311.17042)
+- [Lin et al. (2025), "Diffusion Adversarial Post-Training for One-Step Video Generation"](https://arxiv.org/abs/2501.08316)
+- [Chen et al. (2024), "Deep Compression Autoencoder for Efficient High-Resolution Diffusion Models," ICLR 2025](https://arxiv.org/abs/2410.10733)
+- [Yao et al. (2025), "Reconstruction vs. Generation: Taming Optimization Dilemma with Visual Foundation Model Aligned Latent Diffusion Models," CVPR 2025](https://arxiv.org/abs/2501.01423)
+- [Zheng et al. (2025), "Diffusion Transformers with Representation Autoencoders"](https://arxiv.org/abs/2510.11690)
+- [Li & He (2025), "Back to Basics: Let Denoising Generative Models Denoise" (JiT)](https://arxiv.org/abs/2511.13720)

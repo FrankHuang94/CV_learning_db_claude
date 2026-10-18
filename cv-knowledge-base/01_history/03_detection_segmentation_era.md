@@ -1,12 +1,17 @@
 # The Detection & Segmentation Era (2013–2018)
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Foundational
 > **Related Sections:**
 > - [Deep Learning Revolution](./02_deep_learning_revolution.md)
 > - [Object Detection](../02_core_tasks/01_object_detection.md)
 > - [Semantic Segmentation](../02_core_tasks/02_semantic_segmentation.md)
 > - [Instance & Panoptic Segmentation](../02_core_tasks/03_instance_panoptic_segmentation.md)
+
+> **🆕 October 2026 update:**
+> - New section **"A Decade Later: Test-of-Time Awards and Descendants (2025–2026)"**: Faster R-CNN won the NeurIPS 2025 Test of Time Award; Fast R-CNN the ICCV 2025 Helmholtz Prize; FCN (2025) and YOLO (2026) the CVPR Longuet-Higgins Prize.
+> - Traced the era's lineage into 2025–2026 foundation models: SAM 3's Promptable Concept Segmentation merges open-vocabulary detection, instance segmentation and tracking.
+> - Added Fast R-CNN to Key Papers and new Further Reading (NeurIPS 2025 award announcement, Kaiming He's talk, SAM 3).
 
 ---
 
@@ -39,9 +44,19 @@ graph TD
     B --> C[Faster R-CNN 2015<br/>learned RPN]
     C --> D[FPN 2017 / Mask R-CNN 2017]
     A2[YOLO 2016 / SSD] --> B2[RetinaNet 2017<br/>focal loss]
+    D -.decade later.-> E[2025 SAM 3<br/>concept detection + segmentation + tracking]
+    B2 -.-> E
     style C fill:#2d6a4f,color:#fff
     style D fill:#1d3557,color:#fff
 ```
+
+---
+
+## A Decade Later: Test-of-Time Awards and Descendants (2025–2026)
+
+Between 2025 and 2026, essentially every pillar of this era received a ten-year retrospective award. At **NeurIPS 2025**, the Test of Time Award went to **Faster R-CNN** (Ren, He, Girshick, Sun), which the NeurIPS committee noted had been cited more than 56,700 times and had served as a backbone for a vast body of follow-up work; its central contribution — replacing hand-crafted region proposals with a learnable Region Proposal Network — is exactly the step from pipeline to end-to-end learning narrated above. The award announcement also paid tribute to co-author Jian Sun, who died in 2022. Kaiming He presented the award talk, *A Brief History of Visual Object Detection*, at the conference in San Diego. At **ICCV 2025**, the Helmholtz Prize honoured **Fast R-CNN** (Girshick); at **CVPR**, the Longuet-Higgins Prize went to **FCN** (2025) and to **YOLO** (2026), the latter shared with ResNet.
+
+The era's technical lineage also reached a natural endpoint. **SAM 3** [Carion2026] (Nov 2025; ICLR 2026) unifies, in a single promptable model, what this era built as separate systems: open-vocabulary *detection* of every instance of a concept, per-instance *masks*, and identity-preserving *video tracking*, with a "presence head" that echoes the objectness score of the RPN by separating recognition from localisation. Meanwhile, real-time detection — YOLO's legacy — continues as a fast-moving engineering line, increasingly built on transformer (DETR-style) detectors with NMS-free set prediction (see [Object Detection](../02_core_tasks/01_object_detection.md)).
 
 ---
 
@@ -50,7 +65,8 @@ graph TD
 | Paper | Authors | Year | Venue | Key Contribution |
 |-------|---------|------|-------|-----------------|
 | R-CNN | Girshick, Donahue, Darrell, Malik | 2014 | CVPR | CNN features on region proposals |
-| Faster R-CNN | Ren, He, Girshick, Sun | 2015 | NeurIPS | Learned RPN; near end-to-end two-stage |
+| Fast R-CNN | Girshick | 2015 | ICCV | RoI pooling; shared computation; multi-task loss (Helmholtz Prize 2025) |
+| Faster R-CNN | Ren, He, Girshick, Sun | 2015 | NeurIPS | Learned RPN; near end-to-end two-stage (NeurIPS Test of Time 2025) |
 | YOLO | Redmon, Divvala, Girshick, Farhadi | 2016 | CVPR | Real-time single-stage detection |
 | RetinaNet (Focal Loss) | Lin, Goyal, Girshick, et al. | 2017 | ICCV | Focal loss closes one-stage accuracy gap |
 | FCN | Long, Shelhamer, Darrell | 2015 | CVPR | Fully convolutional dense prediction |
@@ -89,3 +105,7 @@ graph TD
 - [Focal Loss / RetinaNet (arXiv:1708.02002)](https://arxiv.org/abs/1708.02002) — dense detection
 - [FCN (arXiv:1411.4038)](https://arxiv.org/abs/1411.4038) — fully convolutional segmentation
 - [U-Net (arXiv:1505.04597)](https://arxiv.org/abs/1505.04597) — biomedical segmentation
+- [Fast R-CNN (arXiv:1504.08083)](https://arxiv.org/abs/1504.08083) — RoI pooling and shared computation
+- [NeurIPS 2025 Test of Time Award: Faster R-CNN](https://blog.neurips.cc/2025/11/26/announcing-the-test-of-time-paper-award-for-neurips-2025/) — award announcement and retrospective
+- [Kaiming He — "A Brief History of Visual Object Detection" (NeurIPS 2025 talk)](https://slideslive.com/39055696/test-of-time-award-a-brief-history-of-visual-object-detection) — first-hand history of the era
+- [SAM 3: Segment Anything with Concepts (arXiv:2511.16719)](https://arxiv.org/abs/2511.16719) — detection, segmentation and tracking unified by concept prompts

@@ -1,6 +1,6 @@
 # Pose Estimation: 2D, 3D Human Mesh Recovery, and 6-DoF Object Pose
 
-> **Last Updated:** June 2026
+> **Last Updated:** October 2026
 > **Level:** Advanced
 > **Related Sections:** [Depth Estimation](./05_depth_estimation.md) | [Optical Flow & Tracking](./06_optical_flow_tracking.md) | [Perception for Robotics](../06_robotics_and_embodied_ai/08_perception_for_robotics.md) | [3D Vision and Scene Understanding](../04_3d_vision_and_scene/00_overview.md)
 
