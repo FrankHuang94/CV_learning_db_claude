@@ -289,3 +289,110 @@ Helix（2025 年 2 月发布）是 Figure AI 面向 Figure 02 平台全身人形
 Helix 是 Figure AI 在 2025 年结束与 OpenAI 的合作、转而构建完全自研 AI 栈之后完全自主开发的。在 BMW 南卡罗来纳州 Spartanburg 工厂的商业部署已累计运行 1,250+ 小时，为 30,000 辆汽车装载了 90,000+ 个零件。
 
 Helix 尚未公开报告其在标准学术基准上的数值。2025 年间，Figure 发布了 Helix 在物流包裹处理和家务任务上的扩展，并于 2025 年 10 月推出围绕 Helix 构建的重新设计的 **Figure 03** 人形机器人（新增手部触觉传感与相机，面向家庭的设计）；BMW 的 Figure 02 机队在完成部署周期后已退役。
+
+---
+
+### OpenVLA-OFT (Kim, Finn, Liang, Feb 2025, arXiv 2502.19645)
+
+OpenVLA-OFT 研究的是 **如何微调** VLA，而非如何预训练它。将 OpenVLA 的自回归 256 区间解码替换为：(a) 在一次前向传播中 **并行解码** 整个动作块；(b) 采用 **L1 回归** 目标的连续动作；(c) 面向多视角输入的基于 FiLM 的语言条件化——这使 LIBERO 平均成功率从 76.5% 提升到 **97.1%**，并将动作生成吞吐量提高约 26 倍。该方案（OFT）被广泛用作 VLA 强化学习工作（SimpleVLA-RL、RLinf）的 SFT 起点。
+
+---
+
+### SmolVLA (Shukor et al., Hugging Face, June 2025, arXiv 2506.01844)
+
+SmolVLA 是一个 **4.5 亿参数** 的 VLA，设计目标是能在单张 GPU 上训练并在消费级硬件上运行。它截断了 SmolVLM2 主干（只使用较低层，作者发现这对控制已经足够），减少每帧视觉 token，并增加一个交替使用自注意力与交叉注意力的流匹配动作专家。预训练仅使用社区贡献的、在低成本机械臂（SO-100/101）上采集的 LeRobot 数据集。其 **异步推理** 栈将动作预测与执行解耦，使机器人在动作块之间不会空闲。据报道，SmolVLA 在 LIBERO、Meta-World 和真实 SO-100 任务上可与大得多的 VLA（π0、OpenVLA）竞争，并且是 LeRobot 中的默认 VLA。
+
+---
+
+### GR00T N1.5 / N1.6 / N1.7 (NVIDIA, 2025–2026)
+
+NVIDIA 大约每六个月迭代一次 GR00T，所有版本均以约 30 亿参数的检查点形式在 Isaac-GR00T 代码仓库中发布 [NVIDIA2026]：
+
+| 版本 | VLM 主干 | 动作头 | 数据 / 训练变化 | 报告效果 |
+|---|---|---|---|---|
+| N1.5（2025 年中） | Eagle 2.5，在预训练和后训练中均 **冻结**；简化的 MLP 适配器 | 流匹配 DiT | 在人类第一人称视频上使用 FLARE（未来潜在表示对齐）；DreamGen 合成神经轨迹 | GR-1 任务上语言跟随 93.3%，N1 为 46.6%；少样本与新物体泛化更好 |
+| N1.6（2025 年末） | 内部 Cosmos-Reason-2B 变体；解冻 VLM 顶部 4 层；原生宽高比图像 | 规模翻倍的 DiT（32 层 vs. 16 层） | 状态相对动作块；额外数千小时遥操作数据（双臂 YAM、AgiBot Genie-1 等）；RTC/异步封装 | LIBERO 平均约 97%；提供 BEHAVIOR-1K 与 Unitree G1 移动操作检查点 |
+| N1.7（2026） | Cosmos-Reason2-2B (Qwen3-VL) | 流匹配 DiT（16 层），动作时域 40，状态/动作维度 132 | **机器人与人类共享的相对末端执行器动作空间**；2 万小时 EgoScale 人类视频；Apache 2.0；可导出 ONNX/TensorRT 至 Jetson Thor/Orin | 与 N1.6 相当，泛化与语言跟随有所提升 |
+
+这一演进轨迹颇具启发性：NVIDIA 从通用 VLM 转向 **物理推理 VLM**（Cosmos Reason），从绝对动作空间转向 **相对动作空间**，并从仅用机器人数据转向 **大规模人类视频**。
+
+---
+
+### Gemini Robotics 1.5, ER 1.5 and On-Device (Google DeepMind, 2025)
+
+- **Gemini Robotics On-Device**（2025 年 6 月）是一个经过优化、可在机器人本地低延迟运行的 VLA；DeepMind 报告其可通过 50–100 次示范适应新任务，并可迁移到双臂 Franka 和 Apptronik Apollo 平台。受信测试者通过 Gemini Robotics SDK（Safari SDK）访问。
+- **Gemini Robotics 1.5**（2025 年 9 月）是一个"会思考"的 VLA：在行动之前，它可以输出一段内部自然语言推理轨迹，将指令分解为短时程步骤，从而改善多步任务表现和可解释性。**运动迁移（Motion Transfer, MT）** 训练方案使不同具身之间的运动对齐，单个检查点即可控制 ALOHA、双臂 Franka 和 Apollo，在一台机器人上示范的技能能零样本迁移到其他机器人上 [GoogleDeepMind2025b]。
+- **Gemini Robotics-ER 1.5** 是具身推理"编排器"：它执行指点、二维/三维定位、轨迹以及成功/进度估计，能调用网页搜索等工具，并向 VLA 下达自然语言指令。它是首个通过 Gemini API 向开发者广泛开放的 Gemini Robotics 模型，DeepMind 报告其在 15 个具身推理基准组成的套件上达到最先进水平。
+
+这种 **智能体式双模型设计**（ER 规划器 + VLA 执行器）将 Helix 和 GR00T 的双系统思想，从固定的潜在接口推广为支持工具使用的语言接口。
+
+---
+
+### π\*0.6 and Recap (Physical Intelligence, November 2025)
+
+π0.6 是升级后的基础 VLA（主干和动作专家均大于 π0.5）；**π\*0.6** 则是在 π0.6 基础上进一步用 **Recap**（*RL with Experience and Corrections via Advantage-conditioned Policies*，基于经验与纠正、通过优势条件化策略的强化学习）训练的版本 [PI2025Recap]。其流程为：(1) 在多样化数据上用离线强化学习进行预训练；(2) 部署到任务上，收集自主运行回合，并在机器人出错时收集 **专家遥操作纠正**；(3) 在全部数据上训练一个分布式 **价值函数**（预测进度/距成功所需时间）；(4) 计算优势值，并以二值化的 **改进指示变量** 为条件训练策略；推理时以"高优势"为条件。
+
+```
+# 优势条件化的策略改进（示意，参照 Recap）
+A(o_t, a_t) ≈ V(o_{t+k}) - V(o_t) + r_{t:t+k}        # 基于价值的优势估计
+I_t = 1[A(o_t, a_t) > ε]                              # 改进指示变量
+L = - log π_θ(a_t | o_t, ℓ, I_t)                       # 在全部数据上的监督损失，
+                                                       # 以 I_t 为条件
+# 推理：采样 a ~ π_θ(· | o, ℓ, I = 1)（可选地使用 CFG 式引导）
+```
+
+由于策略是在全部数据上用监督损失而非策略梯度训练的，Recap 可扩展到数十亿参数的流匹配 VLA。Physical Intelligence 报告称，π\*0.6 在最困难的任务（制作意式浓缩咖啡、折叠多样衣物、组装纸箱）上吞吐量提高一倍以上、失败率大约减半，成功率超过 90%，并能连续运行数小时（例如从清晨到深夜提供咖啡服务）。这些是公司自行报告的结果，没有独立基准验证。
+
+---
+
+### Large Behavior Models (TRI, July 2025, arXiv 2507.05331)
+
+TRI 的《A Careful Examination of Large Behavior Models for Multitask Dexterous Manipulation》因其 **方法论** 而值得关注：在真实和仿真的双臂任务上进行盲测、随机化的 A/B 评估，并给出统计置信区间。其 LBM 是扩散 Transformer 策略（语言条件化、多相机），在约 1,700 小时机器人数据（TRI 遥操作数据、OXE 子集和仿真数据）上预训练。报告的发现：预训练提升了鲁棒性和成功率，微调后的 LBM 达到目标性能所需的任务特定数据显著少于单任务基线——但收益比宣传性演示所暗示的要小，需要细致的评估才能检测出来。2025 年 8 月，Boston Dynamics 与 TRI 展示了由 LBM 控制电动 Atlas 人形机器人进行长时程全身操作。
+
+---
+
+### The 2025–2026 Open-VLA Ecosystem (brief)
+
+| 模型 | 机构 | 核心思想 |
+|---|---|---|
+| GR-3 (Jul 2025, arXiv 2507.15493) | ByteDance Seed | 与网络视觉-语言数据和人类 VR 轨迹协同训练的大型 VLA；双臂移动机器人 |
+| InternVLA-M1 (Oct 2025, arXiv 2510.13778) | Shanghai AI Lab | 空间引导的 VLA：先进行空间定位预训练，再进行空间提示的动作后训练 |
+| X-VLA (Oct 2025, arXiv 2510.10274) | Tsinghua AIR et al. | 按具身设置 **软提示**；0.9B；LIBERO 98.1%；仅通过学习提示即可适配新机器人 |
+| WALL-OSS (Sep 2025, arXiv 2509.11766) | X Square Robot | 混合离散与流匹配动作的 MoE 动作头；统一的跨层级思维链 |
+| Galaxea G0 (Sep 2025, arXiv 2509.00576) | Galaxea | 双系统 VLA + Galaxea Open-World 数据集 |
+| MolmoAct2 (2026, arXiv 2605.02881) | Allen AI | 面向真实世界部署的完全开放"动作推理模型"家族 |
+| DreamZero (Feb 2026, arXiv 2602.15922) | NVIDIA | 世界动作模型（视频扩散主干）——见[世界模型](./02_world_models.md) |
+
+---
+
+## VLA 的强化学习微调（2025–2026）
+
+监督式模仿继承了示范者的上限，并受误差累积之苦。强化学习微调可同时解决这两个问题，并在 2025 年成为继预训练和 SFT 之后的第三个标准训练阶段。VLA 特有的关键挑战包括：(a) **似然**：流匹配头没有可解析的动作对数概率；(b) **奖励**：真实世界中的成功检测；(c) **系统**：GPU 并行仿真器或物理机器人上的推演必须与数十亿参数的更新交替进行。
+
+```mermaid
+graph LR
+    P["预训练 VLA"] --> S["在任务示范上 SFT"]
+    S --> R{"强化学习后训练"}
+    R --> SIM["仿真强化学习\nPPO / GRPO，稀疏成功奖励\nSimpleVLA-RL · VLA-RL · πRL"]
+    R --> REAL["真实世界强化学习\n价值 / 优势条件化\nπ*0.6 Recap"]
+    R --> LAT["潜在噪声强化学习\n引导冻结的扩散策略\nDSRL"]
+    R --> WM["基于世界模型的强化学习\n想象推演\nWoVR"]
+    SIM --> D["部署的策略"]
+    REAL --> D
+    LAT --> D
+    WM --> D
+```
+
+| 方法 | 年份 | 基础策略 | 强化学习形式 | 亮点 |
+|---|---|---|---|---|
+| RL4VLA ("What Can RL Bring to VLA Generalization?") | 2025 (NeurIPS) | OpenVLA | 仿真中的 PPO | 相比 SFT，强化学习提升语义与执行泛化；视觉鲁棒性相近 |
+| VLA-RL | 2025 | OpenVLA | 使用学习的机器人过程奖励模型的在线 PPO | 将轨迹级强化学习建模为多轮对话 |
+| RIPT-VLA | 2025 | QueST, OpenVLA-OFT | 基于稀疏二值奖励的交互式后训练（留一法 PPO） | 从极少示范中获得显著提升 |
+| SimpleVLA-RL | 2025 (arXiv 2509.09674) | OpenVLA-OFT | 在 veRL 上进行 GRPO 式结果奖励强化学习 | 在 LIBERO / RoboTwin 数据稀缺条件下大幅提升；出现"pushcut"新行为 |
+| πRL | 2025 (arXiv 2510.25889) | π0, π0.5 | 借助 Flow-Noise 或 Flow-SDE 似然的 PPO/GRPO | π0.5 ManiSkill3 多任务 40.1% → 90.9%；MetaWorld MT50 43.8% → 70.7% |
+| DSRL | 2025 (arXiv 2506.15799) | 扩散 / 流策略（含 π0） | 在策略的 **潜在噪声空间** 中进行 SAC；基础权重冻结 | 黑盒、样本高效的引导 |
+| Self-Improving Embodied Foundation Models | 2025 (NeurIPS, arXiv 2509.15155) | Google DeepMind EFMs | 由模型自身给出"剩余步数"奖励；自主练习 | 自我改进比增加模仿数据更样本高效 |
+| Recap (π\*0.6) | 2025 (arXiv 2511.14759) | π0.6 | 优势条件化策略、分布式价值函数、人类纠正 | 复杂任务上真实世界吞吐量提升 >2 倍 |
+| WoVR | 2026 (arXiv 2602.13977) | VLAs | 在作为模拟器的学习世界模型中进行强化学习 | 降低真实/仿真推演成本 |
+
+开源的 **RLinf** 框架（RLinf-VLA，RSS 2026；OSDI 2026 系统论文）在多种仿真器（ManiSkill、LIBERO、RoboTwin、BEHAVIOR、Isaac Lab）和真实机器人上支持上述大部分算法，并被 Isaac Lab 3.0 采用于 VLA 后训练。
